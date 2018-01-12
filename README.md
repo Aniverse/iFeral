@@ -1,8 +1,8 @@
 # iFeral
-> 主要针对 FH SSD，HDD 某些地方可能有区别
-> rm -rf ~/.* ~/*  
+> 主要针对 FH SSD，HDD 某些地方可能有区别  
+> rm -rf ~/.* ~/*    
 
-### qBittorrent、rar、unrar、speedtest，alias，zsh
+## qBittorrent、rar、unrar、speedtest，alias，zsh
 ``` 
 cd
 wget -O ~/.zshrc https://github.com/Aniverse/iFeral/raw/master/template/zshrc
@@ -15,21 +15,14 @@ chmod -R +x iFeral
 mkdir -p tmp private/qbittorrent/{data,watch,torrents}
 
 source ~/.zshrc
-
 ```
 
-### 安装 ffmepg
-```
-wget http://ffmpeg.org/releases/ffmpeg-3.4.1.tar.xz
-tar xf ffmpeg-3.4.1.tar.xz
-cd ffmpeg-3.4.1
-./configure --prefix=$HOME --enable-static --disable-shared --enable-pic --disable-x86asm
-make -j48 1>> /dev/null
-make install
-cd; rm -rf ffmpeg-3.4.1 ffmpeg-3.4.1.tar.xz
-```
+## rTorrent $ ruTorrent
 
-### 改变 rTorrent 的版本
+#### 修改 ruTorrent 的密码
+```htpasswd -cm ~/www/$(whoami).$(hostname -f)/public_html/rutorrent/.htpasswd $(whoami)```
+
+#### 改变 rTorrent 的版本
 ```
 rtversion="0.9.3_w0.13.3"
 rtversion="0.9.6_w0.13.6"
@@ -42,7 +35,7 @@ pkill -fu "$(whoami)" 'SCREEN -S rtorrent'
 screen -S rtorrent rtorrent
 ```
 
-### ruTorrent 升级到 3.8
+#### ruTorrent 升级到 3.8
 ```
 cd ~/www/$(whoami).$(hostname -f)/public_html/
 git clone --depth=1 https://github.com/Novik/ruTorrent.git
@@ -51,17 +44,70 @@ cp rutorrent/.ht* ruTorrent/
 rm -rf rutorrent/ && mv ruTorrent rutorrent && cd
 ```
 
+#### ruTorrent Plugins
+
+##### ffmpeg
+```
+wget http://ffmpeg.org/releases/ffmpeg-3.4.1.tar.xz
+tar xf ffmpeg-3.4.1.tar.xz
+cd ffmpeg-3.4.1
+./configure --prefix=$HOME --enable-static --disable-shared --enable-pic --disable-x86asm
+make -j48 1>> /dev/null
+make install
+cd; rm -rf ffmpeg-3.4.1 ffmpeg-3.4.1.tar.xz
+```
+
+##### Filemanager
+```
+cd ~/www/$(whoami).$(hostname -f)/public_html/rutorrent/plugins/
+svn co -q https://github.com/nelu/rutorrent-thirdparty-plugins/trunk/filemanager
+chmod 700 ~/www/$(whoami).$(hostname -f)/public_html/rutorrent/plugins/filemanager/scripts/*
+cd && sed -i "s|(getExternal(\"ffprobe\")|(getExternal(\"~/bin/ffprobe\")|g" ~/www/$(whoami).$(hostname -f)/public_html/rutorrent/plugins/filemanager/flm.class.php
+sed -i "s|(getExternal('ffmpeg')|(getExternal('$(pwd)/bin/ffmpeg')|g" ~/www/$(whoami).$(hostname -f)/public_html/rutorrent/plugins/filemanager/flm.class.php
+```
+
+##### Fileshare
+```
+cd ~/www/$(whoami).$(hostname -f)/public_html/rutorrent/plugins/
+svn co -q https://github.com/nelu/rutorrent-thirdparty-plugins/trunk/fileshare
+ln -s ~/www/$(whoami).$(hostname -f)/public_html/rutorrent/plugins/fileshare/share.php ~/www/$(whoami).$(hostname -f)/public_html/
+sed "/if(getConfFile(/d" -i ~/www/$(whoami).$(hostname -f)/public_html/rutorrent/plugins/fileshare/share.php
+sed -i "s|'http://mydomain.com/share.php';|'http://$(whoami).$(hostname -f)/share.php';|g" ~/www/$(whoami).$(hostname -f)/public_html/rutorrent/plugins/fileshare/conf.php
+```
+
+##### Fileupload
+```
+mkdir -p ~/bin
+git clone https://github.com/mcrapet/plowshare.git ~/.plowshare-source && cd ~/.plowshare-source
+make install PREFIX=$HOME
+cd && rm -rf .plowshare-source
+plowmod --install
+cd ~/www/$(whoami).$(hostname -f)/public_html/rutorrent/plugins/
+svn co -q https://github.com/nelu/rutorrent-thirdparty-plugins/trunk/fileupload
+```
+
+##### AutoDL-Irssi
+```
+wget -qO ~/install.autodl.sh http://git.io/oTUCMg && bash ~/install.autodl.sh
+```
+
+
+
+
+
 ### 改变 Deluge 的版本
 ```
 DEVERSION=1.3.13
+```
+
+```
 wget -qO ~/deluge-tmp.tar.gz http://download.deluge-torrent.org/source/deluge-"${DEVERSION}".tar.gz
 mkdir ~/deluge-tmp && tar xf ~/deluge-tmp.tar.gz  --strip-components=1 -C ~/deluge-tmp && cd ~/deluge-tmp/
 python setup.py install --user
 cd && rm -rf ~/deluge-tmp*
 ```
 
-### 修改 ruTorrent 的密码
-```htpasswd -cm ~/www/$(whoami).$(hostname -f)/public_html/rutorrent/.htpasswd $(whoami)```
+
 
 ### 设置客户端及其密码
 ```
@@ -69,12 +115,10 @@ cd
 ANUSER=$(whoami)
 ANPASS=
 
-# 先关闭客户端
 kill "$(pgrep -fu "$(whoami)" "deluged")"
 kill "$(pgrep -fu "$(whoami)" "transmission-daemon")"
 kill "$(pgrep -fu "$(whoami)" "/usr/local/bin/rtorrent")"
 kill "$(pgrep -fu "$(whoami)" "qbittorrent-nox")"
-
 
 ~/.config/deluge/plugins
 
@@ -106,13 +150,8 @@ sed -i "s/DWP/${DWP}/g" ~/.config/deluge/web.conf
 
 
 
-
-
-
 sed -i 's|"download_location": "$(pwd)/Downloads"|"download_location": "$(pwd)/private/deluge/data"|g' ~/.config/deluge/core.conf
 sed -i 's|"autoadd_location": "$(pwd)/Downloads"|"autoadd_location": "$(pwd)/private/deluge/watch"|g' ~/.config/deluge/core.conf
-
-
 
 
 
