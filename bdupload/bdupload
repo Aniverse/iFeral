@@ -128,23 +128,6 @@ elif [[ "${resolution}" == "input" ]]; then
     echo -e "${normal}The script will take 10 screenshots in ${green}$fenbianlv${normal}"
 fi
 
-if [[ ! "${resolution}" == "no" ]]; then
-    echo
-    echo -ne "${yellow}Would you like to generate a thumbnail?${white} [Y]es or [${cyan}N${white}]o "
-    read responce
-    case $responce in
-        [yY] | [yY][Ee][Ss] )  sstn=Yes ;;
-        [nN] | [nN][Oo] | "" )  sstn=No ;;
-        *) sstn=No ;;
-    esac
-fi
-
-if [[ $sstn == Yes ]]; then
-    echo -e "The script will generate a thumbnail"
-else
-    echo -e "The script will not generate a thumbnail"
-fi
-
 echo
 
 }
@@ -272,12 +255,6 @@ elif [[ "${resolution}" == "auto" ]]; then
 
 fi
 
-# 缩略图
-if [[ $sstn == Yes ]]; then
-    vcs "${main_m2ts_path}" -U0 -n 24 -c 4 -H200 -a 16/9 -o "${outputpath}/thumbs.png"
-fi
-
-
 }
 
 
@@ -305,6 +282,7 @@ timeused=$(( $endtime - $starttime ))
 
 clear
 echo -e "${bold}Done. Files created in ${yellow}\"${outputpath}\"${normal}"
+
 if [[ $timeused -gt 60 && $timeused -lt 3600 ]]; then
     timeusedmin=$(expr $timeused / 60)
     timeusedsec=$(expr $timeused % 60)
@@ -317,6 +295,9 @@ elif [[ $timeused -ge 3600 ]]; then
 else
    echo -e "${bold}}Time used: ${timeused} sec${normal}"
 fi
+
+[[ ! "${bdscan}" == "no" ] && echo && cat "${outputpath}/bdinfo.quick.summary.txt"
+
 echo
 
 }
