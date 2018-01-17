@@ -1,8 +1,7 @@
 # iFeral
 > 主要针对 FH SSD，HDD 某些地方可能有区别  
 > 部分内容对于 SeedHost 也适用
-> rm -rf ~/.* ~/*   
-> cd ~/www/$(whoami).$(hostname -f)/*  
+> rm -rf ~/.* ~/*    
 
 ## qBittorrent、rar、unrar、speedtest，oh-my-zsh
 ``` 
@@ -144,7 +143,7 @@ wget http://ffmpeg.org/releases/ffmpeg-3.4.1.tar.xz
 tar xf ffmpeg-3.4.1.tar.xz
 cd ffmpeg-3.4.1
 ./configure --prefix=$HOME --enable-static --disable-shared --enable-pic --disable-x86asm
-make -j48 1>> /dev/null
+make -j$(nproc) 1>> /dev/null
 make install
 cd; rm -rf ffmpeg-3.4.1 ffmpeg-3.4.1.tar.xz
 ```
@@ -306,6 +305,77 @@ npm run build --prefix ~/node/apps/flood
 screen -dmS flood npm start --prefix ~/node/apps/flood/ && echo http://$(id -u -n).$(hostname -f):$(sed -rn 's/(.*)floodServerPort: (.*),/\2/p' ~/node/apps/flood/config.js)
 ```
 
+### 安装 Aria2
+```
+git clone --depth=1 -b release-1.33.1 --single-branch https://github.com/aria2/aria2
+cd aria2
+autoreconf -i
+./configure --prefix=$HOME
+make -j$(nproc) && make install
+cd .. && rm -rf aria2
+
+cd ~/www/$(whoami).$(hostname -f)/* 
+git clone --depth=1 https://github.com/ziahamza/webui-aria2 aria2
+
+mkdir -p ~/.config/aria2 ~/private/aria2
+cd ~/.config/aria2
+
+cat >~/.config/aria2/aria2.conf<<EOF
+#Setting
+dir=~/private/aria2
+dht-file-path=~/.config/aria2/dht.dat
+save-session-interval=15
+force-save=false
+log-level=error
+ 
+# Advanced Options
+disable-ipv6=true
+file-allocation=none
+max-download-result=35
+max-download-limit=20M
+ 
+# RPC Options
+enable-rpc=true
+rpc-allow-origin-all=true
+rpc-listen-all=true
+rpc-save-upload-metadata=true
+rpc-secure=false
+ 
+# see --split option
+continue=true
+max-concurrent-downloads=10
+max-overall-download-limit=0
+max-overall-upload-limit=5
+max-upload-limit=1
+ 
+# Http/FTP options
+split=16
+connect-timeout=120
+max-connection-per-server=16
+max-file-not-found=2
+min-split-size=10M
+check-certificate=false
+http-no-cache=true
+ 
+#BT options
+bt-enable-lpd=true
+bt-max-peers=1024
+bt-require-crypto=true
+follow-torrent=true
+listen-port=6881-6999
+bt-request-peer-speed-limit=256K
+bt-hash-check-seed=true
+bt-seed-unverified=true
+bt-save-metadata=true
+enable-dht=true
+enable-peer-exchange=true
+seed-time=0
+EOF
+
+echo -e "\nhttp://$(whoami).$(hostname -f)/aria2\n"
+aria2c --enable-rpc --rpc-listen-all
+```
+
 ### 一些安装时的参数与用法
 ```
 ~/pip/bin/pip install package
@@ -314,7 +384,7 @@ tar xf XXXXXXXXX.js.tar.gz --strip-components=1 -C ~/
 cmake -DPREFIX=$HOME
 ./configure --prefix=$HOME
 PREFIX=$HOME make
-make -j24
+make -j$(nproc)
 make install DEST_HOME=$HOME
 
 echo "PATH=~/bin:$PATH" > ~/.bashrc
@@ -330,8 +400,8 @@ rm -rf ~/software
 
   -------------------
 ### Some references
-https://www.feralhosting.com/wiki
-https://github.com/feralhosting/wiki
-https://github.com/feralhosting/faqs-cached
-
-https://www.feralhosting.com/wiki/software/flexget
+https://www.feralhosting.com/wiki  
+https://github.com/feralhosting/wiki  
+https://github.com/feralhosting/faqs-cached  
+  
+https://www.feralhosting.com/wiki/software/flexget  
