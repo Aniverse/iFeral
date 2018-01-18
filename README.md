@@ -14,10 +14,9 @@
 - 设置时区为 UTC+8，设置 UTF-8 为默认编码
 - 安装 rar, unrar, speedtest, rclone, mktorrent
 - 安装 h5ai 用于 http 下载
-- 安装 Aria2
-- 安装 Flexget
+- 安装 Aria2 & WebUI
+- 安装 Flexget & WebUI
 - 安装 pip, mono, cmake, ffmepg
-- 安装
 - 用 p7zip 解压 DVDISO（BDISO 无解）
 - 在 FeralHosting 盒子上用脚本扫描 BDinfo
 
@@ -508,8 +507,9 @@ cp -rf ~/software/usr/bin* ~/bin/
 rm -rf ~/software
 ```
 
-~/.apache2/conf.d/
+```
 cd ~/www/$(whoami).$(hostname -f)/*
+```
 
 
   -------------------
