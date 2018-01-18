@@ -10,7 +10,6 @@ chsh -s /usr/bin/zsh
 rm -rf ~/.oh-my-zsh .zshrc
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
 wget -O ~/.oh-my-zsh/themes/agnosterzak.zsh-theme http://raw.github.com/zakaziko99/agnosterzak-ohmyzsh-theme/master/agnosterzak.zsh-theme
-cp -f "${local_packages}"/template/config/zshrc ~/.zshrc
 
 rm -rf iFeral
 git clone --depth=1 https://github.com/Aniverse/iFeral
@@ -110,9 +109,6 @@ source ~/.zshrc
 
 ## rTorrent & ruTorrent
 
-### 修改 ruTorrent 的密码
-```htpasswd -cm ~/www/$(whoami).$(hostname -f)/public_html/rutorrent/.htpasswd $(whoami)```
-
 ### 修改 rTorrent 的版本
 ```
 rtversion="0.9.3_w0.13.3"
@@ -126,10 +122,15 @@ pkill -fu "$(whoami)" 'SCREEN -S rtorrent'
 SCREEN -S rtorrent -fa -d -m rtorrent
 ```
 
+### 修改 ruTorrent 的密码
+```
+htpasswd -cm ~/www/$(whoami).$(hostname -f)/public_html/rutorrent/.htpasswd $(whoami)
+```
+
 ### ruTorrent 升级到 3.8
 ```
 cd ~/www/$(whoami).$(hostname -f)/public_html/
-git clone --depth=1 https://github.com/Novik/ruTorrent.git
+git clone --depth=1 https://github.com/Novik/ruTorrent
 cp -r rutorrent/conf/* ruTorrent/conf/
 cp rutorrent/.ht* ruTorrent/
 rm -rf rutorrent/ && mv ruTorrent rutorrent && cd
@@ -137,7 +138,12 @@ rm -rf rutorrent/ && mv ruTorrent rutorrent && cd
 
 ### ruTorrent Plugins
 
-#### ffmpeg
+Screenshots 插件支持截图 m2ts
+```
+sed -i "s/\"mkv\"/\"mkv\",\"m2ts\"/g" ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/screenshots/conf.php
+```
+
+- #### ffmpeg
 ```
 wget http://ffmpeg.org/releases/ffmpeg-3.4.1.tar.xz
 tar xf ffmpeg-3.4.1.tar.xz
@@ -148,7 +154,7 @@ make install
 cd; rm -rf ffmpeg-3.4.1 ffmpeg-3.4.1.tar.xz
 ```
 
-#### Filemanager
+- #### Filemanager
 ```
 cd ~/www/$(whoami).$(hostname -f)/public_html/rutorrent/plugins/
 svn co -q https://github.com/nelu/rutorrent-thirdparty-plugins/trunk/filemanager
@@ -157,7 +163,7 @@ cd && sed -i "s|(getExternal(\"ffprobe\")|(getExternal(\"~/bin/ffprobe\")|g" ~/w
 sed -i "s|(getExternal('ffmpeg')|(getExternal('$(pwd)/bin/ffmpeg')|g" ~/www/$(whoami).$(hostname -f)/public_html/rutorrent/plugins/filemanager/flm.class.php
 ```
 
-#### Fileshare
+- #### Fileshare
 ```
 cd ~/www/$(whoami).$(hostname -f)/public_html/rutorrent/plugins/
 svn co -q https://github.com/nelu/rutorrent-thirdparty-plugins/trunk/fileshare
@@ -169,7 +175,7 @@ sed -i "s|'http://mydomain.com/share.php';|'http://$(whoami).$(hostname -f)/shar
 #### Fileupload
 ```
 mkdir -p ~/bin
-git clone https://github.com/mcrapet/plowshare.git ~/.plowshare-source && cd ~/.plowshare-source
+git clone --depth=1 https://github.com/mcrapet/plowshare.git ~/.plowshare-source && cd ~/.plowshare-source
 make install PREFIX=$HOME
 cd && rm -rf .plowshare-source
 plowmod --install
