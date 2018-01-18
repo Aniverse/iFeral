@@ -3,6 +3,24 @@
 > 部分内容对于 SeedHost 也适用
 > rm -rf ~/.* ~/*    
 
+## What can I do for you ?
+- 安装任意版本的 Deluge，同时运行两个 Deluge
+- 将 rTorrent 版本降低至 0.9.4 或者更低
+- 升级 ruTorrent 到 3.8
+- 安装第三方 ruTorrent 插件与主题
+- 安装 qBittorrent，可选版本为 3.3.7/3.3.11/3.3.16
+
+- 使用 oh-my-zsh，配置 alias 简化命令
+- 设置时区为 UTC+8，设置 UTF-8 为默认编码
+- 安装 rar, unrar, speedtest, rclone, mktorrent
+- 安装 h5ai 用于 http 下载
+- 安装 Aria2
+- 安装 Flexget
+- 安装 pip, mono, cmake, ffmepg
+- 安装
+- 用 p7zip 解压 DVDISO（BDISO 无解）
+- 在 FeralHosting 盒子上用脚本扫描 BDinfo
+
 ## qBittorrent、rar、unrar、speedtest，oh-my-zsh
 ``` 
 cd
@@ -14,7 +32,43 @@ wget -qO ~/.oh-my-zsh/themes/agnosterzak.zsh-theme http://raw.github.com/zakazik
 rm -rf iFeral
 git clone --depth=1 https://github.com/Aniverse/iFeral
 chmod -R +x iFeral
-mkdir -p tmp private/qbittorrent/{data,watch,torrents}
+mkdir -p tmp private/qbittorrent/{data,watch,torrents} ~/.config/qBittorrent
+```
+
+### Configuring qBittorrent
+```
+PASSWORD=<INPUT YOUR PASSWORD>
+QBPASS=$(python ~/iFeral/app/qbittorrent.userpass.py ${PASSWORD})
+
+function portGenerator() { portGen=$(shuf -i 10001-32001 -n 1) }
+function portCheck() { while [[ "$(netstat -ln | grep ':'"$portGen"'' | grep -c 'LISTEN')" -eq "1" ]];do;portGenerator;done }
+portGenerator && portCheck
+
+cat > ~/.config/qBittorrent/qBittorrent.conf <<EOF
+[LegalNotice]
+Accepted=true
+
+[Preferences]
+Bittorrent\AddTrackers=false
+Bittorrent\DHT=false
+Bittorrent\Encryption=1
+Bittorrent\LSD=false
+Bittorrent\MaxConnecs=-1
+Bittorrent\MaxConnecsPerTorrent=-1
+Bittorrent\MaxRatioAction=0
+Bittorrent\PeX=false
+Bittorrent\uTP=false
+Bittorrent\uTP_rate_limited=false
+Connection\GlobalDLLimitAlt=0
+Connection\GlobalUPLimitAlt=0
+General\Locale=zh
+Queueing\QueueingEnabled=false
+Downloads\SavePath=private/qBittorrent/data
+
+WebUI\Port=$portGen
+WebUI\Password_ha1=@ByteArray($QBPASS)
+WebUI\Username=$(whoami)
+EOF
 ```
 
 ## qBittorrent 3.3.7 (From FeralHosting Offical WiKi)
@@ -30,10 +84,11 @@ sed -i "s/robbyrussell/agnosterzak/g" ~/.zshrc
 cat >> ~/.zshrc <<EOF
 #ZSH_THEME="agnoster"
 
-export LC_ALL=en_US.UTF-8  
+export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
+export TZ="/usr/share/zoneinfo/Asia/Shanghai"
 
-export PATH=~/iFeral/app:~/iFeral/bdupload:~/bin:$PATH
+export PATH=~/iFeral/app:~/iFeral/bdupload:~/bin:~/pip/bin:$PATH
 export LD_LIBRARY_PATH=~/iFeral/qbittorrent.3.3.16:$PATH
 export TMPDIR=~/tmp
 
@@ -151,43 +206,24 @@ cd
 
 ### ruTorrent Plugins
 
-#### AutoDL-Irssi
+- #### AutoDL-Irssi
 ```
 wget -qO ~/install.autodl.sh http://git.io/oTUCMg && bash ~/install.autodl.sh && rm -rf ~/install.autodl.sh
 ```
 
-- #### Screenshots 插件支持截图 m2ts
+- #### Screenshots supports m2ts
 ```
+cd && sed -i "s|ffmpeg'] = ''|ffmpeg'] = '$(pwd)/bin/ffmpeg'|g" ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/screenshots/conf.php
 sed -i "s/\"mkv\"/\"mkv\",\"m2ts\"/g" ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/screenshots/conf.php
-```
-
-- #### ffmpeg
-```
-wget http://ffmpeg.org/releases/ffmpeg-3.4.1.tar.xz
-tar xf ffmpeg-3.4.1.tar.xz
-cd ffmpeg-3.4.1
-./configure --prefix=$HOME --enable-static --disable-shared --enable-pic --disable-x86asm
-make -j$(nproc) 1>> /dev/null
-make install
-cd; rm -rf ffmpeg-3.4.1 ffmpeg-3.4.1.tar.xz
-```
-
-```
-mkdir -p ~/bin
-wget -qO ~/ffmpeg.tar.gz https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-64bit-static.tar.xz
-tar xf ~/ffmpeg.tar.gz && cd && rm -rf ffmpeg-*-64bit-static/{manpages,presets,readme.txt}
-cp ~/ffmpeg-*-64bit-static/* ~/bin
-chmod 700 ~/bin/{ffmpeg,ffprobe,ffmpeg-10bit,qt-faststart}
-cd && rm -rf ffmpeg{.tar.gz,-*-64bit-static}
 ```
 
 - #### Filemanager
 ```
-cd ~/www/$(whoami).$(hostname -f)/public_html/rutorrent/plugins/
+cd ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/
 svn co -q https://github.com/nelu/rutorrent-thirdparty-plugins/trunk/filemanager
-chmod 700 ~/www/$(whoami).$(hostname -f)/public_html/rutorrent/plugins/filemanager/scripts/*
-cd && sed -i "s|(getExternal(\"ffprobe\")|(getExternal(\"~/bin/ffprobe\")|g" ~/www/$(whoami).$(hostname -f)/public_html/rutorrent/plugins/filemanager/flm.class.php
-sed -i "s|(getExternal('ffmpeg')|(getExternal('$(pwd)/bin/ffmpeg')|g" ~/www/$(whoami).$(hostname -f)/public_html/rutorrent/plugins/filemanager/flm.class.php
+chmod 700 ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/filemanager/scripts/*
+cd && sed -i "s|(getExternal(\"ffprobe\")|(getExternal(\"~/bin/ffprobe\")|g" ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/filemanager/flm.class.php
+sed -i "s|(getExternal('ffmpeg')|(getExternal('$(pwd)/bin/ffmpeg')|g" ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/filemanager/flm.class.php
 ```
 
 - #### Fileshare
@@ -206,23 +242,30 @@ git clone --depth=1 https://github.com/mcrapet/plowshare.git ~/.plowshare-source
 make install PREFIX=$HOME
 cd && rm -rf .plowshare-source
 plowmod --install
-cd ~/www/$(whoami).$(hostname -f)/public_html/rutorrent/plugins/
+cd ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins
 svn co -q https://github.com/nelu/rutorrent-thirdparty-plugins/trunk/fileupload
 cd
 ```
 
 - #### ruTorrent Mobile
 ```
-cd ~/www/$(whoami).$(hostname -f)/public_html/rutorrent/plugins/
+cd ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins
 git clone --depth=1 https://github.com/xombiemp/rutorrentMobile.git mobile
 cd
+```
+
+- #### Coloured Ratio Column
+```
+wget -qO ~/ratio.zip http://git.io/71cumA
+unzip -qo ~/ratio.zip -d ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/
+rm -f ratio.zip
 ```
 
 
 
 
 
-### 安装第二个 Deluge
+### Install another version of Deluge & running multiple instances
 ```
 DEVERSION=1.3.13
 ```
@@ -244,74 +287,80 @@ de2 -c ~/.config/deluge2
 dew2 --fork -c ~/.config/deluge2 --port 65231
 ```
 
-### 显示 Deluge Remote GUI 要用的信息
+### Accessing Deluge Remote GUI
 ```
 printf "$(hostname -f)\n$(whoami)\n$(sed -rn 's/(.*)"daemon_port": (.*),/\2/p' ~/.config/deluge/core.conf)\n$(sed -rn "s/$(whoami):(.*):(.*)/\1/p" ~/.config/deluge/auth)\n"
 printf "$(hostname -f)\n$(whoami)\n$(sed -rn 's/(.*)"daemon_port": (.*),/\2/p' ~/.config/deluge2/core.conf)\n$(sed -rn "s/$(whoami):(.*):(.*)/\1/p" ~/.config/deluge2/auth)\n"
 ```
 
-### 设置客户端及其密码（还没写完）
+
+
+
+### FFmpeg (From FeralHosting Offical WiKi)
 ```
-cd
-ANUSER=$(whoami)
-ANPASS=你的密码
-
-kill "$(pgrep -fu "$(whoami)" "deluged")"
-kill "$(pgrep -fu "$(whoami)" "transmission-daemon")"
-kill "$(pgrep -fu "$(whoami)" "/usr/local/bin/rtorrent")"
-kill "$(pgrep -fu "$(whoami)" "qbittorrent-nox")"
-
-~/.config/deluge/plugins
-
-# qBittorrent WebUI
-cp -f ~/iFeral/template/qBittorrent.conf ~/.config/qBittorrent/qBittorrent.conf
-QBPASS=$(python ~/iFeral/app/qbittorrent.userpass.py ${ANPASS})
-
-sed -i "s/PPWWDD/$(pwd)/g" ~/.config/qBittorrent/qBittorrent.conf
-sed -i "s/SCRIPTUSERNAME/${ANUSER}/g" ~/.config/qBittorrent/qBittorrent.conf
-sed -i "s/SCRIPTQBPASS/${QBPASS}/g" ~/.config/qBittorrent/qBittorrent.conf
-
-# Deluge WebUI
-
-cp -f ~/iFeral/template/deluge.core.conf ~/.config/deluge/core.conf
-
-
-DWSALT=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
-DWP=$(python ~/iFeral/app/deluge.userpass.py ${ANPASS} ${DWSALT})
-
-sed -i '/^$(whoami):.*/'d ~/.config/deluge/auth
-echo "${ANUSER}:${ANPASS}:10" > ~/.config/deluge/auth
-
-sed -i "s/delugeuser/${ANUSER}/g" ~/.config/deluge/core.conf
-sed -i "s/DWSALT/${DWSALT}/g" ~/.config/deluge/web.conf
-sed -i "s/DWP/${DWP}/g" ~/.config/deluge/web.conf
-
-# Transmission WebUI
-#sed -i "s/RPCUSERNAME/${ANUSER}/g" ~/.config/transmission-daemon/settings.json
-#sed -i "s/RPCPASSWORD/${ANPASS}/g" ~/.config/transmission-daemon/settings.json
-sed -i 's|"download_location": "$(pwd)/Downloads"|"download_location": "$(pwd)/private/deluge/data"|g' ~/.config/deluge/core.conf
-sed -i 's|"autoadd_location": "$(pwd)/Downloads"|"autoadd_location": "$(pwd)/private/deluge/watch"|g' ~/.config/deluge/core.conf
+mkdir -p ~/bin
+wget -qO ~/ffmpeg.tar.gz https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-64bit-static.tar.xz
+tar xf ~/ffmpeg.tar.gz && cd && rm -rf ffmpeg-*-64bit-static/{manpages,presets,readme.txt}
+cp ~/ffmpeg-*-64bit-static/* ~/bin
+chmod 700 ~/bin/{ffmpeg,ffprobe,ffmpeg-10bit,qt-faststart}
+cd && rm -rf ffmpeg{.tar.gz,-*-64bit-static}
 ```
 
-### 安装 mktorrent
+### FFmpeg buliding
+```
+wget http://ffmpeg.org/releases/ffmpeg-3.4.1.tar.xz
+tar xf ffmpeg-3.4.1.tar.xz
+cd ffmpeg-3.4.1
+./configure --prefix=$HOME --enable-static --disable-shared --enable-pic --disable-x86asm
+make -j$(nproc) 1>> /dev/null
+make install
+cd; rm -rf ffmpeg-3.4.1 ffmpeg-3.4.1.tar.xz
+```
+
+### Install p7zip
+```
+wget -qO ~/p7zip.tar.bz2 http://sourceforge.net/projects/p7zip/files/p7zip/9.38.1/p7zip_9.38.1_src_all.tar.bz2
+tar xf ~/p7zip.tar.bz2 && cd ~/p7zip_9.38.1
+make && make install DEST_HOME=$HOME
+cd && rm -f ~/p7zip.tar.bz2
+```
+
+### Install rclone
+```
+mkdir -p ~/bin
+wget -qO ~/rclone.zip http://downloads.rclone.org/rclone-current-linux-amd64.zip
+unzip ~/rclone.zip
+mv ~/rclone-v*-linux-amd64/rclone ~/bin
+rm -rf ~/rclone-v*-linux-amd64 ~/rclone.zip
+```
+
+```
+mkdir -p ~/.config/rclone
+cat>~/.config/rclone/rclone.conf<<EOF
+--- PASTE YOUR CONFIG HERE ---
+EOF
+```
+
+### Install Mktorrent
 ```
 git clone --depth=1 https://github.com/Rudde/mktorrent
-cd mktorrent/ && PREFIX=$HOME make
+cd mktorrent/ && PREFIX=$HOME make -j$(nproc)
 PREFIX=$HOME make install
 cd .. && rm -rf mktorrent
 ```
 
-### 安装 CMake 与 mono
+### Install CMake & mono
 ```
 mkdir -p ~/bin
-wget -qO ~/cmake.tar.gz https://cmake.org/files/v3.9/cmake-3.9.4-Linux-x86_64.tar.gz
+wget -O ~/cmake.tar.gz https://cmake.org/files/v3.9/cmake-3.9.4-Linux-x86_64.tar.gz
 tar xf ~/cmake.tar.gz --strip-components=1 -C ~/
+rm -rf ~/cmake.tar.gz
 
-wget -qO ~/libtool.tar.gz http://ftpmirror.gnu.org/libtool/libtool-2.4.6.tar.gz
+wget -O ~/libtool.tar.gz http://ftpmirror.gnu.org/libtool/libtool-2.4.6.tar.gz
 tar xf ~/libtool.tar.gz && cd ~/libtool-2.4.6
 ./configure --prefix=$HOME
 make -j$(nproc) && make install 
-cd && rm -rf libtool{-2.4.6,.tar.gz}
+cd .. && rm -rf libtool{-2.4.6,.tar.gz}
 
 PATH=~/bin:$PATH
 wget -qO ~/mono.tar.bz2 http://download.mono-project.com/sources/mono/mono-5.4.0.201.tar.bz2
@@ -321,15 +370,18 @@ make get-monolite-latest && make -j$(nproc) && make install
 cd && rm -rf ~/mono{-*,.tar.bz2}
 ```
 
-### 安装 pip 与 Flexget
+### Install Pip & Flexget
 ```
 pip install --user --ignore-installed --no-use-wheel virtualenv
 ~/.local/bin/virtualenv ~/pip --system-site-packages
 ~/pip/bin/pip install flexget
-touch ~/config.yml
+touch ~/.config/flexget/config.yml
+
+pip install --user transmissionrpc
+sed -i "s|base_url + '/t|base_url + '/$(whoami)/t|g" ~/.local/lib/python2.7/site-packages/transmissionrpc/client.py
 ```
 
-### 安装 Node.js 与 Flood
+### Install Node.js & Flood
 ```
 mkdir -p ~/bin
 wget -qO ~/node.js.tar.gz https://nodejs.org/dist/v8.7.0/node-v8.7.0-linux-x64.tar.xz
@@ -352,7 +404,7 @@ npm run build --prefix ~/node/apps/flood
 screen -dmS flood npm start --prefix ~/node/apps/flood/ && echo http://$(id -u -n).$(hostname -f):$(sed -rn 's/(.*)floodServerPort: (.*),/\2/p' ~/node/apps/flood/config.js)
 ```
 
-### 安装 Aria2
+### Install Aria2
 ```
 git clone --depth=1 -b release-1.33.1 --single-branch https://github.com/aria2/aria2
 cd aria2
@@ -423,32 +475,46 @@ echo -e "\nhttp://$(whoami).$(hostname -f)/aria2\n"
 aria2c --enable-rpc --rpc-listen-all
 ```
 
-### 一些安装时的参数与用法
+### Install h5ai
 ```
-~/pip/bin/pip install package
+wget -qO ~/h5ai.zip http://git.io/vEMGv
+unzip -qo ~/h5ai.zip -d ~/www/$(whoami).$(hostname -f)/*/
+echo -e '<Location ~ "/">\n    DirectoryIndex  index.html  index.php  /_h5ai/public/index.php\n</Location>' > ~/.apache2/conf.d/h5ai.conf
+/usr/sbin/apache2ctl -k graceful
+```
 
-tar xf XXXXXXXXX.js.tar.gz --strip-components=1 -C ~/
+
+
+
+
+### General info on installing software
+```
+tar xf XXXXXXXXX.tar.gz --strip-components=1 -C ~/
 cmake -DPREFIX=$HOME
 ./configure --prefix=$HOME
-PREFIX=$HOME make
-make -j$(nproc)
+PREFIX=$HOME make -j$(nproc)
 make install DEST_HOME=$HOME
+```
 
+```
 echo "PATH=~/bin:$PATH" > ~/.bashrc
 source ~/.bashrc
+```
 
+```
 wget -qO software.deb https://somesite.com/software.deb
 dpkg -x ~/software.deb ~/software
 cp -rf ~/software/usr/bin* ~/bin/
 rm -rf ~/software
 ```
 
+~/.apache2/conf.d/
+cd ~/www/$(whoami).$(hostname -f)/*
 
 
   -------------------
 ### Some references
 https://www.feralhosting.com/wiki  
-https://github.com/feralhosting/wiki  
 https://github.com/feralhosting/faqs-cached  
-  
-https://www.feralhosting.com/wiki/software/flexget  
+
+https://github.com/wyjok/FH  
