@@ -1,7 +1,8 @@
 # iFeral
 > 主要针对 FH SSD，HDD 某些地方可能有区别  
-> 部分内容对于 SeedHost 也适用
-> rm -rf ~/.* ~/*    
+> 部分内容对于 SeedHost 也适用  
+> 我懒得把它们写成脚本了  
+> rm -rf ~/.* ~/*   
 
 ## What can I do for you ?
 - 安装任意版本的 Deluge，同时运行两个 Deluge
