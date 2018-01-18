@@ -8,12 +8,12 @@
 - 将 rTorrent 版本降低至 0.9.4 或者更低
 - 升级 ruTorrent 到 3.8
 - 安装第三方 ruTorrent 插件与主题
-- 安装 qBittorrent，可选版本为 3.3.7/3.3.11/3.3.16
-
+- 安装 qBittorrent，可选版本为 3.3.7 / 3.3.11 / 3.3.16
+  
 - 使用 oh-my-zsh，配置 alias 简化命令
 - 设置时区为 UTC+8，设置 UTF-8 为默认编码
 - 安装 rar, unrar, speedtest, rclone, mktorrent
-- 安装 h5ai 用于 http 下载
+- 安装 h5ai
 - 安装 Aria2 & WebUI
 - 安装 Flexget & WebUI
 - 安装 pip, mono, cmake, ffmepg
