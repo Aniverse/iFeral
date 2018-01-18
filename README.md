@@ -9,7 +9,7 @@ cd
 chsh -s /usr/bin/zsh
 rm -rf ~/.oh-my-zsh .zshrc
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
-wget -O ~/.oh-my-zsh/themes/agnosterzak.zsh-theme http://raw.github.com/zakaziko99/agnosterzak-ohmyzsh-theme/master/agnosterzak.zsh-theme
+wget -qO ~/.oh-my-zsh/themes/agnosterzak.zsh-theme http://raw.github.com/zakaziko99/agnosterzak-ohmyzsh-theme/master/agnosterzak.zsh-theme
 
 rm -rf iFeral
 git clone --depth=1 https://github.com/Aniverse/iFeral
@@ -103,13 +103,17 @@ bindkey -s "^[Oj" "*"
 bindkey -s "^[Oo" "/"  
 EOF
 
-#nano ~/.zshrc
 source ~/.zshrc
+#nano ~/.zshrc
 ```
+
+
+
+
 
 ## rTorrent & ruTorrent
 
-### 修改 rTorrent 的版本
+### rTorrent Version
 ```
 rtversion="0.9.3_w0.13.3"
 rtversion="0.9.6_w0.13.6"
@@ -122,23 +126,37 @@ pkill -fu "$(whoami)" 'SCREEN -S rtorrent'
 SCREEN -S rtorrent -fa -d -m rtorrent
 ```
 
-### 修改 ruTorrent 的密码
+### ruTorrent Password
 ```
 htpasswd -cm ~/www/$(whoami).$(hostname -f)/public_html/rutorrent/.htpasswd $(whoami)
 ```
 
-### ruTorrent 升级到 3.8
+### ruTorrent Upgrade
 ```
-cd ~/www/$(whoami).$(hostname -f)/public_html/
+cd ~/www/$(whoami).$(hostname -f)/public_html
 git clone --depth=1 https://github.com/Novik/ruTorrent
 cp -r rutorrent/conf/* ruTorrent/conf/
 cp rutorrent/.ht* ruTorrent/
 rm -rf rutorrent/ && mv ruTorrent rutorrent && cd
 ```
 
+### ruTorrent Themes
+
+```
+cd ~/www/$(whoami).$(hostname -f)/public_html/rutorrent/theme/themes
+svn co -q https://github.com/ArtyumX/ruTorrent-Themes/trunk/MaterialDesign
+svn co -q https://github.com/ArtyumX/ruTorrent-Themes/trunk/club-QuickBox
+cd
+```
+
 ### ruTorrent Plugins
 
-Screenshots 插件支持截图 m2ts
+#### AutoDL-Irssi
+```
+wget -qO ~/install.autodl.sh http://git.io/oTUCMg && bash ~/install.autodl.sh && rm -rf ~/install.autodl.sh
+```
+
+- #### Screenshots 插件支持截图 m2ts
 ```
 sed -i "s/\"mkv\"/\"mkv\",\"m2ts\"/g" ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/screenshots/conf.php
 ```
@@ -152,6 +170,15 @@ cd ffmpeg-3.4.1
 make -j$(nproc) 1>> /dev/null
 make install
 cd; rm -rf ffmpeg-3.4.1 ffmpeg-3.4.1.tar.xz
+```
+
+```
+mkdir -p ~/bin
+wget -qO ~/ffmpeg.tar.gz https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-64bit-static.tar.xz
+tar xf ~/ffmpeg.tar.gz && cd && rm -rf ffmpeg-*-64bit-static/{manpages,presets,readme.txt}
+cp ~/ffmpeg-*-64bit-static/* ~/bin
+chmod 700 ~/bin/{ffmpeg,ffprobe,ffmpeg-10bit,qt-faststart}
+cd && rm -rf ffmpeg{.tar.gz,-*-64bit-static}
 ```
 
 - #### Filemanager
@@ -172,7 +199,7 @@ sed "/if(getConfFile(/d" -i ~/www/$(whoami).$(hostname -f)/public_html/rutorrent
 sed -i "s|'http://mydomain.com/share.php';|'http://$(whoami).$(hostname -f)/share.php';|g" ~/www/$(whoami).$(hostname -f)/public_html/rutorrent/plugins/fileshare/conf.php
 ```
 
-#### Fileupload
+- #### Fileupload
 ```
 mkdir -p ~/bin
 git clone --depth=1 https://github.com/mcrapet/plowshare.git ~/.plowshare-source && cd ~/.plowshare-source
@@ -181,12 +208,19 @@ cd && rm -rf .plowshare-source
 plowmod --install
 cd ~/www/$(whoami).$(hostname -f)/public_html/rutorrent/plugins/
 svn co -q https://github.com/nelu/rutorrent-thirdparty-plugins/trunk/fileupload
+cd
 ```
 
-#### AutoDL-Irssi
+- #### ruTorrent Mobile
 ```
-wget -qO ~/install.autodl.sh http://git.io/oTUCMg && bash ~/install.autodl.sh
+cd ~/www/$(whoami).$(hostname -f)/public_html/rutorrent/plugins/
+git clone --depth=1 https://github.com/xombiemp/rutorrentMobile.git mobile
+cd
 ```
+
+
+
+
 
 ### 安装第二个 Deluge
 ```
@@ -259,13 +293,20 @@ sed -i 's|"download_location": "$(pwd)/Downloads"|"download_location": "$(pwd)/p
 sed -i 's|"autoadd_location": "$(pwd)/Downloads"|"autoadd_location": "$(pwd)/private/deluge/watch"|g' ~/.config/deluge/core.conf
 ```
 
+### 安装 mktorrent
+```
+git clone --depth=1 https://github.com/Rudde/mktorrent
+cd mktorrent/ && PREFIX=$HOME make
+PREFIX=$HOME make install
+cd .. && rm -rf mktorrent
+```
+
 ### 安装 CMake 与 mono
 ```
 mkdir -p ~/bin
 wget -qO ~/cmake.tar.gz https://cmake.org/files/v3.9/cmake-3.9.4-Linux-x86_64.tar.gz
 tar xf ~/cmake.tar.gz --strip-components=1 -C ~/
 
-mkdir -p ~/bin
 wget -qO ~/libtool.tar.gz http://ftpmirror.gnu.org/libtool/libtool-2.4.6.tar.gz
 tar xf ~/libtool.tar.gz && cd ~/libtool-2.4.6
 ./configure --prefix=$HOME
