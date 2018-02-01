@@ -73,7 +73,7 @@ EOF
 
 ## qBittorrent 3.3.7 (From FeralHosting Offical WiKi)
 ``` 
-wget -qO ~/install.qbittorrent.sh https://goo.gl/PFYfgd && bash ~/install.qbittorrent.sh
+wget -qO ~/install.qbittorrent.sh https://bitbucket.org/feralio/wiki/raw/HEAD/src/wiki/software/qbittorrent/qbittorrent.sh && bash ~/install.qbittorrent.sh
 ```
 
 ## zsh
@@ -201,7 +201,6 @@ rm -rf rutorrent/ && mv ruTorrent rutorrent && cd
 cd ~/www/$(whoami).$(hostname -f)/public_html/rutorrent/theme/themes
 svn co -q https://github.com/ArtyumX/ruTorrent-Themes/trunk/MaterialDesign
 svn co -q https://github.com/ArtyumX/ruTorrent-Themes/trunk/club-QuickBox
-cd
 ```
 
 ### ruTorrent Plugins
@@ -211,7 +210,7 @@ cd
 wget -qO ~/install.autodl.sh http://git.io/oTUCMg && bash ~/install.autodl.sh && rm -rf ~/install.autodl.sh
 ```
 
-- #### Screenshots supports m2ts
+- #### Screenshots
 ```
 cd && sed -i "s|ffmpeg'] = ''|ffmpeg'] = '$(pwd)/bin/ffmpeg'|g" ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/screenshots/conf.php
 sed -i "s/\"mkv\"/\"mkv\",\"m2ts\"/g" ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/screenshots/conf.php
@@ -244,14 +243,12 @@ cd && rm -rf .plowshare-source
 plowmod --install
 cd ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins
 svn co -q https://github.com/nelu/rutorrent-thirdparty-plugins/trunk/fileupload
-cd
 ```
 
 - #### ruTorrent Mobile
 ```
 cd ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins
 git clone --depth=1 https://github.com/xombiemp/rutorrentMobile.git mobile
-cd
 ```
 
 - #### Coloured Ratio Column
