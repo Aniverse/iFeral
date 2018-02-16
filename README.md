@@ -1,6 +1,7 @@
 # iFeral
 > 主要针对 FH SSD，HDD 某些地方可能有区别  
 > 部分内容对于 SeedHost 也适用  
+> 网页文件夹的路径可能有变化，具体参照本文底部  
 > 我懒得把它们写成脚本了  
 > rm -rf ~/.* ~/*   
 
@@ -480,8 +481,18 @@ echo -e '<Location ~ "/">\n    DirectoryIndex  index.html  index.php  /_h5ai/pub
 /usr/sbin/apache2ctl -k graceful
 ```
 
-
-
+### Install Transmission
+```
+TRVERSION=2.92
+```
+```
+git clone --depth=1 -b ${TRVERSION} --single-branch https://github.com/transmission/transmission
+cd transmission
+[[ ! "$TRVERSION" = "2.93" ]] && sed -i "s/m4_copy/m4_copy_force/g" m4/glib-gettext.m4
+./autogen.sh && ./configure --prefix=$HOME
+make clean && make -j$(nproc) && make install
+cd; rm -rf transmission*
+```
 
 
 ### General info on installing software
@@ -507,6 +518,8 @@ rm -rf ~/software
 
 ```
 cd ~/www/$(whoami).$(hostname -f)/*
+cd ~/www/$(whoami).$(hostname -a)/*
+ln -s ~/bin/0utput 0utput
 ```
 
 
