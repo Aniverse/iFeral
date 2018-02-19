@@ -10,7 +10,7 @@
 - 将 rTorrent 版本降低至 0.9.4 或者更低
 - 升级 ruTorrent 到 3.8
 - 安装第三方 ruTorrent 插件与主题
-- 安装 qBittorrent，可选版本为 3.3.7 / 3.3.11 / 3.3.16
+- 安装 qBittorrent 3.3.3-3.3.16
   
 - 使用 oh-my-zsh，配置 alias 简化命令
 - 设置时区为 UTC+8，设置 UTF-8 为默认编码
@@ -89,8 +89,8 @@ export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export TZ="/usr/share/zoneinfo/Asia/Shanghai"
 
-export PATH=~/iFeral/app:~/iFeral/bdupload:~/bin:~/pip/bin:$PATH
-export LD_LIBRARY_PATH=~/iFeral/qbittorrent.3.3.16:$PATH
+export PATH=~/iFeral/app:~/bin:~/pip/bin:$PATH
+export LD_LIBRARY_PATH=~/iFeral/qbittorrent:$LD_LIBRARY_PATH
 export TMPDIR=~/tmp
 
 alias -s sh='bash'
@@ -126,11 +126,17 @@ alias pid="ps aux | grep -v grep | grep"
 alias io='iostat -d -x -m 1| grep -E "`echo $PWD | cut -c8-10` | rMB/s | wMB/s"'
 alias ios="iostat -d -x -m 1"
 alias wangsu='sar -n DEV 1| grep -E "rxkB\/s|txkB\/s|eth0|eth1"'
+alias qb7='nohup ~/iFeral/app/qbitorrent-nox.3.3.7 &'
 alias qb11='nohup ~/iFeral/app/qbitorrent-nox.3.3.11 &'
+alias qb111='nohup ~/iFeral/app/qbitorrent-nox.3.3.11.Skip &'
+alias qb12='nohup ~/iFeral/app/qbitorrent-nox.3.3.12 &'
+alias qb14='nohup ~/iFeral/app/qbitorrent-nox.3.3.14 &'
+alias qb15='nohup ~/iFeral/app/qbitorrent-nox.3.3.15 &'
 alias qb16='nohup ~/iFeral/app/qbitorrent-nox.3.3.16 &'
 alias fenjuan="rar5 a -rr5 -m0 -ma5 -v1983M"
 
 alias killde='kill "$(pgrep -fu "$(whoami)" "deluged")"'
+alias killde2='kill "$(pgrep -fu "$(whoami)" "de2")"'
 alias killtr='kill "$(pgrep -fu "$(whoami)" "transmission-daemon")"'
 alias killrt='kill "$(pgrep -fu "$(whoami)" "/usr/local/bin/rtorrent")"'
 alias killqb='kill "$(pgrep -fu "$(whoami)" "qbittorrent-nox")"'
