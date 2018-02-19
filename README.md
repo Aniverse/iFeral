@@ -494,6 +494,16 @@ make clean && make -j$(nproc) && make install
 cd; rm -rf transmission*
 ```
 
+### Install Qmake (NOT Work)
+```
+wget -O qt.tar.gz http://download.qt.io/official_releases/qt/5.7/5.7.1/single/qt-everywhere-opensource-src-5.7.1.tar.gz
+tar zxf qt.tar.gz
+cd qt-everywhere-opensource-src-5.7.1
+time ./configure --prefix=$HOME -opensource -nomake tests
+time make -j$(nproc)
+time make install
+# export QTDIR=~/
+```
 
 ### General info on installing software
 ```
