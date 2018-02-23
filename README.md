@@ -6,11 +6,12 @@
 > rm -rf ~/.* ~/*   
 
 ## What can I do for you ?
-- 安装任意版本的 Deluge，同时运行两个 Deluge
+- 安装指定版本的 Deluge，同时运行多个 Deluge
+- 安装指定版本的 Transmission，同时运行多个 Transmission
+- 安装指定版本的  qBittorrent
 - 将 rTorrent 版本降低至 0.9.4 或者更低
 - 升级 ruTorrent 到 3.8
 - 安装第三方 ruTorrent 插件与主题
-- 安装 qBittorrent 3.3.3-3.3.16
   
 - 使用 oh-my-zsh，配置 alias 简化命令
 - 设置时区为 UTC+8，设置 UTF-8 为默认编码
@@ -20,13 +21,11 @@
 - 安装 Flexget & WebUI
 - 安装 pip, mono, cmake, ffmepg
 - 用 p7zip 解压 DVDISO（BDISO 无解）
-- 在 FeralHosting 盒子上用脚本扫描 BDinfo
+- 用脚本扫描 BDinfo
 
 ## qBittorrent、rar、unrar、speedtest，oh-my-zsh
 ``` 
-cd
-chsh -s /usr/bin/zsh
-rm -rf ~/.oh-my-zsh .zshrc
+cd;chsh -s /usr/bin/zsh;rm -rf ~/.oh-my-zsh .zshrc
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
 wget -qO ~/.oh-my-zsh/themes/agnosterzak.zsh-theme http://raw.github.com/zakaziko99/agnosterzak-ohmyzsh-theme/master/agnosterzak.zsh-theme
 
@@ -90,7 +89,7 @@ export LANG=en_US.UTF-8
 export TZ="/usr/share/zoneinfo/Asia/Shanghai"
 
 export PATH=~/iFeral/app:~/bin:~/pip/bin:$PATH
-export LD_LIBRARY_PATH=~/iFeral/qbittorrent:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=~/iFeral/qb3:~/iFeral/qb4:$LD_LIBRARY_PATH
 export TMPDIR=~/tmp
 
 alias -s sh='bash'
@@ -126,13 +125,18 @@ alias pid="ps aux | grep -v grep | grep"
 alias io='iostat -d -x -m 1| grep -E "`echo $PWD | cut -c8-10` | rMB/s | wMB/s"'
 alias ios="iostat -d -x -m 1"
 alias wangsu='sar -n DEV 1| grep -E "rxkB\/s|txkB\/s|eth0|eth1"'
-alias qb7='nohup ~/iFeral/app/qbitorrent-nox.3.3.7 &'
-alias qb11='nohup ~/iFeral/app/qbitorrent-nox.3.3.11 &'
-alias qb111='nohup ~/iFeral/app/qbitorrent-nox.3.3.11.Skip &'
-alias qb12='nohup ~/iFeral/app/qbitorrent-nox.3.3.12 &'
-alias qb14='nohup ~/iFeral/app/qbitorrent-nox.3.3.14 &'
-alias qb15='nohup ~/iFeral/app/qbitorrent-nox.3.3.15 &'
-alias qb16='nohup ~/iFeral/app/qbitorrent-nox.3.3.16 &'
+alias qb7='nohup ~/iFeral/app/qbittorrent-nox.3.3.7 &'
+alias qb11='nohup ~/iFeral/app/qbittorrent-nox.3.3.11 &'
+alias qb111='nohup ~/iFeral/app/qbittorrent-nox.3.3.11.Skip &'
+alias qb12='nohup ~/iFeral/app/qbittorrent-nox.3.3.12 &'
+alias qb14='nohup ~/iFeral/app/qbittorrent-nox.3.3.14 &'
+alias qb15='nohup ~/iFeral/app/qbittorrent-nox.3.3.15 &'
+alias qb16='nohup ~/iFeral/app/qbittorrent-nox.3.3.16 &'
+alias qb400='nohup ~/iFeral/app/qbittorrent-nox.4.0.0 &'
+alias qb401='nohup ~/iFeral/app/qbittorrent-nox.4.0.1 &'
+alias qb402='nohup ~/iFeral/app/qbittorrent-nox.4.0.2 &'
+alias qb403='nohup ~/iFeral/app/qbittorrent-nox.4.0.3 &'
+alias qb404='nohup ~/iFeral/app/qbittorrent-nox.4.0.4 &'
 alias fenjuan="rar5 a -rr5 -m0 -ma5 -v1983M"
 
 alias killde='kill "$(pgrep -fu "$(whoami)" "deluged")"'
