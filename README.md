@@ -37,11 +37,11 @@ mkdir -p tmp private/qbittorrent/{data,watch,torrents} ~/.config/qBittorrent
 
 ### Configuring qBittorrent
 ```
-PASSWORD=<INPUT YOUR PASSWORD>
+PASSWORD=改成密码
 QBPASS=$(python ~/iFeral/app/qbittorrent.userpass.py ${PASSWORD})
 
-function portGenerator() { portGen=$(shuf -i 10001-32001 -n 1) }
-function portCheck() { while [[ "$(netstat -ln | grep ':'"$portGen"'' | grep -c 'LISTEN')" -eq "1" ]];do;portGenerator;done }
+function portGenerator() { portGen=$(shuf -i 10001-32001 -n 1) ; }
+function portCheck() { while [[ "$(netstat -ln | grep ':'"$portGen"'' | grep -c 'LISTEN')" -eq "1" ]] ; do portGenerator ; done }
 portGenerator && portCheck
 
 cat > ~/.config/qBittorrent/qBittorrent.conf <<EOF
@@ -125,25 +125,24 @@ alias pid="ps aux | grep -v grep | grep"
 alias io='iostat -d -x -m 1| grep -E "`echo $PWD | cut -c8-10` | rMB/s | wMB/s"'
 alias ios="iostat -d -x -m 1"
 alias wangsu='sar -n DEV 1| grep -E "rxkB\/s|txkB\/s|eth0|eth1"'
-alias qb7='nohup ~/iFeral/app/qbittorrent-nox.3.3.7 &'
-alias qb11='nohup ~/iFeral/app/qbittorrent-nox.3.3.11 &'
-alias qb111='nohup ~/iFeral/app/qbittorrent-nox.3.3.11.Skip &'
-alias qb12='nohup ~/iFeral/app/qbittorrent-nox.3.3.12 &'
-alias qb14='nohup ~/iFeral/app/qbittorrent-nox.3.3.14 &'
-alias qb15='nohup ~/iFeral/app/qbittorrent-nox.3.3.15 &'
-alias qb16='nohup ~/iFeral/app/qbittorrent-nox.3.3.16 &'
-alias qb400='nohup ~/iFeral/app/qbittorrent-nox.4.0.0 &'
-alias qb401='nohup ~/iFeral/app/qbittorrent-nox.4.0.1 &'
-alias qb402='nohup ~/iFeral/app/qbittorrent-nox.4.0.2 &'
-alias qb403='nohup ~/iFeral/app/qbittorrent-nox.4.0.3 &'
-alias qb404='nohup ~/iFeral/app/qbittorrent-nox.4.0.4 &'
+alias qb7="screen -dmS qBittorrent /bin/bash -c 'export LD_LIBRARY_PATH=~/iFeral/qb3:$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.7'"
+alias qb3111="screen -dmS qBittorrent /bin/bash -c 'export LD_LIBRARY_PATH=~/iFeral/qb3:$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.11.Skip'"
+alias qb311="screen -dmS qBittorrent /bin/bash -c 'export LD_LIBRARY_PATH=~/iFeral/qb3:$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.11'"
+alias qb312="screen -dmS qBittorrent /bin/bash -c 'export LD_LIBRARY_PATH=~/iFeral/qb3:$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.12'"
+alias qb314="screen -dmS qBittorrent /bin/bash -c 'export LD_LIBRARY_PATH=~/iFeral/qb3:$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.14'"
+alias qb315="screen -dmS qBittorrent /bin/bash -c 'export LD_LIBRARY_PATH=~/iFeral/qb3:$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.15'"
+alias qb316="screen -dmS qBittorrent /bin/bash -c 'export LD_LIBRARY_PATH=~/iFeral/qb3:$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.16'"
+alias qb400="screen -dmS qBittorrent /bin/bash -c 'export LD_LIBRARY_PATH=~/iFeral/qb4:$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.4.0.0'"
+alias qb401="screen -dmS qBittorrent /bin/bash -c 'export LD_LIBRARY_PATH=~/iFeral/qb4:$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.4.0.1'"
+alias qb402="screen -dmS qBittorrent /bin/bash -c 'export LD_LIBRARY_PATH=~/iFeral/qb4:$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.4.0.2'"
+alias qb403="screen -dmS qBittorrent /bin/bash -c 'export LD_LIBRARY_PATH=~/iFeral/qb4:$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.4.0.3'"
+alias qb404="screen -dmS qBittorrent /bin/bash -c 'export LD_LIBRARY_PATH=~/iFeral/qb4:$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.4.0.4'"
 alias fenjuan="rar5 a -rr5 -m0 -ma5 -v1983M"
-
 alias killde='kill "$(pgrep -fu "$(whoami)" "deluged")"'
 alias killde2='kill "$(pgrep -fu "$(whoami)" "de2")"'
 alias killtr='kill "$(pgrep -fu "$(whoami)" "transmission-daemon")"'
 alias killrt='kill "$(pgrep -fu "$(whoami)" "/usr/local/bin/rtorrent")"'
-alias killqb='kill "$(pgrep -fu "$(whoami)" "qbittorrent-nox")"'
+alias shaqb="kill `ps aux | grep -v grep | grep qbittorrent-nox | head -n1 | awk '{print $2}'`"
 
 # Fix numeric keypad  
 # 0 . Enter  
