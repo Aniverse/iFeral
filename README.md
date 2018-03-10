@@ -70,7 +70,7 @@ WebUI\Password_ha1=@ByteArray($QBPASS)
 WebUI\Username=$(whoami)
 EOF
 
-echo "http://$portGen"
+echo "http://$(hostname -f):$portGen"
 ```
 
 ## qBittorrent 3.3.7 (From FeralHosting Offical WiKi)
