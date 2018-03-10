@@ -25,7 +25,8 @@
 
 ## qBittorrent、rar、unrar、speedtest，oh-my-zsh
 ``` 
-cd;chsh -s /usr/bin/zsh;rm -rf ~/.oh-my-zsh .zshrc
+cd;chsh -s /usr/bin/zsh
+rm -rf ~/.oh-my-zsh .zshrc
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
 wget -qO ~/.oh-my-zsh/themes/agnosterzak.zsh-theme http://raw.github.com/zakaziko99/agnosterzak-ohmyzsh-theme/master/agnosterzak.zsh-theme
 
@@ -90,8 +91,8 @@ export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export TZ="/usr/share/zoneinfo/Asia/Shanghai"
 
-export PATH=~/iFeral/app:~/bin:~/pip/bin:$PATH
-#export LD_LIBRARY_PATH=~/iFeral/qb:$LD_LIBRARY_PATH
+export PATH=~/iFeral/app:~/bin:~/pip/bin:\$PATH
+#export LD_LIBRARY_PATH=~/iFeral/qb:\$LD_LIBRARY_PATH
 #export TMPDIR=~/tmp
 
 alias -s sh='bash'
@@ -126,28 +127,28 @@ alias pid="ps aux | grep -v grep | grep"
 alias io='iostat -d -x -m 1| grep -E "`echo $PWD | cut -c8-10` | rMB/s | wMB/s"'
 alias ios="iostat -d -x -m 1"
 alias wangsu='sar -n DEV 1| grep -E "rxkB\/s|txkB\/s|eth0|eth1"'
-alias qb300="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.0'"
-alias qb301="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.1'"
-alias qb302="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.2'"
-alias qb303="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.3'"
-alias qb304="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.4'"
-alias qb305="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.5'"
-alias qb306="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.6'"
-alias qb307="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.7'"
-alias qb308="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.8'"
-alias qb309="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.9'"
-alias qb310="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.10'"
-alias qb3111="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.11.Skip'"
-alias qb311="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.11'"
-alias qb312="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.12'"
-alias qb314="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.14'"
-alias qb315="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.15'"
-alias qb316="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.16'"
-alias qb400="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.4.0.0'"
-alias qb401="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.4.0.1'"
-alias qb402="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.4.0.2'"
-alias qb403="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.4.0.3'"
-alias qb404="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.4.0.4'"
+alias qb300="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:\$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.0'"
+alias qb301="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:\$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.1'"
+alias qb302="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:\$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.2'"
+alias qb303="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:\$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.3'"
+alias qb304="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:\$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.4'"
+alias qb305="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:\$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.5'"
+alias qb306="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:\$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.6'"
+alias qb307="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:\$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.7'"
+alias qb308="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:\$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.8'"
+alias qb309="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:\$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.9'"
+alias qb310="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:\$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.10'"
+alias qb3111="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:\$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.11.Skip'"
+alias qb311="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:\$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.11'"
+alias qb312="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:\$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.12'"
+alias qb314="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:\$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.14'"
+alias qb315="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:\$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.15'"
+alias qb316="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:\$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.16'"
+alias qb400="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:\$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.4.0.0'"
+alias qb401="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:\$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.4.0.1'"
+alias qb402="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:\$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.4.0.2'"
+alias qb403="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:\$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.4.0.3'"
+alias qb404="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:\$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.4.0.4'"
 alias fenjuan="rar5 a -rr5 -m0 -ma5 -v1983M"
 alias killde='kill "$(pgrep -fu "$(whoami)" "deluged")"'
 alias killde2='kill "$(pgrep -fu "$(whoami)" "de2")"'
