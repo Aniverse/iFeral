@@ -76,7 +76,7 @@ bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:\$LD_LIBRARY_PAT
 echo "http://$(hostname -f):$portGen"
 ```
 
-## qBittorrent 3.3.7 Script
+### qBittorrent 3.3.7 Script
 ``` 
 bash -c "$(wget -qO- https://github.com/Aniverse/iFeral/raw/master/app/qb)"
 ```
@@ -185,7 +185,9 @@ mkdir -p ~/bin
 wget -qO ~/node.js.tar.gz https://nodejs.org/dist/v8.7.0/node-v8.7.0-linux-x64.tar.xz
 tar xf ~/node.js.tar.gz --strip-components=1 -C ~/
 cd && rm -rf node.js.tar.gz
+```
 
+```
 rm -rf ~/node/apps
 mkdir -p ~/node/apps
 git clone --depth=1 -b v1.0.0 --single-branch https://github.com/jfurrow/flood.git ~/node/apps/flood
@@ -194,9 +196,11 @@ cp ~/node/apps/flood/config.template.js ~/node/apps/flood/config.js
 sed -i "s|floodServerHost: '127.0.0.1'|floodServerHost: ''|g" ~/node/apps/flood/config.js
 sed -i "s|floodServerPort: 3000|floodServerPort: $(shuf -i 10001-32001 -n 1)|g" ~/node/apps/flood/config.js
 sed -i "s|secret: 'flood'|secret: '$(< /dev/urandom tr -dc \
-'1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz' | head -c20; echo;)'|g" ~/node/apps/flood/config.js
+'1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz' | head -c20; echo;)'|g" \
+~/node/apps/flood/config.js
 sed -i "s|socket: false|socket: true|g" ~/node/apps/flood/config.js
-sed -i "s|socketPath: '/tmp/rtorrent.sock'|socketPath: '$HOME/private/rtorrent/.socket'|g" ~/node/apps/flood/config.js
+sed -i "s|socketPath: '/tmp/rtorrent.sock'|socketPath: '$HOME/private/rtorrent/.socket'|g" \
+~/node/apps/flood/config.js
 npm install --production --prefix ~/node/apps/flood
 npm run build --prefix ~/node/apps/flood
 
@@ -415,7 +419,7 @@ echo -e '<Location ~ "/">\n    DirectoryIndex  index.html  index.php  /_h5ai/pub
 ```
 
 
-### Install Transmission
+### Install another version of Transmission
 ```
 TRVERSION=2.92
 ```
