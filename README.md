@@ -82,9 +82,9 @@ bash -c "$(wget -qO- https://github.com/Aniverse/iFeral/raw/master/app/qb)"
 ```
 
 
-## rTorrent & ruTorrent
+# rTorrent & ruTorrent
 
-### rTorrent Version
+### rTorrent Downgrade
 ```
 rtversion="0.9.3_w0.13.3"
 rtversion="0.9.6_w0.13.6"
@@ -128,7 +128,8 @@ wget -qO ~/install.autodl.sh http://git.io/oTUCMg && bash ~/install.autodl.sh &&
 
 - #### Screenshots
 ```
-cd && sed -i "s|ffmpeg'] = ''|ffmpeg'] = '$(pwd)/bin/ffmpeg'|g" ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/screenshots/conf.php
+cd && sed -i "s|ffmpeg'] = ''|ffmpeg'] = '$(pwd)/bin/ffmpeg'|g" \
+~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/screenshots/conf.php
 sed -i "s/\"mkv\"/\"mkv\",\"m2ts\"/g" ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/screenshots/conf.php
 ```
 
@@ -137,17 +138,21 @@ sed -i "s/\"mkv\"/\"mkv\",\"m2ts\"/g" ~/www/$(whoami).$(hostname -f)/*/rutorrent
 cd ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/
 svn co -q https://github.com/nelu/rutorrent-thirdparty-plugins/trunk/filemanager
 chmod 700 ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/filemanager/scripts/*
-cd && sed -i "s|(getExternal(\"ffprobe\")|(getExternal(\"~/bin/ffprobe\")|g" ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/filemanager/flm.class.php
-sed -i "s|(getExternal('ffmpeg')|(getExternal('$(pwd)/bin/ffmpeg')|g" ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/filemanager/flm.class.php
+cd && sed -i "s|(getExternal(\"ffprobe\")|(getExternal(\"~/bin/ffprobe\")|g" \
+~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/filemanager/flm.class.php
+sed -i "s|(getExternal('ffmpeg')|(getExternal('$(pwd)/bin/ffmpeg')|g" \
+~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/filemanager/flm.class.php
 ```
 
 - #### Fileshare
 ```
 cd ~/www/$(whoami).$(hostname -f)/public_html/rutorrent/plugins/
 svn co -q https://github.com/nelu/rutorrent-thirdparty-plugins/trunk/fileshare
-ln -s ~/www/$(whoami).$(hostname -f)/public_html/rutorrent/plugins/fileshare/share.php ~/www/$(whoami).$(hostname -f)/public_html/
+ln -s ~/www/$(whoami).$(hostname -f)/public_html/rutorrent/plugins/fileshare/share.php \
+~/www/$(whoami).$(hostname -f)/public_html/
 sed "/if(getConfFile(/d" -i ~/www/$(whoami).$(hostname -f)/public_html/rutorrent/plugins/fileshare/share.php
-sed -i "s|'http://mydomain.com/share.php';|'http://$(whoami).$(hostname -f)/share.php';|g" ~/www/$(whoami).$(hostname -f)/public_html/rutorrent/plugins/fileshare/conf.php
+sed -i "s|'http://mydomain.com/share.php';|'http://$(whoami).$(hostname -f)/share.php';|g" \
+~/www/$(whoami).$(hostname -f)/public_html/rutorrent/plugins/fileshare/conf.php
 ```
 
 - #### Fileupload
@@ -174,9 +179,33 @@ unzip -qo ~/ratio.zip -d ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/
 rm -f ratio.zip
 ```
 
+### Node.js & Flood
+```
+mkdir -p ~/bin
+wget -qO ~/node.js.tar.gz https://nodejs.org/dist/v8.7.0/node-v8.7.0-linux-x64.tar.xz
+tar xf ~/node.js.tar.gz --strip-components=1 -C ~/
+cd && rm -rf node.js.tar.gz
+
+rm -rf ~/node/apps
+mkdir -p ~/node/apps
+git clone --depth=1 -b v1.0.0 --single-branch https://github.com/jfurrow/flood.git ~/node/apps/flood
+cp ~/node/apps/flood/config.template.js ~/node/apps/flood/config.js
+
+sed -i "s|floodServerHost: '127.0.0.1'|floodServerHost: ''|g" ~/node/apps/flood/config.js
+sed -i "s|floodServerPort: 3000|floodServerPort: $(shuf -i 10001-32001 -n 1)|g" ~/node/apps/flood/config.js
+sed -i "s|secret: 'flood'|secret: '$(< /dev/urandom tr -dc \
+'1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz' | head -c20; echo;)'|g" ~/node/apps/flood/config.js
+sed -i "s|socket: false|socket: true|g" ~/node/apps/flood/config.js
+sed -i "s|socketPath: '/tmp/rtorrent.sock'|socketPath: '$HOME/private/rtorrent/.socket'|g" ~/node/apps/flood/config.js
+npm install --production --prefix ~/node/apps/flood
+npm run build --prefix ~/node/apps/flood
+
+screen -dmS flood npm start --prefix ~/node/apps/flood/ &&
+echo http://$(id -u -n).$(hostname -f):$(sed -rn 's/(.*)floodServerPort: (.*),/\2/p' ~/node/apps/flood/config.js)
+```
 
 
-
+# Deluge
 
 ### Install another version of Deluge & running multiple instances
 ```
@@ -202,14 +231,16 @@ dew2 --fork -c ~/.config/deluge2 --port 65231
 
 ### Accessing Deluge Remote GUI
 ```
-printf "$(hostname -f)\n$(whoami)\n$(sed -rn 's/(.*)"daemon_port": (.*),/\2/p' ~/.config/deluge/core.conf)\n$(sed -rn "s/$(whoami):(.*):(.*)/\1/p" ~/.config/deluge/auth)\n"
-printf "$(hostname -f)\n$(whoami)\n$(sed -rn 's/(.*)"daemon_port": (.*),/\2/p' ~/.config/deluge2/core.conf)\n$(sed -rn "s/$(whoami):(.*):(.*)/\1/p" ~/.config/deluge2/auth)\n"
+printf "$(hostname -f)\n$(whoami)\n$(sed -rn 's/(.*)"daemon_port": (.*),/\2/p' \
+~/.config/deluge/core.conf)\n$(sed -rn "s/$(whoami):(.*):(.*)/\1/p" ~/.config/deluge/auth)\n"
+printf "$(hostname -f)\n$(whoami)\n$(sed -rn 's/(.*)"daemon_port": (.*),/\2/p' \
+~/.config/deluge2/core.conf)\n$(sed -rn "s/$(whoami):(.*):(.*)/\1/p" ~/.config/deluge2/auth)\n"
 ```
 
 
 
 
-### FFmpeg (From FeralHosting Offical WiKi)
+### Install FFmpeg
 ```
 mkdir -p ~/bin
 wget -qO ~/ffmpeg.tar.gz https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-64bit-static.tar.xz
@@ -219,7 +250,8 @@ chmod 700 ~/bin/{ffmpeg,ffprobe,ffmpeg-10bit,qt-faststart}
 cd && rm -rf ffmpeg{.tar.gz,-*-64bit-static}
 ```
 
-### FFmpeg buliding
+
+### building FFmpeg 
 ```
 wget http://ffmpeg.org/releases/ffmpeg-3.4.1.tar.xz
 tar xf ffmpeg-3.4.1.tar.xz
@@ -230,6 +262,7 @@ make install
 cd; rm -rf ffmpeg-3.4.1 ffmpeg-3.4.1.tar.xz
 ```
 
+
 ### Install p7zip
 ```
 wget -qO ~/p7zip.tar.bz2 http://sourceforge.net/projects/p7zip/files/p7zip/9.38.1/p7zip_9.38.1_src_all.tar.bz2
@@ -237,6 +270,7 @@ tar xf ~/p7zip.tar.bz2 && cd ~/p7zip_9.38.1
 make && make install DEST_HOME=$HOME
 cd && rm -f ~/p7zip.tar.bz2
 ```
+
 
 ### Install rclone
 ```
@@ -254,6 +288,7 @@ cat>~/.config/rclone/rclone.conf<<EOF
 EOF
 ```
 
+
 ### Install Mktorrent
 ```
 git clone --depth=1 https://github.com/Rudde/mktorrent
@@ -261,6 +296,7 @@ cd mktorrent/ && PREFIX=$HOME make -j$(nproc)
 PREFIX=$HOME make install
 cd .. && rm -rf mktorrent
 ```
+
 
 ### Install CMake & mono
 ```
@@ -283,6 +319,7 @@ make get-monolite-latest && make -j$(nproc) && make install
 cd && rm -rf ~/mono{-*,.tar.bz2}
 ```
 
+
 ### Install Pip & Flexget
 ```
 pip install --user --ignore-installed --no-use-wheel virtualenv
@@ -291,31 +328,10 @@ pip install --user --ignore-installed --no-use-wheel virtualenv
 touch ~/.config/flexget/config.yml
 
 pip install --user transmissionrpc
-sed -i "s|base_url + '/t|base_url + '/$(whoami)/t|g" ~/.local/lib/python2.7/site-packages/transmissionrpc/client.py
+sed -i "s|base_url + '/t|base_url + '/$(whoami)/t|g" \
+~/.local/lib/python2.7/site-packages/transmissionrpc/client.py
 ```
 
-### Install Node.js & Flood
-```
-mkdir -p ~/bin
-wget -qO ~/node.js.tar.gz https://nodejs.org/dist/v8.7.0/node-v8.7.0-linux-x64.tar.xz
-tar xf ~/node.js.tar.gz --strip-components=1 -C ~/
-cd && rm -rf node.js.tar.gz
-
-rm -rf ~/node/apps
-mkdir -p ~/node/apps
-git clone --depth=1 -b v1.0.0 --single-branch https://github.com/jfurrow/flood.git ~/node/apps/flood
-cp ~/node/apps/flood/config.template.js ~/node/apps/flood/config.js
-
-sed -i "s|floodServerHost: '127.0.0.1'|floodServerHost: ''|g" ~/node/apps/flood/config.js
-sed -i "s|floodServerPort: 3000|floodServerPort: $(shuf -i 10001-32001 -n 1)|g" ~/node/apps/flood/config.js
-sed -i "s|secret: 'flood'|secret: '$(< /dev/urandom tr -dc '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz' | head -c20; echo;)'|g" ~/node/apps/flood/config.js
-sed -i "s|socket: false|socket: true|g" ~/node/apps/flood/config.js
-sed -i "s|socketPath: '/tmp/rtorrent.sock'|socketPath: '$HOME/private/rtorrent/.socket'|g" ~/node/apps/flood/config.js
-npm install --production --prefix ~/node/apps/flood
-npm run build --prefix ~/node/apps/flood
-
-screen -dmS flood npm start --prefix ~/node/apps/flood/ && echo http://$(id -u -n).$(hostname -f):$(sed -rn 's/(.*)floodServerPort: (.*),/\2/p' ~/node/apps/flood/config.js)
-```
 
 ### Install Aria2
 ```
@@ -388,13 +404,16 @@ echo -e "\nhttp://$(whoami).$(hostname -f)/aria2\n"
 aria2c --enable-rpc --rpc-listen-all
 ```
 
+
 ### Install h5ai
 ```
 wget -qO ~/h5ai.zip http://git.io/vEMGv
 unzip -qo ~/h5ai.zip -d ~/www/$(whoami).$(hostname -f)/*/
-echo -e '<Location ~ "/">\n    DirectoryIndex  index.html  index.php  /_h5ai/public/index.php\n</Location>' > ~/.apache2/conf.d/h5ai.conf
+echo -e '<Location ~ "/">\n    DirectoryIndex  index.html  index.php  /_h5ai/public/index.php\n</Location>' \
+> ~/.apache2/conf.d/h5ai.conf
 /usr/sbin/apache2ctl -k graceful
 ```
+
 
 ### Install Transmission
 ```
@@ -409,16 +428,6 @@ make clean && make -j$(nproc) && make install
 cd; rm -rf transmission*
 ```
 
-### Install Qmake (NOT Work)
-```
-wget -O qt.tar.gz http://download.qt.io/official_releases/qt/5.7/5.7.1/single/qt-everywhere-opensource-src-5.7.1.tar.gz
-tar zxf qt.tar.gz
-cd qt-everywhere-opensource-src-5.7.1
-time ./configure --prefix=$HOME -opensource -nomake tests
-time make -j$(nproc)
-time make install
-# export QTDIR=~/
-```
 
 ### General info on installing software
 ```
