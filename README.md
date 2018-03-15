@@ -1,6 +1,6 @@
 # iFeral
-> For FeralHosting Seedbox
-> Some usages also works on SeedHost
+> For FeralHosting Seedbox  
+> Some usages also works on SeedHost  
 
 ## What can I do for you?
 - Install the selected version of Deluge
@@ -28,11 +28,12 @@ mkdir -p ~/tmp ~/private/qbittorrent/{data,watch,torrents} ~/.config/qBittorrent
 
 ### Configuring qBittorrent
 ```
-PASSWORD=<YOUR PASSWORD>
+PASSWORD=<REPLACE HERE WITH YOUR PASSWORD>
 QBPASS=`echo -n $PASSWORD | md5sum | awk '{print $1}'`
 
-function portGenerator() { portGen=$(shuf -i 10001-32001 -n 1) ; }
-function portCheck() { while [[ "$(netstat -ln | grep ':'"$portGen"'' | grep -c 'LISTEN')" -eq "1" ]] ; do portGenerator ; done }
+portGenerator() { portGen=$(shuf -i 10001-32001 -n 1) ; }
+portCheck() { while [[ "$(netstat -ln | grep ':'"$portGen"'' | grep -c 'LISTEN')" -eq "1" ]]
+do portGenerator ; done ; }
 portGenerator && portCheck
 
 cat > ~/.config/qBittorrent/qBittorrent.conf <<EOF
@@ -62,11 +63,15 @@ WebUI\Username=$(whoami)
 EOF
 ```
 
+
+**You can edit the version number to run different version of qBittorrent**  
 ```
-screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:\$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.4.0.4'
+QBVERSION=4.0.4
+bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:\$LD_LIBRARY_PATH
+~/iFeral/app/qbittorrent-nox.\$QBVERSION -d'
 ```
 
-You could find your qBittorrent WebUI here:
+**You could find your qBittorrent WebUI by typing the following commands**  
 ```
 echo "http://$(hostname -f):$portGen"
 ```
