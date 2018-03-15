@@ -71,14 +71,14 @@ bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:\$LD_LIBRARY_PAT
 ~/iFeral/app/qbittorrent-nox.\$QBVERSION -d'
 ```
 
-**You could find your qBittorrent WebUI by typing the following commands**  
+**You could find your qBittorrent WebUI by typing the following command**  
 ```
 echo "http://$(hostname -f):$portGen"
 ```
 
-## qBittorrent 3.3.7
+## qBittorrent 3.3.7 Script
 ``` 
-wget -qO ~/install.qbittorrent.sh https://bitbucket.org/feralio/wiki/raw/HEAD/src/wiki/software/qbittorrent/qbittorrent.sh && bash ~/install.qbittorrent.sh
+bash -c "$(wget -qO- https://github.com/Aniverse/iFeral/raw/master/app/qb)"
 ```
 
 
