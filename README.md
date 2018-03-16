@@ -29,6 +29,9 @@ mkdir -p ~/tmp ~/private/qbittorrent/{data,watch,torrents} ~/.config/qBittorrent
 ### Configuring qBittorrent
 ```
 PASSWORD=<REPLACE HERE WITH YOUR PASSWORD>
+```
+
+```
 QBPASS=`echo -n $PASSWORD | md5sum | awk '{print $1}'`
 
 portGenerator() { portGen=$(shuf -i 10001-32001 -n 1) ; }
@@ -67,6 +70,8 @@ EOF
 **You can edit the version number to run different version of qBittorrent**  
 ```
 QBVERSION=4.0.4
+```
+```
 bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:\$LD_LIBRARY_PATH
 ~/iFeral/app/qbittorrent-nox.\$QBVERSION -d'
 ```
