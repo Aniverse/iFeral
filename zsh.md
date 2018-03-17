@@ -81,7 +81,7 @@ alias killde='kill "$(pgrep -fu "$(whoami)" "deluged")"'
 alias killde2='kill "$(pgrep -fu "$(whoami)" "de2")"'
 alias killtr='kill "$(pgrep -fu "$(whoami)" "transmission-daemon")"'
 alias killrt='kill "$(pgrep -fu "$(whoami)" "/usr/local/bin/rtorrent")"'
-alias shaqb="kill `ps aux | egrep "$(whoami)|COMMAND" | grep -v grep | grep qbittorrent-nox | head -n1 | awk '{print $2}'`"
+alias shaqb='kill $(pgrep -fu "$(whoami)" "qbitt")'
 
 # Fix numeric keypad  
 # 0 . Enter  
