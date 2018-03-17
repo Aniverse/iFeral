@@ -68,10 +68,10 @@ EOF
 
 **You can edit QBVERSION to run different version of qBittorrent**  
 ```
-export QBVERSION=4.0.3
+export QBVERSION=4.0.4
 ```
 ```
-bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:$LD_LIBRARY_PATH \
+bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:$LD_LIBRARY_PATH
 ~/iFeral/app/qbittorrent-nox.$QBVERSION -d'
 ```
 
