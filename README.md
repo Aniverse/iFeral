@@ -66,14 +66,13 @@ WebUI\Username=$(whoami)
 EOF
 ```
 
-
-**You can edit the version number to run different version of qBittorrent**  
+**You can edit QBVERSION to run different version of qBittorrent**  
 ```
-QBVERSION=4.0.4
+export QBVERSION=4.0.3
 ```
 ```
-bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:\$LD_LIBRARY_PATH
-~/iFeral/app/qbittorrent-nox.\$QBVERSION -d'
+bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:$LD_LIBRARY_PATH \
+~/iFeral/app/qbittorrent-nox.$QBVERSION -d'
 ```
 
 **You could find your qBittorrent WebUI by typing the following command**  
