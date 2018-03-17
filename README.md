@@ -34,10 +34,9 @@ PASSWORD=<REPLACE HERE WITH YOUR PASSWORD>
 ```
 QBPASS=`echo -n $PASSWORD | md5sum | awk '{print $1}'`
 
-portGenerator() { portGen=$(shuf -i 10001-32001 -n 1) ; }
+portGenerator() { portGen=$(shuf -i 10001-32001 -n1) ; }
 portCheck() { while [[ "$(netstat -ln | grep ':'"$portGen"'' | grep -c 'LISTEN')" -eq "1" ]]
-do portGenerator ; done ; }
-portGenerator && portCheck
+do portGenerator ; done ; } ; portGenerator && portCheck
 
 cat > ~/.config/qBittorrent/qBittorrent.conf <<EOF
 [LegalNotice]
@@ -80,10 +79,26 @@ bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:$LD_LIBRARY_PATH
 echo "http://$(hostname -f):$portGen"
 ```
 
+**You could stop qBittorrent by typing the following command**  
+```
+kill $(pgrep -fu "$(whoami)" "qbitt")
+```
+
 ### qBittorrent 3.3.7 Script
 ``` 
 bash -c "$(wget -qO- https://github.com/Aniverse/iFeral/raw/master/app/qb)"
 ```
+
+
+
+
+
+
+
+
+
+
+
 
 
 # rTorrent & ruTorrent
@@ -213,28 +228,57 @@ echo http://$(id -u -n).$(hostname -f):$(sed -rn 's/(.*)floodServerPort: (.*),/\
 ```
 
 
+
+
+
+
+
+
+
 # Deluge
 
-### Install another version of Deluge & running multiple instances
+### Install another version of Deluge & running the second instances
+
+**Select a version to be installed**  
 ```
-DEVERSION=1.3.13
+DEVERSION=1.3.9
 ```
 
+**Install**  
 ```
 wget -O ~/deluge-"${DEVERSION}".tar.gz http://download.deluge-torrent.org/source/deluge-"${DEVERSION}".tar.gz
 tar zxf ~/deluge-"${DEVERSION}".tar.gz && cd ~/deluge-"${DEVERSION}"
+sed -i "s/SSL.SSLv3_METHOD/SSL.SSLv23_METHOD/g" deluge/core/rpcserver.py
+sed -i "/        ctx = SSL.Context(SSL.SSLv23_METHOD)/a\        ctx.set_options(SSL.OP_NO_SSLv2 & SSL.OP_NO_SSLv3)" \
+deluge/core/rpcserver.py
 python setup.py install --user
 cd && rm -rf ~/deluge-"${DEVERSION}" ~/deluge-"${DEVERSION}".tar.gz
 echo "export PATH=~/.local/bin:$PATH" >> ~/.bashrc
 source ~/.bashrc
-mv ~/.local/bin/deluged ~/.local/bin/de2
-mv ~/.local/bin/deluge-web ~/.local/bin/dew2
+```
+
+**Configure**  
+```
+mv -f ~/.local/bin/deluged ~/.local/bin/de2
+mv -f ~/.local/bin/deluge-web ~/.local/bin/dew2
 cp -r ~/.config/deluge ~/.config/deluge2
 rm -rf ~/.config/deluge2/deluged.pid ~/.config/deluge2/state/*.torrent
-sed -i 's|"daemon_port":.*,|"daemon_port": '$(shuf -i 10001-32001 -n 1)',|g' ~/.config/deluge2/core.conf
 
+portGenerator() { portGen=$(shuf -i 10001-32001 -n1) ; }
+portCheck() { while [[ "$(netstat -ln | grep ':'"$portGen"'' | grep -c 'LISTEN')" -eq "1" ]]
+do portGenerator ; done ; } ; portGenerator && portCheck
+portGenerator2() { portGen2=$(shuf -i 10001-32001 -n1) ; }
+portCheck2() { while [[ "$(netstat -ln | grep ':'"$portGen2"'' | grep -c 'LISTEN')" -eq "1" ]]
+do portGenerator2 ; done ; } ; portGenerator2 && portCheck2
+
+sed -i 's|"daemon_port":.*,|"daemon_port": '$portGen',|g' ~/.config/deluge2/core.conf
+sed -i 's|"port":.*,|"port": '$portGen2',|g' ~/.config/deluge2/web.conf
+```
+
+**Running the second instance**  
+```
 de2 -c ~/.config/deluge2
-dew2 --fork -c ~/.config/deluge2 --port 65231
+dew2 --fork -c ~/.config/deluge2
 ```
 
 ### Accessing Deluge Remote GUI
@@ -244,6 +288,13 @@ printf "$(hostname -f)\n$(whoami)\n$(sed -rn 's/(.*)"daemon_port": (.*),/\2/p' \
 printf "$(hostname -f)\n$(whoami)\n$(sed -rn 's/(.*)"daemon_port": (.*),/\2/p' \
 ~/.config/deluge2/core.conf)\n$(sed -rn "s/$(whoami):(.*):(.*)/\1/p" ~/.config/deluge2/auth)\n"
 ```
+
+
+
+
+
+
+
 
 
 
