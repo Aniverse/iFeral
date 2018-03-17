@@ -310,15 +310,15 @@ cd && rm -rf ffmpeg{.tar.gz,-*-64bit-static}
 ```
 
 
-### building FFmpeg 
+### Compile FFmpeg 
 ```
-wget http://ffmpeg.org/releases/ffmpeg-3.4.1.tar.xz
-tar xf ffmpeg-3.4.1.tar.xz
-cd ffmpeg-3.4.1
-./configure --prefix=$HOME --enable-static --disable-shared --enable-pic --disable-x86asm
-make -j$(nproc) 1>> /dev/null
+wget http://ffmpeg.org/releases/ffmpeg-3.4.2.tar.xz
+tar xf ffmpeg*.tar.xz
+cd ffmpeg-3.4.2
+./configure --prefix=$HOME --disable-shared --enable-pic --disable-x86asm #--enable-libbluray
+make -j$(nproc)
 make install
-cd; rm -rf ffmpeg-3.4.1 ffmpeg-3.4.1.tar.xz
+cd; rm -rf ffmpeg*
 ```
 
 
