@@ -105,6 +105,16 @@ export TZ="/usr/share/zoneinfo/Asia/Shanghai"
 
 export PATH=~/iFeral/app:~/bin:~/pip/bin:~/.local/bin:\$PATH
 
+cdk=\$(df -h | grep `pwd | awk -F '/' '{print \$3}'` | awk '{print \$1}' | awk -F '/' '{print \$3}')
+[[ \$(echo \$cdk | grep -E "sd[a-z]+1") ]] && cdk=\$(echo \$cdk | sed "s/1//")
+alias io='iostat -d -x -m 1 | grep -E "\$cdk | rMB/s | wMB/s"'
+
+alias killde='kill "$(pgrep -fu "$(whoami)" "deluged")"'
+alias killde2='kill "$(pgrep -fu "$(whoami)" "de2")"'
+alias killtr='kill "$(pgrep -fu "$(whoami)" "transmission-daemon")"'
+alias killrt='kill "$(pgrep -fu "$(whoami)" "/usr/local/bin/rtorrent")"'
+alias killqb='kill $(pgrep -fu "$(whoami)" "qbitt")'
+
 alias cesu='echo;python ~/iFeral/app/spdtest --share;echo'
 alias cesu2='python ~/iFeral/app/spdtest --share --server'
 alias cesu3="echo;python ~/iFeral/app/spdtest --list 2>&1 | head -n30 | grep --color=always -P '(\d+)\.(\d+)\skm|(\d+)(?=\))';echo"
@@ -113,7 +123,6 @@ alias ll="ls -hAlvZ --color --group-directories-first"
 alias shanchu='rm -rf'
 alias zjpid='ps aux | egrep "$(whoami)|COMMAND" | egrep -v "grep|aux|root"'
 alias pid="ps aux | grep -v grep | grep"
-alias io='iostat -d -x -m 1| grep -E "`echo $PWD | cut -c8-10` | rMB/s | wMB/s"'
 alias ios="iostat -d -x -m 1"
 alias wangsu='sar -n DEV 1| grep -E "rxkB\/s|txkB\/s|eth0|eth1"'
 alias scrgd="screen -R gooooogle"
@@ -124,6 +133,7 @@ alias gclone="git clone --depth=1"
 EOF
 
 }
+
 
 
 
@@ -141,7 +151,7 @@ echo -e "${green}(05) ${jiacu}配置 ruTorrent       "
 echo -e "${green}(06) ${jiacu}安装 flexget         "
 echo -e "${green}(07) ${jiacu}安装 ffmpeg, rclone  "
 echo -e "${green}(08) ${jiacu}查看 系统信息        "
-echo -e "${green}(09) ${jiacu}查看 邻居        "
+echo -e "${green}(09) ${jiacu}查看 邻居            "
 echo -e "${green}(99) ${jiacu}退出脚本             "
 echo -e "${normal}"
 
@@ -231,9 +241,9 @@ if [[ ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittorrent ` 
     echo -e "${bold}${yellow}
 qBittorrent 已安装完成！${jiacu}
 
-网址：${cyan}http://$(hostname -f):$portGen${jiacu}
-账号：${cyan}$(whoami)${jiacu}
-密码：${cyan}$PASSWORD${normal}
+网址  ${cyan}http://$(hostname -f):$portGen${jiacu}
+账号  ${cyan}$(whoami)${jiacu}
+密码  ${cyan}$PASSWORD${normal}
 "
 else
     echo -e "${error} qBittorrent 安装完成，但无法正常运行。\n不要问我为什么，我可能也不知道！要不你换个别的脚本试试？${normal}"
