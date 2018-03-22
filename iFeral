@@ -252,7 +252,7 @@ for depid in ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep de2 | a
 
 while [[ $DEVERSION = "" ]]; do
     echo -ne "${bold}${yellow}请输入你要安装的 Deluge 版本 : ${normal}" ; read -e DEVERSION
-    wget -qO ~/deluge-"${DEVERSION}".tar.gz http://download.deluge-torrent.org/source/deluge-"${DEVERSION}".tar.gz && || { echo -e "${error} 下载 Deluge 源码失败，可能是这个版本不可用！" ; unset DEVERSION ; }
+    wget -qO ~/deluge-"${DEVERSION}".tar.gz http://download.deluge-torrent.org/source/deluge-"${DEVERSION}".tar.gz || { echo -e "${error} 下载 Deluge 源码失败，可能是这个版本不可用！" ; unset DEVERSION ; }
 done
 
 tar zxf ~/deluge-"${DEVERSION}".tar.gz && cd ~/deluge-"${DEVERSION}"
