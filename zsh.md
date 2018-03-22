@@ -24,9 +24,9 @@ export PATH=~/iFeral/app:~/bin:~/pip/bin:\$PATH
 
 alias -s sh='bash'
 alias -s log='tail -n50'
-alias -s gz='tar -xzvf'
+alias -s gz='tar zxf'
 alias -s xz='tar xf'
-alias -s tgz='tar -xzvf'
+alias -s tgz='tar zxf'
 alias -s rar='unrar x'
 alias -s zip='unzip'
 alias -s bz2='tar -xjvf'
