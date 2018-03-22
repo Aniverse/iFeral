@@ -76,8 +76,8 @@ Seedbox=Unknown ; [[ `  hostname -f | grep feral  ` ]] && Seedbox=FH ; [[ `  hos
 # 00. Logo
 function _logo() {
 cd ; clear ; wget -qO- https://github.com/Aniverse/iFeral/raw/master/files/iFeral.logo.1
-[[ $Seedbox == Unknown ]] && echo -e "\n你这个似乎不是 FH 或 SH 的盒子，不保证本脚本能正常工作！\n"
-[[ $Seedbox == SH ]] && echo -e "\n本脚本主要为 FH 盒子设计，不保证所有功能都能在 SH 盒子上正常工作！\n" ; }
+[[ $Seedbox == Unknown ]] && echo -e "${warn} 你这个似乎不是 FH 或 SH 的盒子，不保证本脚本能正常工作！"
+[[ $Seedbox == SH ]] && echo -e "${atte} 本脚本主要为 FH 盒子设计，不保证所有功能都能在 SH 盒子上正常工作！" ; }
 
 
 
@@ -189,9 +189,8 @@ function _install_qb() {
 for qbpid in ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittorrent | awk '{print $2}' ` ; do kill -9 $qbpid ; done
 
 while [[ $QBVERSION = "" ]]; do
-    echo -ne "${bold}${yellow}请输入你要安装的 qBittorrent 版本，只支持 3.3.0-4.0.4 : ${normal}" ; read -e QBVERSION
+    echo -ne "${bold}${yellow}请输入你要安装的 qBittorrent 版本，只支持 3.3.0-4.0.4 : ${normal}" ; read -e QBVERSION ; export QBVERSION=$QBVERSION
     [[ ! `ls ~/iFeral/app | grep $QBVERSION` ]] && { echo -e "${error} 你输入的版本不可用，请重新输入！" ; unset QBVERSION ; }
-    export QBVERSION=$QBVERSION
 done
 
 read -ep "${bold}${yellow}请输入你要用于 qb WebUI 的密码：${normal}" PASSWORD
@@ -226,7 +225,7 @@ WebUI\Password_ha1=@ByteArray($QBPASS)
 WebUI\Username=$(whoami)
 EOF
 
-bash -c 'export TMPDIR=~/tmp ; export LD_LIBRARY_PATH=~/iFeral/qb:$LD_LIBRARY_PATH ; ~/iFeral/app/qbittorrent-nox.$qbversion -d'
+bash -c 'export TMPDIR=~/tmp ; export LD_LIBRARY_PATH=~/iFeral/qb:$LD_LIBRARY_PATH ; ~/iFeral/app/qbittorrent-nox.$QBVERSION -d'
 
 if [[ ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittorrent ` ]]; then
     echo -e "${bold}${yellow}
