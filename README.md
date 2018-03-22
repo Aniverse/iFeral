@@ -8,7 +8,7 @@
 bash -c "$(wget -qO- https://github.com/Aniverse/iFeral/raw/master/i)"
 ``` 
 
-Note that this script will replace your `.bashrc` files.
+Note that this script will replace your `.bashrc` file, you may need to reset some alias or variable.  
 
 ## Features
 - Install the selected version of Deluge
