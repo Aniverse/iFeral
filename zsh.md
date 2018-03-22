@@ -1,10 +1,11 @@
 ## zsh For iFeral
 
 ```
-cd;chsh -s /usr/bin/zsh
+cd ; chsh -s /usr/bin/zsh
 rm -rf ~/.oh-my-zsh .zshrc
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
-wget -qO ~/.oh-my-zsh/themes/agnosterzak.zsh-theme http://raw.github.com/zakaziko99/agnosterzak-ohmyzsh-theme/master/agnosterzak.zsh-theme
+wget -qO ~/.oh-my-zsh/themes/agnosterzak.zsh-theme \
+http://raw.github.com/zakaziko99/agnosterzak-ohmyzsh-theme/master/agnosterzak.zsh-theme
 ```
 
 ```
@@ -31,6 +32,10 @@ alias -s rar='unrar x'
 alias -s zip='unzip'
 alias -s bz2='tar -xjvf'
 
+cdk=\$(df -h | grep `pwd | awk -F '/' '{print \$3}'` | awk '{print \$1}' | awk -F '/' '{print \$3}')
+[[ \$(echo \$cdk | grep -E "sd[a-z]+1") ]] && cdk=\$(echo \$cdk | sed "s/1//")
+alias io='iostat -d -x -m 1 | grep -E "\$cdk | rMB/s | wMB/s"'
+
 alias yongle='du -sB GB ~/'
 alias space='du -sB GB'
 alias chongqi='bash ~/iFeral/app/restart.sh'
@@ -51,7 +56,6 @@ alias gclone="git clone --depth=1"
 alias scrl="screen -ls"
 alias zjpid='ps aux | egrep "$(whoami)|COMMAND" | egrep -v "grep|aux|root"'
 alias pid="ps aux | grep -v grep | grep"
-alias io='iostat -d -x -m 1| grep -E "`echo $PWD | cut -c8-10` | rMB/s | wMB/s"'
 alias ios="iostat -d -x -m 1"
 alias wangsu='sar -n DEV 1| grep -E "rxkB\/s|txkB\/s|eth0|eth1"'
 alias qb300="screen -dmS qBittorrent /bin/bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:\$LD_LIBRARY_PATH; ~/iFeral/app/qbittorrent-nox.3.3.0'"
@@ -81,7 +85,7 @@ alias killde='kill "$(pgrep -fu "$(whoami)" "deluged")"'
 alias killde2='kill "$(pgrep -fu "$(whoami)" "de2")"'
 alias killtr='kill "$(pgrep -fu "$(whoami)" "transmission-daemon")"'
 alias killrt='kill "$(pgrep -fu "$(whoami)" "/usr/local/bin/rtorrent")"'
-alias shaqb='kill $(pgrep -fu "$(whoami)" "qbitt")'
+alias killqb='kill $(pgrep -fu "$(whoami)" "qbitt")'
 
 # Fix numeric keypad  
 # 0 . Enter  
