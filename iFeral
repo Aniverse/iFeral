@@ -16,6 +16,7 @@ baihuangse=${white}${on_yellow}; bailanse=${white}${on_blue}; bailvse=${white}${
 baiqingse=${white}${on_cyan}; baihongse=${white}${on_red}; baizise=${white}${on_magenta};
 heibaise=${black}${on_white}; jiacu=${normal}${bold}
 shanshuo=$(tput blink); wuguangbiao=$(tput civis); guangbiao=$(tput cnorm)
+error="${baihongse}${bold} 错误 ${jiacu}" ; warn="${baihongse}${bold} 警告 ${jiacu}" ; atte="${baihongse}${bold} 注意 ${jiacu}"
 # 调试 -----------------------------------------------------------------------------------
 DeBUG=0 ; [[ $1 == -d ]] && DeBUG=1
 # 系统检测 -----------------------------------------------------------------------------------
@@ -189,7 +190,8 @@ for qbpid in ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittor
 
 while [[ $QBVERSION = "" ]]; do
     echo -ne "${bold}${yellow}请输入你要安装的 qBittorrent 版本，只支持 3.3.0-4.0.4 : ${normal}" ; read -e QBVERSION
-    [[ ! `ls ~/iFeral/app | grep $QBVERSION` ]] && { echo -e "你输入的版本不可用，请重新输入！" ; unset QBVERSION ; }
+    [[ ! `ls ~/iFeral/app | grep $QBVERSION` ]] && { echo -e "${error} 你输入的版本不可用，请重新输入！" ; unset QBVERSION ; }
+    export QBVERSION=$QBVERSION
 done
 
 read -ep "${bold}${yellow}请输入你要用于 qb WebUI 的密码：${normal}" PASSWORD
@@ -224,17 +226,18 @@ WebUI\Password_ha1=@ByteArray($QBPASS)
 WebUI\Username=$(whoami)
 EOF
 
-bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:$LD_LIBRARY_PATH;~/iFeral/app/qbittorrent-nox.$qbversion -d'
+bash -c 'export TMPDIR=~/tmp ; export LD_LIBRARY_PATH=~/iFeral/qb:$LD_LIBRARY_PATH ; ~/iFeral/app/qbittorrent-nox.$qbversion -d'
 
 if [[ ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittorrent ` ]]; then
     echo -e "${bold}${yellow}
 qBittorrent 已安装完成！${jiacu}
+
 网址：${cyan}http://$(hostname -f):$portGen${jiacu}
 账号：${cyan}$(whoami)${jiacu}
 密码：${cyan}$PASSWORD${normal}
 "
 else
-    echo -e "${bold}${red}qBittorrent 安装完成，但无法正常运行。\n不要问我为什么，我可能也不知道！要不你换个别的脚本试试？${normal}"
+    echo -e "${error} qBittorrent 安装完成，但无法正常运行。\n不要问我为什么，我可能也不知道！要不你换个别的脚本试试？${normal}"
 fi ; }
 
 
@@ -247,13 +250,15 @@ function _install_de() {
 
 for depid in ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep de2 | awk '{print $2}' ` ; do kill -9 $depid ; done
 
-echo -ne "${bold}${yellow}请输入你要安装的 Deluge 版本 : ${normal}" ; read -e DEVERSION
+while [[ $DEVERSION = "" ]]; do
+    echo -ne "${bold}${yellow}请输入你要安装的 Deluge 版本 : ${normal}" ; read -e DEVERSION
+    wget -qO ~/deluge-"${DEVERSION}".tar.gz http://download.deluge-torrent.org/source/deluge-"${DEVERSION}".tar.gz && || { echo -e "${error} 下载 Deluge 源码失败，可能是这个版本不可用！" ; unset DEVERSION ; }
+done
 
-wget -qO ~/deluge-"${DEVERSION}".tar.gz http://download.deluge-torrent.org/source/deluge-"${DEVERSION}".tar.gz
 tar zxf ~/deluge-"${DEVERSION}".tar.gz && cd ~/deluge-"${DEVERSION}"
 sed -i "s/SSL.SSLv3_METHOD/SSL.SSLv23_METHOD/g" deluge/core/rpcserver.py
 sed -i "/        ctx = SSL.Context(SSL.SSLv23_METHOD)/a\        ctx.set_options(SSL.OP_NO_SSLv2 & SSL.OP_NO_SSLv3)" deluge/core/rpcserver.py
-python setup.py install --user
+python setup.py install --user >/dev/null 2>&1
 cd && rm -rf ~/deluge-"${DEVERSION}" ~/deluge-"${DEVERSION}".tar.gz
 
 mv -f ~/.local/bin/deluged ~/.local/bin/de2
@@ -269,16 +274,18 @@ de2 -c ~/.config/deluge2
 if [[ ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep de2 ` ]]; then
     echo -e "${bold}${yellow}
 第二个 Deluge 已安装完成！${jiacu}
-WebUI 网址：${cyan}http://$(hostname -f)/$(whoami)/deluge (和原先的一样)${jiacu}
-WebUI 密码：${cyan}和原先的 Deluge WebUI 的密码一样${jiacu}
 
-WebUI 主机名：${cyan}127.0.0.1 或 10.0.0.1${jiacu}
-GtkUI 主机名：${cyan}$(hostname -f)${jiacu}
-daemon  端口：${cyan}$portGen${jiacu}
-daemon  密码：${cyan}$(sed -rn "s/$(whoami):(.*):(.*)/\1/p" ~/.config/deluge2/auth)${normal}
+WebUI 网址    ${cyan}http://$(hostname -f)/$(whoami)/deluge (和原先的一样)${jiacu}
+WebUI 密码    ${cyan}和原先的 Deluge WebUI 的密码一样${jiacu}
+
+WebUI 主机名  ${cyan}127.0.0.1 或 10.0.0.1${jiacu}
+GtkUI 主机名  ${cyan}$(hostname -f)${jiacu}
+daemon  账号  ${cyan}$(whoami)${jiacu}
+daemon  密码  ${cyan}$(sed -rn "s/$(whoami):(.*):(.*)/\1/p" ~/.config/deluge2/auth)${normal}
+daemon  端口  ${cyan}$portGen${jiacu}
 "
 else
-    echo -e "${bold}${red}第二个 Deluge 安装完成，但无法正常运行。\n不要问我为什么，我可能也不知道！要不你换个别的脚本试试？${normal}"
+    echo -e "${error} 第二个 Deluge 安装完成，但无法正常运行。\n不要问我为什么，我可能也不知道！要不你手动安装试试？${normal}"
 fi ; }
 
 
@@ -305,14 +312,15 @@ esac
 if [[ $Seedbox == FH ]]; then
     mkdir -p ~/private/rtorrent
     echo -n "$FHRTVERSION" > ~/private/rtorrent/.version
-    pkill -fu "$(whoami)" 'SCREEN -S rtorrent'
-    SCREEN -S rtorrent -fa -d -m rtorrent
+    echo -e "\n版本改变完成，需要重启 rTorrent 以生效\n"
 elif [[ $Seedbox == SH ]]; then
     mkdir -p ~/private/rtorrent
     if [[ $SHRTVERSION == 0.9.6 ]];then rm -f ~/.config/.rtversion ; else echo "$SHRTVERSION" > ~/.config/.rtversion ; fi
+    echo -e "\n版本改变完成，需要重启 rTorrent 以生效\n"
 else
-    echo "不支持非 SH/FH 盒子！"
+    echo "${warn} 不支持非 SH/FH 盒子！${normal}"
 fi ; }
+
 
 
 
@@ -352,10 +360,7 @@ cd
 # AutoDL-Irssi
 bash -c "$(wget -qO- http://git.io/oTUCMg)"
 
-else
-    echo "这是为了 FH 盒子设计的，其他盒子就不要用了~"
-fi ; }
-
+else echo "${atte} 这是为了 FH 盒子设计的，其他盒子就不要用了~${normal}" ; fi ; }
 
 
 
@@ -375,6 +380,8 @@ if [[ $Seedbox == FH ]]; then
     ~/pip/bin/pip install flexget
 elif [[ $Seedbox == SH ]]; then
     pip install --user flexget
+else
+    echo "${warn} 不支持非 SH/FH 盒子！${normal}" ; exit 1
 fi
 
 portGenerator && portCheck
