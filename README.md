@@ -2,7 +2,12 @@
 > For FeralHosting Seedbox  
 > Some usages also works on SeedHost  
 
-## What can I do for you?
+## Usage
+``` 
+bash -c "$(wget -qO- https://github.com/Aniverse/iFeral/raw/master/iFeral)"
+``` 
+
+## Features
 - Install the selected version of Deluge
 - Running multiple instances of Deluge
 - Install the selected version of Transmission
@@ -251,7 +256,7 @@ tar zxf ~/deluge-"${DEVERSION}".tar.gz && cd ~/deluge-"${DEVERSION}"
 sed -i "s/SSL.SSLv3_METHOD/SSL.SSLv23_METHOD/g" deluge/core/rpcserver.py
 sed -i "/        ctx = SSL.Context(SSL.SSLv23_METHOD)/a\        ctx.set_options(SSL.OP_NO_SSLv2 & SSL.OP_NO_SSLv3)" \
 deluge/core/rpcserver.py
-python setup.py install --user
+python setup.py install --user >/dev/null 2>&1
 cd && rm -rf ~/deluge-"${DEVERSION}" ~/deluge-"${DEVERSION}".tar.gz
 echo "export PATH=~/.local/bin:$PATH" >> ~/.bashrc
 source ~/.bashrc
