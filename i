@@ -3,7 +3,7 @@
 # https://github.com/Aniverse/iFeral
 #
 #
-iFeralVer=0.2.0
+iFeralVer=0.2.5
 iFeralDate=2018.03.22
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
@@ -75,7 +75,7 @@ Seedbox=Unknown ; [[ `  hostname -f | grep feral  ` ]] && Seedbox=FH ; [[ `  hos
 
 # 00. Logo
 function _logo() {
-cd ; clear ; wget -qO- https://github.com/Aniverse/iFeral/raw/master/files/iFeral.logo.1
+cd ; clear ; wget --timeout=7 -qO- https://github.com/Aniverse/iFeral/raw/master/files/iFeral.logo.1
 [[ $Seedbox == Unknown ]] && echo -e "${warn} 你这个似乎不是 FH 或 SH 的盒子，不保证本脚本能正常工作！"
 [[ $Seedbox == SH ]] && echo -e "${atte} 本脚本主要为 FH 盒子设计，不保证所有功能都能在 SH 盒子上正常工作！" ; }
 
@@ -90,7 +90,7 @@ function _init() {
 if [[ ! `  ls | grep iFeral  `  ]]; then
     git clone --depth=1 https://github.com/Aniverse/iFeral
     chmod -R +x iFeral
-    cd ; clear ; wget -qO- https://github.com/Aniverse/iFeral/raw/master/files/iFeral.logo.1
+    cd ; clear ; wget --timeout=7 -qO- https://github.com/Aniverse/iFeral/raw/master/files/iFeral.logo.1
 fi
 
 # 路径
@@ -142,7 +142,6 @@ EOF
 # 00. 导航菜单
 function _main_menu() {
 
-echo
 echo -e "${green}(01) ${jiacu}安装 qBittorrent     "
 echo -e "${green}(02) ${jiacu}安装 Deluge          "
 #echo -e "${green}(03) ${jiacu}安装 Transmission   "
@@ -180,7 +179,7 @@ case $response in
             echo -e "${bold}${cayn}以下是当前和你在同一个硬盘分区上的邻居${normal}\n"
             getent passwd | grep -v $(whoami) | grep $current_disk/ | awk -F ":" '{print $1}' | pr -3 -t ; echo
             echo -e "${bold}${cayn}以下是整个盒子上所有的邻居${normal}\n"
-            getent passwd | grep -v $(whoami) | grep -E 'home[0-9]+|media' | awk -F ':' '{print $1}' | sort -u | pr -3 -t
+            getent passwd | grep -v $(whoami) | grep -E 'home[0-9]+|media' | awk -F ':' '{print $1}' | sort -u | pr -3 -t ; echo
             _main_menu ;;
     99| "") clear ; exit 0 ;;
     *     ) clear ; exit 0 ;;
@@ -196,6 +195,7 @@ echo ; }
 
 function _install_qb() {
 
+echo
 for qbpid in ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittorrent | awk '{print $2}' ` ; do kill -9 $qbpid ; done
 
 while [[ $QBVERSION = "" ]]; do
@@ -238,13 +238,12 @@ EOF
 bash -c 'export TMPDIR=~/tmp ; export LD_LIBRARY_PATH=~/iFeral/qb:$LD_LIBRARY_PATH ; ~/iFeral/app/qbittorrent-nox.$QBVERSION -d'
 
 if [[ ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittorrent ` ]]; then
-    echo -e "${bold}${yellow}
+    echo -e "${bold}${green}
 qBittorrent 已安装完成！${jiacu}
 
 网址  ${cyan}http://$(hostname -f):$portGen${jiacu}
 账号  ${cyan}$(whoami)${jiacu}
-密码  ${cyan}$PASSWORD${normal}
-"
+密码  ${cyan}$PASSWORD${normal}"
 else
     echo -e "${error} qBittorrent 安装完成，但无法正常运行。\n不要问我为什么，我可能也不知道！要不你换个别的脚本试试？${normal}"
 fi ; }
@@ -254,9 +253,11 @@ fi ; }
 
 
 # 02. 安装 第二个 Deluge
+# https://www.feralhosting.com/wiki/software/deluge
 
 function _install_de() {
 
+echo
 for depid in ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep de2 | awk '{print $2}' ` ; do kill -9 $depid ; done
 
 while [[ $DEVERSION = "" ]]; do
@@ -278,21 +279,19 @@ rm -rf ~/.config/deluge2/deluged.pid ~/.config/deluge2/state/*.torrent
 portGenerator && portCheck
 sed -i 's|"daemon_port":.*,|"daemon_port": '$portGen',|g' ~/.config/deluge2/core.conf
 
-de2 -c ~/.config/deluge2
+~/.local/bin/de2 -c ~/.config/deluge2
 
 if [[ ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep de2 ` ]]; then
-    echo -e "${bold}${yellow}
+    echo -e "${bold}${green}
 第二个 Deluge 已安装完成！${jiacu}
 
-WebUI 网址    ${cyan}http://$(hostname -f)/$(whoami)/deluge (和原先的一样)${jiacu}
-WebUI 密码    ${cyan}和原先的 Deluge WebUI 的密码一样${jiacu}
-
+WebUI   网址  ${cyan}http://$(hostname -f)/$(whoami)/deluge (和原先的一样)${jiacu}
+WebUI   密码  ${cyan}和原先的 Deluge WebUI 的密码一样${jiacu}
 WebUI 主机名  ${cyan}127.0.0.1 或 10.0.0.1${jiacu}
 GtkUI 主机名  ${cyan}$(hostname -f)${jiacu}
 daemon  账号  ${cyan}$(whoami)${jiacu}
 daemon  密码  ${cyan}$(sed -rn "s/$(whoami):(.*):(.*)/\1/p" ~/.config/deluge2/auth)${normal}
-daemon  端口  ${cyan}$portGen${jiacu}
-"
+daemon  端口  ${cyan}$portGen${jiacu}"
 else
     echo -e "${error} 第二个 Deluge 安装完成，但无法正常运行。\n不要问我为什么，我可能也不知道！要不你手动安装试试？${normal}"
 fi ; }
@@ -307,14 +306,16 @@ fi ; }
 
 function _rt_downgrade() {
 
+echo
 echo -e "${green}01)${normal} rTorrent ${cyan}0.9.4${normal}"
 echo -e "${green}02)${normal} rTorrent ${cyan}0.9.6${normal}"
-
 echo -ne "${bold}${yellow}你想用哪个版本 的 rTorrent？${normal}：" ; read -e version
 
 case $version in
-    01 | 3) SHRTVERSION=0.9.4 && FHRTVERSION=0.9.4_w0.13.4 ;;
+    01 | 1) SHRTVERSION=0.9.4 && FHRTVERSION=0.9.4_w0.13.4 ;;
     02 | 2) SHRTVERSION=0.9.6 && FHRTVERSION=0.9.6_w0.13.6 ;;
+    03 | 3) SHRTVERSION=0.9.2 && FHRTVERSION=0.9.2_w0.13.2 ;;
+    04 | 4) SHRTVERSION=0.9.3 && FHRTVERSION=0.9.3_w0.13.3 ;;
     "" | *) SHRTVERSION=0.9.4 && FHRTVERSION=0.9.4_w0.13.4 ;;
 esac
 
@@ -553,7 +554,8 @@ echo -e  "${bold}  操作系统      : ${cyan}$DISTRO $osversion $CODENAME ($arc
 echo -e  "${bold}  运行内核      : ${cyan}$running_kernel${normal}"
 echo -e  "${bold}  拥塞控制算法  : ${cyan}$tcp_control${normal}"
 echo
-echo -e  "${bold}  服务器时间    : ${cyan}$date${normal}" ; }
+echo -e  "${bold}  服务器时间    : ${cyan}$date${normal}"
+echo ; }
 
 
 
