@@ -3,7 +3,7 @@
 # https://github.com/Aniverse/iFeral
 #
 #
-iFeralVer=0.3.0
+iFeralVer=0.3.1
 iFeralDate=2018.03.25
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
@@ -138,10 +138,11 @@ fi ; }
 
 
 
-
 # 00. 导航菜单
 function _main_menu() {
 
+echo -e "${bold}Ver. $iFeralDate    "
+echo
 echo -e "${green}(01) ${jiacu}安装 qBittorrent     "
 echo -e "${green}(02) ${jiacu}安装 Deluge          "
 #echo -e "${green}(03) ${jiacu}安装 Transmission   "
