@@ -3,8 +3,8 @@
 # https://github.com/Aniverse/iFeral
 #
 #
-iFeralVer=0.2.5
-iFeralDate=2018.03.22
+iFeralVer=0.3.0
+iFeralDate=2018.03.25
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -200,7 +200,7 @@ for qbpid in ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittor
 
 while [[ $QBVERSION = "" ]]; do
     echo -ne "${bold}${yellow}请输入你要安装的 qBittorrent 版本，只支持 3.3.0-4.0.4 : ${normal}" ; read -e QBVERSION
-    [[ ! `ls ~/iFeral/app | grep $QBVERSION` ]] && { echo -e "${error} 你输入的版本不可用，请重新输入！" ; unset QBVERSION ; }
+    [[ ! `ls ~/iFeral/qb | grep $QBVERSION` ]] && { echo -e "${error} 你输入的版本不可用，请重新输入！" ; unset QBVERSION ; }
 done
 
 read -ep "${bold}${yellow}请输入你要用于 qb WebUI 的密码：${normal}" PASSWORD
@@ -240,7 +240,7 @@ WebUI\Password_ha1=@ByteArray($QBPASS)
 WebUI\Username=$(whoami)
 EOF
 
-TMPDIR=~/tmp LD_LIBRARY_PATH=~/iFeral/qb ~/iFeral/app/qbittorrent-nox.$QBVERSION -d
+TMPDIR=~/tmp LD_LIBRARY_PATH=~/iFeral/qb/library ~/iFeral/qb/qbittorrent-nox.$QBVERSION -d
 
 if [[ ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittorrent ` ]]; then
     echo -e "${bold}${green}
@@ -348,7 +348,7 @@ if [[ $Seedbox == FH ]]; then
 
 # ruTorrent Upgrade
 cd ~/www/$(whoami).$(hostname -f)/*
-git clone --depth=1 https://github.com/Novik/ruTorrent
+git clone --depth=1 https://github.com/Novik/ruTorrent ruTorrent
 cp -r rutorrent/conf/* ruTorrent/conf/
 cp rutorrent/.ht* ruTorrent/
 rm -rf rutorrent/ && mv ruTorrent rutorrent && cd
