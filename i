@@ -4,7 +4,7 @@
 #
 #
 iFeralVer=0.3.3
-iFeralDate=2018.03.25.4
+iFeralDate=2018.03.25.5
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -60,9 +60,9 @@ function isValidIpAddress() { echo $1 | grep -qE '^[0-9][0-9]?[0-9]?\.[0-9][0-9]
 function isInternalIpAddress() { echo $1 | grep -qE '(192\.168\.((\d{1,2})|(1\d{2})|(2[0-4]\d)|(25[0-5]))\.((\d{1,2})$|(1\d{2})$|(2[0-4]\d)$|(25[0-5])$))|(172\.((1[6-9])|(2\d)|(3[0-1]))\.((\d{1,2})|(1\d{2})|(2[0-4]\d)|(25[0-5]))\.((\d{1,2})$|(1\d{2})$|(2[0-4]\d)$|(25[0-5])$))|(10\.((\d{1,2})|(1\d{2})|(2[0-4]\d)|(25[0-5]))\.((\d{1,2})|(1\d{2})|(2[0-4]\d)|(25[0-5]))\.((\d{1,2})$|(1\d{2})$|(2[0-4]\d)$|(25[0-5])$))' ; }
 
 ### 端口生成与检查 ###
-portGenerator() { portGen=$(shuf -i 10001-32001 -n1) ; }
-portCheck() { while [[ "$(netstat -ln | grep ':'"$portGen"'' | grep -c 'LISTEN')" -eq "1" ]]
-do portGenerator ; done ; }
+portGenerator() { portGen=$(shuf -i 10001-32001 -n1) ; } ; portGenerator2() { portGen2=$(shuf -i 10001-32001 -n1) ; }
+portCheck() { while [[ "$(netstat -ln | grep ':'"$portGen"'' | grep -c 'LISTEN')" -eq "1" ]]; do portGenerator ; done ; }
+portCheck2() { while [[ "$(netstat -ln | grep ':'"$portGen2"'' | grep -c 'LISTEN')" -eq "1" ]]; do portGenerator2 ; done ; }
 
 current_disk=`  echo $(pwd) | sed "s/\/$(whoami)//"  `
 Seedbox=Unknown ; [[ `  hostname -f | grep feral  ` ]] && Seedbox=FH ; [[ `  hostname -f | grep seedhost  ` ]] && Seedbox=SH
@@ -76,6 +76,7 @@ Seedbox=Unknown ; [[ `  hostname -f | grep feral  ` ]] && Seedbox=FH ; [[ `  hos
 # 00. Logo
 function _logo() {
 cd ; clear ; wget --timeout=7 -qO- https://github.com/Aniverse/iFeral/raw/master/files/iFeral.logo.1
+echo -e "${bold}Ver. $iFeralDate    \n"
 [[ $Seedbox == Unknown ]] && echo -e "${warn} 你这个似乎不是 FH 或 SH 的盒子，不保证本脚本能正常工作！"
 [[ $Seedbox == SH ]] && echo -e "${atte} 本脚本主要为 FH 盒子设计，不保证所有功能都能在 SH 盒子上正常工作！" ; }
 
@@ -87,9 +88,9 @@ cd ; clear ; wget --timeout=7 -qO- https://github.com/Aniverse/iFeral/raw/master
 # 00. 初始化
 function _init() {  if [[ ! `  ls ~ | grep iFeral  `  ]]; then
 
-git clone --depth=1 https://github.com/Aniverse/iFeral
-chmod -R +x iFeral
+git clone --depth=1 https://github.com/Aniverse/iFeral ; chmod -R +x iFeral
 cd ; clear ; wget --timeout=7 -qO- https://github.com/Aniverse/iFeral/raw/master/files/iFeral.logo.1
+echo -e "${bold}Ver. $iFeralDate    \n"
 
 mkdir -p ~/bin ~/lib
 
@@ -141,8 +142,6 @@ fi ; }
 # 00. 导航菜单
 function _main_menu() {
 
-echo -e "${bold}Ver. $iFeralDate    "
-echo
 echo -e "${green}(01) ${jiacu}安装 qBittorrent     "
 echo -e "${green}(02) ${jiacu}安装 Deluge          "
 #echo -e "${green}(03) ${jiacu}安装 Transmission   "
@@ -221,6 +220,7 @@ read -ep "${bold}${yellow}请输入你要用于 qb WebUI 的密码：${normal}" 
 QBPASS=`  echo -n $PASSWORD | md5sum | awk '{print $1}'  `
 
 portGenerator && portCheck
+portGenerator2 && portCheck2
 
 cp -f ~/.config/qBittorrent/qBittorrent.conf ~/.config/qBittorrent/qBittorrent.conf."$(date "+%Y.%m.%d.%H.%M.%S")".bak
 cat > ~/.config/qBittorrent/qBittorrent.conf <<EOF
@@ -240,9 +240,11 @@ Bittorrent\uTP=false
 Bittorrent\uTP_rate_limited=false
 Connection\GlobalDLLimitAlt=0
 Connection\GlobalUPLimitAlt=0
+Connection\PortRangeMin=$portGen2
 General\Locale=zh
 Queueing\QueueingEnabled=false
 Downloads\SavePath=private/qBittorrent/data
+
 
 WebUI\Port=$portGen
 WebUI\Password_ha1=@ByteArray($QBPASS)
@@ -344,6 +346,7 @@ elif [[ $Seedbox == SH ]]; then
 else
     echo "${warn} 不支持非 SH/FH 盒子！${normal}"
 fi ; }
+
 
 
 
