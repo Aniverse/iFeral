@@ -85,25 +85,20 @@ cd ; clear ; wget --timeout=7 -qO- https://github.com/Aniverse/iFeral/raw/master
 
 
 # 00. 初始化
-function _init() {
+function _init() {  if [[ ! `  ls ~ | grep iFeral  `  ]]; then
 
-if [[ ! `  ls | grep iFeral  `  ]]; then
-    git clone --depth=1 https://github.com/Aniverse/iFeral
-    chmod -R +x iFeral
-    cd ; clear ; wget --timeout=7 -qO- https://github.com/Aniverse/iFeral/raw/master/files/iFeral.logo.1
-fi
-
-# 路径
-mkdir -p ~/bin ~/tmp ~/private/qbittorrent/{data,watch,torrents} ~/.config/{qBittorrent,flexget}
+git clone --depth=1 https://github.com/Aniverse/iFeral
+chmod -R +x iFeral
+cd ; clear ; wget --timeout=7 -qO- https://github.com/Aniverse/iFeral/raw/master/files/iFeral.logo.1
 
 # 备份下，然后直接覆盖掉原先的内容
-cp -f ~/.bashrc ~/.bashrc."$(date "+%Y.%m.%d.%H.%M.%S")".bak
-cat > ~/.bashrc <<EOF
+cp -f ~/.profile ~/.profile."$(date "+%Y.%m.%d.%H.%M.%S")".bak >/dev/null 2>&1
+cat > ~/.profile <<EOF
 export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export TZ="/usr/share/zoneinfo/Asia/Shanghai"
 
-export PATH=~/iFeral/app:~/bin:~/pip/bin:~/.local/bin:\$PATH
+export PATH=~/iFeral/qb:~/iFeral/app:~/bin:~/pip/bin:~/.local/bin:\$PATH
 
 cdk=\$(df -h | grep `pwd | awk -F '/' '{print \$3}'` | awk '{print \$1}' | awk -F '/' '{print \$3}')
 [[ \$(echo \$cdk | grep -E "sd[a-z]+1") ]] && cdk=\$(echo \$cdk | sed "s/1//")
@@ -132,7 +127,9 @@ alias cdb="cd .."
 alias gclone="git clone --depth=1"
 EOF
 
-}
+fi ; }
+
+
 
 
 
@@ -196,10 +193,13 @@ echo ; }
 function _install_qb() {
 
 echo
+
+mkdir -p ~/tmp ~/private/qbittorrent/{data,watch,torrents} ~/.config/{qBittorrent,flexget}
+
 for qbpid in ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittorrent | awk '{print $2}' ` ; do kill -9 $qbpid ; done
 
 while [[ $QBVERSION = "" ]]; do
-    echo -ne "${bold}${yellow}请输入你要安装的 qBittorrent 版本，只支持 3.3.0-4.0.4 : ${normal}" ; read -e QBVERSION ; export QBVERSION=$QBVERSION
+    echo -ne "${bold}${yellow}请输入你要安装的 qBittorrent 版本，只支持 3.3.0-4.0.4 : ${normal}" ; read -e QBVERSION
     [[ ! `ls ~/iFeral/app | grep $QBVERSION` ]] && { echo -e "${error} 你输入的版本不可用，请重新输入！" ; unset QBVERSION ; }
 done
 
@@ -207,6 +207,11 @@ read -ep "${bold}${yellow}请输入你要用于 qb WebUI 的密码：${normal}" 
 QBPASS=`  echo -n $PASSWORD | md5sum | awk '{print $1}'  `
 
 portGenerator && portCheck
+
+if [[ ! `  ls ~/iFeral/qb | grep library  `  ]]; then
+    git clone --depth=1 -b master --single-branch https://github.com/Aniverse/qBittorrent-nox ~/iFeral/qb
+    chmod +x -R ~/iFeral/qb
+fi
 
 cp -f ~/.config/qBittorrent/qBittorrent.conf ~/.config/qBittorrent/qBittorrent.conf."$(date "+%Y.%m.%d.%H.%M.%S")".bak
 cat > ~/.config/qBittorrent/qBittorrent.conf <<EOF
@@ -235,7 +240,7 @@ WebUI\Password_ha1=@ByteArray($QBPASS)
 WebUI\Username=$(whoami)
 EOF
 
-bash -c 'export TMPDIR=~/tmp ; export LD_LIBRARY_PATH=~/iFeral/qb:$LD_LIBRARY_PATH ; ~/iFeral/app/qbittorrent-nox.$QBVERSION -d'
+TMPDIR=~/tmp LD_LIBRARY_PATH=~/iFeral/qb ~/iFeral/app/qbittorrent-nox.$QBVERSION -d
 
 if [[ ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittorrent ` ]]; then
     echo -e "${bold}${green}
@@ -450,9 +455,10 @@ cd && rm -f ~/p7zip.tar.bz2
 # rclone
 mkdir -p ~/bin
 wget -qO ~/rclone.zip http://downloads.rclone.org/rclone-current-linux-amd64.zip
-unzip ~/rclone.zip
+unzip -qq ~/rclone.zip
 mv ~/rclone-v*-linux-amd64/rclone ~/bin
 rm -rf ~/rclone-v*-linux-amd64 ~/rclone.zip
+chmod +x ~/bin/rclone
 
 # mktorrent
 git clone --depth=1 https://github.com/Rudde/mktorrent
