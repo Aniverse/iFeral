@@ -3,8 +3,8 @@
 # https://github.com/Aniverse/iFeral
 #
 #
-iFeralVer=0.3.1
-iFeralDate=2018.03.25
+iFeralVer=0.3.2
+iFeralDate=2018.03.25.3
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -107,11 +107,11 @@ cdk=\$(df -h | grep `pwd | awk -F '/' '{print \$3}'` | awk '{print \$1}' | awk -
 [[ \$(echo \$cdk | grep -E "sd[a-z]+1") ]] && cdk=\$(echo \$cdk | sed "s/1//")
 alias io='iostat -d -x -m 1 | grep -E "\$cdk | rMB/s | wMB/s"'
 
-alias killde='kill "$(pgrep -fu "$(whoami)" "deluged")"'
-alias killde2='kill "$(pgrep -fu "$(whoami)" "de2")"'
-alias killtr='kill "$(pgrep -fu "$(whoami)" "transmission-daemon")"'
-alias killrt='kill "$(pgrep -fu "$(whoami)" "/usr/local/bin/rtorrent")"'
-alias killqb='kill $(pgrep -fu "$(whoami)" "qbitt")'
+alias killde='kill "\$(pgrep -fu "\$(whoami)" "deluged")"'
+alias killde2='kill "\$(pgrep -fu "\$(whoami)" "de2")"'
+alias killtr='kill "\$(pgrep -fu "\$(whoami)" "transmission-daemon")"'
+alias killrt='kill "\$(pgrep -fu "\$(whoami)" "/usr/local/bin/rtorrent")"'
+alias killqb='kill \$(pgrep -fu "\$(whoami)" "qbitt")'
 
 alias cesu='echo;python ~/iFeral/app/spdtest --share;echo'
 alias cesu2='python ~/iFeral/app/spdtest --share --server'
@@ -202,15 +202,19 @@ mkdir -p ~/tmp ~/private/qbittorrent/{data,watch,torrents} ~/.config/{qBittorren
 
 for qbpid in ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittorrent | awk '{print $2}' ` ; do kill -9 $qbpid ; done
 
-if [[ ! `  ls ~/iFeral/qb | grep library  `  ]]; then
+if [[ ! `  ls ~/iFeral/qb/library 2 >/dev/null  `  ]]; then
     echo -e "${bold}${yellow}下载 qbittorrent-nox ...${normal}\n"
-    git clone --depth=1 -b master --single-branch https://github.com/Aniverse/qBittorrent-nox ~/iFeral/qb
-    chmod +x -R ~/iFeral/qb
+    if [[ $Seedbox == FH ]]; then
+        git clone --depth=1 -b master --single-branch https://github.com/Aniverse/qBittorrent-nox ~/iFeral/qb
+    else
+        echo -e "${bold}${yellow}暂时不支持 FH 以外的盒子 ...${normal}\n"
+    fi
+    chmod +x -R ~/iFeral/qb ; echo
 fi
 
 while [[ $QBVERSION = "" ]]; do
     echo -ne "${bold}${yellow}请输入你要安装的 qBittorrent 版本，只支持 3.3.0-4.0.4 : ${normal}" ; read -e QBVERSION
-    [[ ! `ls ~/iFeral/qb | grep $QBVERSION` ]] && { echo -e "${error} 你输入的版本不可用，请重新输入！" ; unset QBVERSION ; }
+    [[ ! ` ls ~/iFeral/qb | grep $QBVERSION ` ]] && { echo -e "${error} 你输入的版本不可用，请重新输入！" ; unset QBVERSION ; }
 done
 
 read -ep "${bold}${yellow}请输入你要用于 qb WebUI 的密码：${normal}" PASSWORD
