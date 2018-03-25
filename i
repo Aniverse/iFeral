@@ -201,6 +201,12 @@ mkdir -p ~/tmp ~/private/qbittorrent/{data,watch,torrents} ~/.config/{qBittorren
 
 for qbpid in ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittorrent | awk '{print $2}' ` ; do kill -9 $qbpid ; done
 
+if [[ ! `  ls ~/iFeral/qb | grep library  `  ]]; then
+    echo -e "${bold}${yellow}下载 qbittorrent-nox ...${normal}\n"
+    git clone --depth=1 -b master --single-branch https://github.com/Aniverse/qBittorrent-nox ~/iFeral/qb
+    chmod +x -R ~/iFeral/qb
+fi
+
 while [[ $QBVERSION = "" ]]; do
     echo -ne "${bold}${yellow}请输入你要安装的 qBittorrent 版本，只支持 3.3.0-4.0.4 : ${normal}" ; read -e QBVERSION
     [[ ! `ls ~/iFeral/qb | grep $QBVERSION` ]] && { echo -e "${error} 你输入的版本不可用，请重新输入！" ; unset QBVERSION ; }
@@ -210,11 +216,6 @@ read -ep "${bold}${yellow}请输入你要用于 qb WebUI 的密码：${normal}" 
 QBPASS=`  echo -n $PASSWORD | md5sum | awk '{print $1}'  `
 
 portGenerator && portCheck
-
-if [[ ! `  ls ~/iFeral/qb | grep library  `  ]]; then
-    git clone --depth=1 -b master --single-branch https://github.com/Aniverse/qBittorrent-nox ~/iFeral/qb
-    chmod +x -R ~/iFeral/qb
-fi
 
 cp -f ~/.config/qBittorrent/qBittorrent.conf ~/.config/qBittorrent/qBittorrent.conf."$(date "+%Y.%m.%d.%H.%M.%S")".bak
 cat > ~/.config/qBittorrent/qBittorrent.conf <<EOF
