@@ -109,6 +109,19 @@ cp rutorrent/.ht* ruTorrent/
 rm -rf rutorrent/ && mv ruTorrent rutorrent && cd
 ```
 
+### sox, spectrogram
+```
+wget http://ftp.debian.org/debian/pool/main/s/sox/libsox3_14.4.2-3_amd64.deb
+dpkg -x libsox3_14.4.2-3_amd64.deb ~/deb-temp
+wget http://ftp.debian.org/debian/pool/main/s/sox/sox_14.4.2-3_amd64.deb
+dpkg -x sox_14.4.2-3_amd64.deb ~/deb-temp
+mv ~/deb-temp/usr/lib/x86_64-linux-gnu/* ~/lib/
+mv ~/deb-temp/usr/bin/* ~/bin/
+rm -rf ~/*.deb ~/deb-temp
+cd && sed -i "s|sox'] = ''|sox'] = '$(pwd)/bin/sox'|g"  \
+~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/spectrogram/conf.php
+```
+
 ### ruTorrent Themes
 
 ```

@@ -91,6 +91,8 @@ git clone --depth=1 https://github.com/Aniverse/iFeral
 chmod -R +x iFeral
 cd ; clear ; wget --timeout=7 -qO- https://github.com/Aniverse/iFeral/raw/master/files/iFeral.logo.1
 
+mkdir -p ~/bin ~/lib
+
 # 备份下，然后直接覆盖掉原先的内容
 cp -f ~/.profile ~/.profile."$(date "+%Y.%m.%d.%H.%M.%S")".bak >/dev/null 2>&1
 cat > ~/.profile <<EOF
@@ -98,7 +100,8 @@ export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export TZ="/usr/share/zoneinfo/Asia/Shanghai"
 
-export PATH=~/iFeral/qb:~/iFeral/app:~/bin:~/pip/bin:~/.local/bin:\$PATH
+export PATH=~/FH:~/iFeral/qb:~/iFeral/app:~/bin:~/pip/bin:~/.local/bin:\$PATH
+export LD_LIBRARY_PATH=~/lib:~/FH/link:\$LD_LIBRARY_PATH
 
 cdk=\$(df -h | grep `pwd | awk -F '/' '{print \$3}'` | awk '{print \$1}' | awk -F '/' '{print \$3}')
 [[ \$(echo \$cdk | grep -E "sd[a-z]+1") ]] && cdk=\$(echo \$cdk | sed "s/1//")
@@ -342,7 +345,7 @@ fi ; }
 
 # 05. 配置 ruTorrent
 
-function _config_rut() {
+function _config_rut() { echo
 
 if [[ $Seedbox == FH ]]; then
 
@@ -352,6 +355,14 @@ git clone --depth=1 https://github.com/Novik/ruTorrent ruTorrent
 cp -r rutorrent/conf/* ruTorrent/conf/
 cp rutorrent/.ht* ruTorrent/
 rm -rf rutorrent/ && mv ruTorrent rutorrent && cd
+
+# sox
+wget http://ftp.debian.org/debian/pool/main/s/sox/libsox3_14.4.2-3_amd64.deb && dpkg -x libsox3_14.4.2-3_amd64.deb ~/deb-temp
+wget http://ftp.debian.org/debian/pool/main/s/sox/sox_14.4.2-3_amd64.deb && dpkg -x sox_14.4.2-3_amd64.deb ~/deb-temp
+mv ~/deb-temp/usr/lib/x86_64-linux-gnu/* ~/lib/
+mv ~/deb-temp/usr/bin/* ~/bin/
+rm -rf ~/*.deb ~/deb-temp
+cd && sed -i "s|sox'] = ''|sox'] = '$(pwd)/bin/sox'|g" ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/spectrogram/conf.php
 
 # Screenshots ffmpeg and m2ts
 cd && sed -i "s|ffmpeg'] = ''|ffmpeg'] = '$(pwd)/bin/ffmpeg'|g" ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/screenshots/conf.php
