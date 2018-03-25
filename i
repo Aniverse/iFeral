@@ -4,7 +4,7 @@
 #
 #
 iFeralVer=0.3.3
-iFeralDate=2018.03.25.5
+iFeralDate=2018.03.25.6
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -92,10 +92,10 @@ git clone --depth=1 https://github.com/Aniverse/iFeral ; chmod -R +x iFeral
 cd ; clear ; wget --timeout=7 -qO- https://github.com/Aniverse/iFeral/raw/master/files/iFeral.logo.1
 echo -e "${bold}Ver. $iFeralDate    \n"
 
-mkdir -p ~/bin ~/lib
+mkdir -p ~/bin ~/lib ~/iFeral/backup
 
 # 备份下，然后直接覆盖掉原先的内容
-cp -f ~/.profile ~/.profile."$(date "+%Y.%m.%d.%H.%M.%S")".bak >/dev/null 2>&1
+cp -f ~/.profile ~/iFeral/backup/.profile."$(date "+%Y.%m.%d.%H.%M.%S")".bak >/dev/null 2>&1
 cat > ~/.profile <<EOF
 export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
@@ -222,7 +222,7 @@ QBPASS=`  echo -n $PASSWORD | md5sum | awk '{print $1}'  `
 portGenerator && portCheck
 portGenerator2 && portCheck2
 
-cp -f ~/.config/qBittorrent/qBittorrent.conf ~/.config/qBittorrent/qBittorrent.conf."$(date "+%Y.%m.%d.%H.%M.%S")".bak
+cp -f ~/.config/qBittorrent/qBittorrent.conf ~/iFeral/backup/qBittorrent.conf."$(date "+%Y.%m.%d.%H.%M.%S")".bak
 cat > ~/.config/qBittorrent/qBittorrent.conf <<EOF
 [LegalNotice]
 Accepted=true
