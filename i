@@ -3,8 +3,8 @@
 # https://github.com/Aniverse/iFeral
 #
 #
-iFeralVer=0.3.2
-iFeralDate=2018.03.25.3
+iFeralVer=0.3.3
+iFeralDate=2018.03.25.4
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -202,7 +202,7 @@ mkdir -p ~/tmp ~/private/qbittorrent/{data,watch,torrents} ~/.config/{qBittorren
 
 for qbpid in ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittorrent | awk '{print $2}' ` ; do kill -9 $qbpid ; done
 
-if [[ ! `  ls ~/iFeral/qb/library 2 >/dev/null  `  ]]; then
+if [[ ! `  ls ~/iFeral/qb/library  2>/dev/null  `  ]]; then
     echo -e "${bold}${yellow}下载 qbittorrent-nox ...${normal}\n"
     if [[ $Seedbox == FH ]]; then
         git clone --depth=1 -b master --single-branch https://github.com/Aniverse/qBittorrent-nox ~/iFeral/qb
