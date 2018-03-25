@@ -92,7 +92,7 @@ git clone --depth=1 https://github.com/Aniverse/iFeral ; chmod -R +x iFeral
 cd ; clear ; wget --timeout=7 -qO- https://github.com/Aniverse/iFeral/raw/master/files/iFeral.logo.1
 echo -e "${bold}Ver. $iFeralDate    \n"
 
-mkdir -p ~/bin ~/lib ~/iFeral/backup
+mkdir -p ~/bin ~/lib ~/iFeral/backup ~/iFeral/log
 
 # 备份下，然后直接覆盖掉原先的内容
 cp -f ~/.profile ~/iFeral/backup/.profile."$(date "+%Y.%m.%d.%H.%M.%S")".bak >/dev/null 2>&1
@@ -224,6 +224,15 @@ portGenerator2 && portCheck2
 
 cp -f ~/.config/qBittorrent/qBittorrent.conf ~/iFeral/backup/qBittorrent.conf."$(date "+%Y.%m.%d.%H.%M.%S")".bak
 cat > ~/.config/qBittorrent/qBittorrent.conf <<EOF
+[Application]
+FileLogger\Enabled=true
+FileLogger\Age=6
+FileLogger\DeleteOld=true
+FileLogger\Backup=true
+FileLogger\AgeType=1
+FileLogger\Path=iFeral/log
+FileLogger\MaxSize=20
+
 [LegalNotice]
 Accepted=true
 
@@ -244,7 +253,6 @@ Connection\PortRangeMin=$portGen2
 General\Locale=zh
 Queueing\QueueingEnabled=false
 Downloads\SavePath=private/qBittorrent/data
-
 
 WebUI\Port=$portGen
 WebUI\Password_ha1=@ByteArray($QBPASS)
