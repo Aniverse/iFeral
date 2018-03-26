@@ -4,7 +4,7 @@
 #
 #
 iFeralVer=0.3.4
-iFeralDate=2018.03.26.2
+iFeralDate=2018.03.26.3
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -77,8 +77,8 @@ Seedbox=Unknown ; [[ `  hostname -f | grep feral  ` ]] && Seedbox=FH ; [[ `  hos
 function _logo() {
 cd ; clear ; wget --timeout=7 -qO- https://github.com/Aniverse/iFeral/raw/master/files/iFeral.logo.1
 echo -e "${bold}Ver. $iFeralDate    \n"
-[[ $Seedbox == Unknown ]] && echo -e "${warn} 你这个似乎不是 FH 或 SH 的盒子，不保证本脚本能正常工作！"
-[[ $Seedbox == SH ]] && echo -e "${atte} 本脚本主要为 FH 盒子设计，不保证所有功能都能在 SH 盒子上正常工作！" ; }
+[[ $Seedbox == Unknown ]] && echo -e "${warn} 你这个似乎不是 FH 或 SH 的盒子，不保证本脚本能正常工作！\n"
+[[ $Seedbox == SH ]] && echo -e "${atte} 本脚本主要为 FH 盒子设计，不保证所有功能都能在 SH 盒子上正常工作！\n" ; }
 
 
 
@@ -302,6 +302,7 @@ mv -f ~/.local/bin/deluge-web ~/.local/bin/dew2
 cp -r ~/.config/deluge ~/.config/deluge2
 rm -rf ~/.config/deluge2/deluged.pid ~/.config/deluge2/state/*.torrent
 
+sed -i 's|"daemon_port":.*,|"daemon_port": '$portGen',|g' ~/.config/deluge2/core.conf
 ~/.local/bin/de2 -c ~/.config/deluge2 >/dev/null 2>&1
 for depid in ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep de2 | awk '{print $2}' ` ; do kill -9 $depid ; done
 
