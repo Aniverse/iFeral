@@ -4,7 +4,7 @@
 #
 #
 iFeralVer=0.3.4
-iFeralDate=2018.03.26.1
+iFeralDate=2018.03.26.2
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -283,7 +283,7 @@ fi ; }
 
 function _install_de() {
 
-echo
+echo ; cd
 for depid in ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep de2 | awk '{print $2}' ` ; do kill -9 $depid ; done
 
 while [[ $DEVERSION = "" ]]; do
@@ -301,6 +301,9 @@ mv -f ~/.local/bin/deluged ~/.local/bin/de2
 mv -f ~/.local/bin/deluge-web ~/.local/bin/dew2
 cp -r ~/.config/deluge ~/.config/deluge2
 rm -rf ~/.config/deluge2/deluged.pid ~/.config/deluge2/state/*.torrent
+
+~/.local/bin/de2 -c ~/.config/deluge2 >/dev/null 2>&1
+for depid in ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep de2 | awk '{print $2}' ` ; do kill -9 $depid ; done
 
 portGenerator && portCheck
 sed -i 's|"daemon_port":.*,|"daemon_port": '$portGen',|g' ~/.config/deluge2/core.conf
