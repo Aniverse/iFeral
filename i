@@ -4,7 +4,7 @@
 #
 #
 iFeralVer=0.3.4
-iFeralDate=2018.03.26.3
+iFeralDate=2018.03.26.4
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -299,15 +299,19 @@ cd && rm -rf ~/deluge-"${DEVERSION}" ~/deluge-"${DEVERSION}".tar.gz
 
 mv -f ~/.local/bin/deluged ~/.local/bin/de2
 mv -f ~/.local/bin/deluge-web ~/.local/bin/dew2
+[[ ! `ls ~/.config/deluge` ]] && DEexist=0
 cp -r ~/.config/deluge ~/.config/deluge2
 rm -rf ~/.config/deluge2/deluged.pid ~/.config/deluge2/state/*.torrent
 
+portGenerator && portCheck
 sed -i 's|"daemon_port":.*,|"daemon_port": '$portGen',|g' ~/.config/deluge2/core.conf
+
 ~/.local/bin/de2 -c ~/.config/deluge2 >/dev/null 2>&1
 for depid in ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep de2 | awk '{print $2}' ` ; do kill -9 $depid ; done
 
-portGenerator && portCheck
+[[ $DEexist == 0 ]] && echo "$(whoami):aniverse233:10" >> ~/.config2/deluge/auth
 sed -i 's|"daemon_port":.*,|"daemon_port": '$portGen',|g' ~/.config/deluge2/core.conf
+echo "${ANUSER}:${ANPASS}:10" >> /root/.config/deluge/auth
 
 ~/.local/bin/de2 -c ~/.config/deluge2
 
@@ -316,7 +320,7 @@ if [[ ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep de2 ` ]]; then
 第二个 Deluge 已安装完成！${jiacu}
 
 WebUI   网址  ${cyan}http://$(hostname -f)/$(whoami)/deluge (和原先的一样)${jiacu}
-WebUI   密码  ${cyan}和原先的 Deluge WebUI 的密码一样${jiacu}
+WebUI   密码  ${cyan}和原先的 Deluge WebUI 的密码一样；如果是新安装的话就是 deluge${jiacu}
 WebUI 主机名  ${cyan}127.0.0.1 或 10.0.0.1${jiacu}
 GtkUI 主机名  ${cyan}$(hostname -f)${jiacu}
 daemon  账号  ${cyan}$(whoami)${jiacu}
