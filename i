@@ -3,8 +3,8 @@
 # https://github.com/Aniverse/iFeral
 #
 #
-iFeralVer=0.3.3
-iFeralDate=2018.03.25.6
+iFeralVer=0.3.4
+iFeralDate=2018.03.26.1
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -61,8 +61,8 @@ function isInternalIpAddress() { echo $1 | grep -qE '(192\.168\.((\d{1,2})|(1\d{
 
 ### 端口生成与检查 ###
 portGenerator() { portGen=$(shuf -i 10001-32001 -n1) ; } ; portGenerator2() { portGen2=$(shuf -i 10001-32001 -n1) ; }
-portCheck() { while [[ "$(netstat -ln | grep ':'"$portGen"'' | grep -c 'LISTEN')" -eq "1" ]]; do portGenerator ; done ; }
-portCheck2() { while [[ "$(netstat -ln | grep ':'"$portGen2"'' | grep -c 'LISTEN')" -eq "1" ]]; do portGenerator2 ; done ; }
+portCheck() { while [[ "$( ~/iFeral/app/netstat -ln | grep ':'"$portGen"'' | grep -c 'LISTEN')" -eq "1" ]]; do portGenerator ; done ; }
+portCheck2() { while [[ "$( ~/iFeral/app/netstat -ln | grep ':'"$portGen2"'' | grep -c 'LISTEN')" -eq "1" ]]; do portGenerator2 ; done ; }
 
 current_disk=`  echo $(pwd) | sed "s/\/$(whoami)//"  `
 Seedbox=Unknown ; [[ `  hostname -f | grep feral  ` ]] && Seedbox=FH ; [[ `  hostname -f | grep seedhost  ` ]] && Seedbox=SH
@@ -203,16 +203,18 @@ for qbpid in ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittor
 
 if [[ ! `  ls ~/iFeral/qb/library  2>/dev/null  `  ]]; then
     echo -e "${bold}${yellow}下载 qbittorrent-nox ...${normal}\n"
-    if [[ $Seedbox == FH ]]; then
-        git clone --depth=1 -b master --single-branch https://github.com/Aniverse/qBittorrent-nox ~/iFeral/qb
+    if   [[ $Seedbox == FH ]]; then
+         git clone --depth=1 -b master --single-branch https://github.com/Aniverse/qBittorrent-nox ~/iFeral/qb
+    elif [[ $Seedbox == SH ]]; then
+         git clone --depth=1 -b trusty --single-branch https://github.com/Aniverse/qBittorrent-nox ~/iFeral/qb
     else
-        echo -e "${bold}${yellow}暂时不支持 FH 以外的盒子 ...${normal}\n"
+         echo -e "${bold}${yellow}暂时不支持 FH/SH 以外的盒子 ...${normal}\n" ; exit 1
     fi
     chmod +x -R ~/iFeral/qb ; echo
 fi
 
 while [[ $QBVERSION = "" ]]; do
-    echo -ne "${bold}${yellow}请输入你要安装的 qBittorrent 版本，只支持 3.3.0-4.0.4 : ${normal}" ; read -e QBVERSION
+    echo -ne "${bold}${yellow}请输入你要安装的 qBittorrent 版本，只支持 3.3.0-4.0.4: ${normal}" ; read -e QBVERSION
     [[ ! ` ls ~/iFeral/qb | grep $QBVERSION ` ]] && { echo -e "${error} 你输入的版本不可用，请重新输入！" ; unset QBVERSION ; }
 done
 
@@ -314,8 +316,8 @@ WebUI   密码  ${cyan}和原先的 Deluge WebUI 的密码一样${jiacu}
 WebUI 主机名  ${cyan}127.0.0.1 或 10.0.0.1${jiacu}
 GtkUI 主机名  ${cyan}$(hostname -f)${jiacu}
 daemon  账号  ${cyan}$(whoami)${jiacu}
-daemon  密码  ${cyan}$(sed -rn "s/$(whoami):(.*):(.*)/\1/p" ~/.config/deluge2/auth)${normal}
-daemon  端口  ${cyan}$portGen${jiacu}"
+daemon  密码  ${cyan}$(sed -rn "s/$(whoami):(.*):(.*)/\1/p" ~/.config/deluge2/auth)${jiacu}
+daemon  端口  ${cyan}$portGen${normal}"
 else
     echo -e "${error} 第二个 Deluge 安装完成，但无法正常运行。\n不要问我为什么，我可能也不知道！要不你手动安装试试？${normal}"
 fi ; }
