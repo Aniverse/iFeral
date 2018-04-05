@@ -79,8 +79,8 @@ do
             dpkg -x libqt5xml5_5.7.1+dfsg-3+b1_amd64.deb ~/deb-temp
             wget -q http://ftp.nl.debian.org/debian/pool/main/q/qbittorrent/qbittorrent-nox_3.3.7-3_amd64.deb
             dpkg -x qbittorrent-nox_3.3.7-3_amd64.deb ~/deb-temp
-            wget -q http://ftp.nl.debian.org/debian/pool/main/g/gcc-6/libstdc++6_6.3.0-18_amd64.deb
-            dpkg -x libstdc++6_6.3.0-18_amd64.deb ~/deb-temp
+            wget -q http://ftp.nl.debian.org/debian/pool/main/g/gcc-6/libstdc++6_6.3.0-18+deb9u1_amd64.deb
+            dpkg -x libstdc++6_6.3.0-18+deb9u1_amd64.deb ~/deb-temp
             wget -q http://ftp.nl.debian.org/debian/pool/main/i/icu/libicu57_57.1-6+deb9u1_amd64.deb
             dpkg -x libicu57_57.1-6+deb9u1_amd64.deb ~/deb-temp
             wget -q http://ftp.nl.debian.org/debian/pool/main/libp/libproxy/libproxy1_0.4.11-4+b2_amd64.deb 
