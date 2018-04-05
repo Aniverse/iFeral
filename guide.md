@@ -157,7 +157,7 @@ sed -i "s|(getExternal('ffmpeg')|(getExternal('$(pwd)/bin/ffmpeg')|g" \
 
 - #### Fileshare
 ```
-cd ~/www/$(whoami).$(hostname -f)/public_html/rutorrent/plugins/
+cd ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/
 svn co -q https://github.com/nelu/rutorrent-thirdparty-plugins/trunk/fileshare
 ln -s ~/www/$(whoami).$(hostname -f)/public_html/rutorrent/plugins/fileshare/share.php \
 ~/www/$(whoami).$(hostname -f)/public_html/
