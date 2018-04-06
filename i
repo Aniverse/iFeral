@@ -443,6 +443,7 @@ fi
 portGenerator && portCheck
 deluge_port=` grep daemon_port ~/.config/deluge/core.conf | grep -Eo "[0-9]+" `
 
+mkdir -p ~/.config/flexget
 cp -f ~/.config/flexget/config.yml ~/.config/flexget/config.yml."$(date "+%Y.%m.%d.%H.%M.%S")".bak >/dev/null 2>&1
 
 cat >  ~/.config/flexget/config.yml <<EOF
