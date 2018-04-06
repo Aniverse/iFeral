@@ -3,8 +3,8 @@
 # https://github.com/Aniverse/iFeral
 #
 #
-iFeralVer=0.3.4
-iFeralDate=2018.03.26.4
+iFeralVer=0.3.5
+iFeralDate=2018.04.06.1
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -214,6 +214,7 @@ if [[ ! `  ls ~/iFeral/qb/library  2>/dev/null  `  ]]; then
 fi
 
 while [[ $QBVERSION = "" ]]; do
+    [[ $Seedbox == SH ]] && echo -e "${atte} SH 没有 4.0 及以后的版本可选！"
     echo -ne "${bold}${yellow}请输入你要安装的 qBittorrent 版本，只支持 3.3.0-4.0.4: ${normal}" ; read -e QBVERSION
     [[ ! ` ls ~/iFeral/qb | grep $QBVERSION ` ]] && { echo -e "${error} 你输入的版本不可用，请重新输入！" ; unset QBVERSION ; }
 done
@@ -224,7 +225,7 @@ QBPASS=`  echo -n $PASSWORD | md5sum | awk '{print $1}'  `
 portGenerator && portCheck
 portGenerator2 && portCheck2
 
-cp -f ~/.config/qBittorrent/qBittorrent.conf ~/iFeral/backup/qBittorrent.conf."$(date "+%Y.%m.%d.%H.%M.%S")".bak
+cp -f ~/.config/qBittorrent/qBittorrent.conf ~/iFeral/backup/qBittorrent.conf."$(date "+%Y.%m.%d.%H.%M.%S")".bak >/dev/null 2>&1
 cat > ~/.config/qBittorrent/qBittorrent.conf <<EOF
 [Application]
 FileLogger\Enabled=true
@@ -287,7 +288,7 @@ echo ; cd
 for depid in ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep de2 | awk '{print $2}' ` ; do kill -9 $depid ; done
 
 while [[ $DEVERSION = "" ]]; do
-    echo -ne "${bold}${yellow}请输入你要安装的 Deluge 版本 : ${normal}" ; read -e DEVERSION
+    echo -ne "${bold}${yellow}请输入你要安装的第二个 Deluge 的版本 : ${normal}" ; read -e DEVERSION
     wget -qO ~/deluge-"${DEVERSION}".tar.gz http://download.deluge-torrent.org/source/deluge-"${DEVERSION}".tar.gz || { echo -e "${error} 下载 Deluge 源码失败，可能是这个版本不可用！" ; unset DEVERSION ; }
 done
 
@@ -334,9 +335,11 @@ fi ; }
 
 
 
+
 # 04. 降级 rTorrent
 # https://www.seedhost.eu/whmcs/knowledgebase/249/Changing-rTorrent-version.html
 # https://www.feralhosting.com/wiki/software/rutorrent/version
+# FH 只提供 0.9.4 和 0.9.6
 
 function _rt_downgrade() {
 
@@ -425,7 +428,7 @@ else echo "${atte} 这是为了 FH 盒子设计的，其他盒子就不要用了
 # https://www.feralhosting.com/wiki/software/flexget
 # https://www.seedhost.eu/whmcs/knowledgebase/248/Flexget-installation.html
 
-function _install_flexget_2() {
+function _install_flexget() {
 
 if [[ $Seedbox == FH ]]; then
     pip install --user --ignore-installed --no-use-wheel virtualenv
@@ -440,7 +443,7 @@ fi
 portGenerator && portCheck
 deluge_port=` grep daemon_port ~/.config/deluge/core.conf | grep -Eo "[0-9]+" `
 
-cp -f ~/.config/flexget/config.yml ~/.config/flexget/config.yml."$(date "+%Y.%m.%d.%H.%M.%S")".bak
+cp -f ~/.config/flexget/config.yml ~/.config/flexget/config.yml."$(date "+%Y.%m.%d.%H.%M.%S")".bak >/dev/null 2>&1
 
 cat >  ~/.config/flexget/config.yml <<EOF
 tasks:
