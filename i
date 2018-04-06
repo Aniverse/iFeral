@@ -4,7 +4,7 @@
 #
 #
 iFeralVer=0.3.5
-iFeralDate=2018.04.06.1
+iFeralDate=2018.04.06.2
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -516,6 +516,8 @@ cd .. && rm -rf mktorrent
 
 # 08. 查看盒子信息
 function _stats() { 
+
+echo -e "\n${bold}正在检查系统信息，请稍等 ... ${normal}\n"
 
 serverfqdn=`  hostname -f  `
 serveripv4=$(ip route get 8.8.8.8 | awk 'NR==1 {print $NF}' )
