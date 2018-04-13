@@ -3,8 +3,8 @@
 # https://github.com/Aniverse/iFeral
 #
 #
-iFeralVer=0.3.5
-iFeralDate=2018.04.06.2
+iFeralVer=0.3.9
+iFeralDate=2018.04.13.1
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -216,7 +216,9 @@ fi
 while [[ $QBVERSION = "" ]]; do
     [[ $Seedbox == SH ]] && echo -e "${atte} SH 没有 4.0 及以后的版本可选！"
     echo -ne "${bold}${yellow}请输入你要安装的 qBittorrent 版本，只支持 3.3.0-4.0.4: ${normal}" ; read -e QBVERSION
-    [[ ! ` ls ~/iFeral/qb | grep $QBVERSION ` ]] && { echo -e "${error} 你输入的版本不可用，请重新输入！" ; unset QBVERSION ; }
+    while [[ ! $QBVERSION = "" ]]; do
+        [[ ! ` ls ~/iFeral/qb | grep $QBVERSION ` ]] && { echo -e "${error} 你输入的版本不可用，请重新输入！" ; unset QBVERSION ; }
+    done
 done
 
 read -ep "${bold}${yellow}请输入你要用于 qb WebUI 的密码：${normal}" PASSWORD
@@ -225,7 +227,7 @@ QBPASS=`  echo -n $PASSWORD | md5sum | awk '{print $1}'  `
 portGenerator && portCheck
 portGenerator2 && portCheck2
 
-cp -f ~/.config/qBittorrent/qBittorrent.conf ~/iFeral/backup/qBittorrent.conf."$(date "+%Y.%m.%d.%H.%M.%S")".bak >/dev/null 2>&1
+    if [[ ! -e ~/.config/qBittorrent/qBittorrent.conf ]]; then
 cat > ~/.config/qBittorrent/qBittorrent.conf <<EOF
 [Application]
 FileLogger\Enabled=true
@@ -233,7 +235,7 @@ FileLogger\Age=6
 FileLogger\DeleteOld=true
 FileLogger\Backup=true
 FileLogger\AgeType=1
-FileLogger\Path=iFeral/log
+FileLogger\Path=~/iFeral/log
 FileLogger\MaxSize=20
 
 [LegalNotice]
@@ -255,12 +257,15 @@ Connection\GlobalUPLimitAlt=0
 Connection\PortRangeMin=$portGen2
 General\Locale=zh
 Queueing\QueueingEnabled=false
-Downloads\SavePath=private/qBittorrent/data
+Downloads\SavePath=~/private/qBittorrent/data
 
 WebUI\Port=$portGen
 WebUI\Password_ha1=@ByteArray($QBPASS)
 WebUI\Username=$(whoami)
 EOF
+    fi
+
+QBPORT=` grep "WebUI.Port" ~/.config/qBittorrent/qBittorrent.conf | grep -Po "\d+" `
 
 TMPDIR=~/tmp LD_LIBRARY_PATH=~/iFeral/qb/library ~/iFeral/qb/qbittorrent-nox.$QBVERSION -d
 
@@ -268,9 +273,10 @@ if [[ ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittorrent ` 
     echo -e "${bold}${green}
 qBittorrent 已安装完成！${jiacu}
 
-网址  ${cyan}http://$(hostname -f):$portGen${jiacu}
+网址  ${cyan}http://$(hostname -f):$QBPORT${jiacu}
 账号  ${cyan}$(whoami)${jiacu}
-密码  ${cyan}$PASSWORD${normal}"
+密码  ${cyan}$PASSWORD${normal}
+注意  如果你原先装过一次 qb，那你应该使用之前的账号密码登陆 qb"
 else
     echo -e "${error} qBittorrent 安装完成，但无法正常运行。\n不要问我为什么，我可能也不知道！要不你换个别的脚本试试？${normal}"
 fi ; }
@@ -292,29 +298,35 @@ while [[ $DEVERSION = "" ]]; do
     wget -qO ~/deluge-"${DEVERSION}".tar.gz http://download.deluge-torrent.org/source/deluge-"${DEVERSION}".tar.gz || { echo -e "${error} 下载 Deluge 源码失败，可能是这个版本不可用！" ; unset DEVERSION ; }
 done
 
+# 安装
 tar zxf ~/deluge-"${DEVERSION}".tar.gz && cd ~/deluge-"${DEVERSION}"
 sed -i "s/SSL.SSLv3_METHOD/SSL.SSLv23_METHOD/g" deluge/core/rpcserver.py
 sed -i "/        ctx = SSL.Context(SSL.SSLv23_METHOD)/a\        ctx.set_options(SSL.OP_NO_SSLv2 & SSL.OP_NO_SSLv3)" deluge/core/rpcserver.py
 python setup.py install --user >/dev/null 2>&1
 cd && rm -rf ~/deluge-"${DEVERSION}" ~/deluge-"${DEVERSION}".tar.gz
 
-mv -f ~/.local/bin/deluged ~/.local/bin/de2
-mv -f ~/.local/bin/deluge-web ~/.local/bin/dew2
-[[ ! `ls ~/.config/deluge` ]] && DEexist=0
-cp -r ~/.config/deluge ~/.config/deluge2
-rm -rf ~/.config/deluge2/deluged.pid ~/.config/deluge2/state/*.torrent
+mv -f ~/.local/bin/deluged ~/bin/de2
+mv -f ~/.local/bin/deluge-web ~/bin/dew2
 
+# 设置(检查原先有没有配置文件，有的话用之前的)
+
+#if [[ ]]; then
+
+cp -rf ~/iFeral/template/deluge.config ~/.config/deluge2
 portGenerator && portCheck
 sed -i 's|"daemon_port":.*,|"daemon_port": '$portGen',|g' ~/.config/deluge2/core.conf
 
-~/.local/bin/de2 -c ~/.config/deluge2 >/dev/null 2>&1
-for depid in ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep de2 | awk '{print $2}' ` ; do kill -9 $depid ; done
+DWSALT=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n1)
+DWP=$(python "~/iFeral/app/deluge.userpass.py" ${ANPASS} ${DWSALT})
+echo "$(whoami):${DEPASS}:10" >> ~/.config/deluge2/auth
+sed -i "s/delugeuser/$(whoami)/g" ~/.config/deluge2/core.conf
+sed -i "s/DWSALT/${DWSALT}/g" ~/.config/deluge2/web.conf
+sed -i "s/DWP/${DWP}/g" ~/.config/deluge2/web.conf
 
-[[ $DEexist == 0 ]] && echo "$(whoami):aniverse233:10" >> ~/.config2/deluge/auth
-sed -i 's|"daemon_port":.*,|"daemon_port": '$portGen',|g' ~/.config/deluge2/core.conf
-echo "${ANUSER}:${ANPASS}:10" >> /root/.config/deluge/auth
+#fi
 
-~/.local/bin/de2 -c ~/.config/deluge2
+# 运行
+~/bin/de2 -c ~/.config/deluge2 >/dev/null 2>&1
 
 if [[ ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep de2 ` ]]; then
     echo -e "${bold}${green}
