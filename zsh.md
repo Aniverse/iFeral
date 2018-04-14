@@ -32,7 +32,7 @@ alias -s rar='unrar x'
 alias -s zip='unzip'
 alias -s bz2='tar -xjvf'
 
-cdk=\$(df -h | grep `pwd | awk -F '/' '{print \$3}'` | awk '{print \$1}' | awk -F '/' '{print \$3}')
+cdk=\$(df -h | grep `pwd | awk -F '/' '{print \$(NF-1)}'` | awk '{print \$1}' | awk -F '/' '{print \$3}')
 [[ \$(echo \$cdk | grep -E "sd[a-z]+1") ]] && cdk=\$(echo \$cdk | sed "s/1//")
 alias io='iostat -d -x -m 1 | grep -E "\$cdk | rMB/s | wMB/s"'
 
