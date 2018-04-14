@@ -3,8 +3,8 @@
 # https://github.com/Aniverse/iFeral
 #
 #
-iFeralVer=0.4.1
-iFeralDate=2018.04.14.2
+iFeralVer=0.4.2
+iFeralDate=2018.04.14.3
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -103,7 +103,7 @@ USERPATH=`pwd` ; }
 # 00. 导航菜单
 function _main_menu() {
 
-echo -e "${green}(01) ${jiacu}安装 qBittorrent     "
+echo -e "${bold}${green}(01) ${jiacu}安装 qBittorrent     "
 echo -e "${green}(02) ${jiacu}安装 Deluge          "
 #echo -e "${green}(03) ${jiacu}安装 Transmission   "
 echo -e "${green}(04) ${jiacu}降级 rTorrent        "
@@ -308,7 +308,7 @@ fi
 if [[ $deconfig == new ]]; then
     read -ep "${bold}${yellow}请输入你要用于 Deluge DAEMON 的密码：${normal}" DEPASS
     DWSALT=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n1)
-    DWP=$(python "~/iFeral/app/deluge.userpass.py" ${DEPASS} ${DWSALT})
+    DWP=$(python "$USERPATH/iFeral/app/deluge.userpass.py" ${DEPASS} ${DWSALT})
     [[ -d ~/.config/deluge2 ]] && { rm -rf ~/.config/deluge2.backup ; mv -f ~/.config/deluge2 ~/.config/deluge2.backup ; }
     cp -rf ~/iFeral/template/deluge2 ~/.config
     portGenerator && portCheck
