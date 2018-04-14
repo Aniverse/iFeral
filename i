@@ -3,8 +3,8 @@
 # https://github.com/Aniverse/iFeral
 #
 #
-iFeralVer=0.4.2
-iFeralDate=2018.04.14.5
+iFeralVer=0.4.3
+iFeralDate=2018.04.14.6
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -92,7 +92,8 @@ cd ; clear ; wget --timeout=7 -qO- https://github.com/Aniverse/iFeral/raw/master
 echo -e "${bold}Ver. $iFeralDate    \n"
 mkdir -p ~/bin ~/lib ~/iFeral/backup ~/iFeral/log ~/.config ~/iSeed
 fi
-USERPATH=`pwd` ; }
+USERPATH=` pwd `
+USERPATHSED=$( echo ${USERPATH} | sed -e 's/\//\\\//g' ) ; }
 
 
 
@@ -313,10 +314,15 @@ if [[ $deconfig == new ]]; then
     [[ -d ~/.config/deluge2 ]] && { rm -rf ~/.config/deluge2.backup ; mv -f ~/.config/deluge2 ~/.config/deluge2.backup ; }
     cp -rf ~/iFeral/template/deluge2 ~/.config
     portGenerator && portCheck
+
     sed -i 's|"daemon_port":.*,|"daemon_port": '$portGen',|g' ~/.config/deluge2/core.conf
-    sed -i "s/USERPATH/$USERPATH/g" ~/.config/deluge2/core.conf
-    sed -i "s/DWSALT/${DWSALT}/g" ~/.config/deluge2/web.conf
-    sed -i "s/DWP/${DWP}/g" ~/.config/deluge2/web.conf
+
+  # 直接 sed 路径无法替换，需要用这种方式来实现，比较蛋疼
+    cat ~/.config/deluge2/core.conf | sed -e "s/USERPATH/${USERPATHSED}/g" > ~/.config/deluge2/core2.conf
+    cat ~/.config/deluge2/core2.conf
+    mv ~/.config/deluge2/core2.conf ~/.config/deluge2/core.conf
+  # sed -i "s/DWSALT/${DWSALT}/g" ~/.config/deluge2/web.conf
+  # sed -i "s/DWP/${DWP}/g" ~/.config/deluge2/web.conf
   # portGenerator2 && portCheck2 && sed -i 's|"port":.*,|"port": '$portGen2',|g' ~/.config/deluge2/web.conf
     echo "$(whoami):${DEPASS}:10" > ~/.config/deluge2/auth
 fi
@@ -326,18 +332,18 @@ fi
 
 # 检查 用户名、密码、端口
 DE2PORT=` grep daemon_port ~/.config/deluge2/core.conf | grep -oP "\d+" `
-DEAUTHNAME=` grep -v localclient ~/.config/deluge2/auth | head -n1 | awk -F ":" '{print $1}' `
-DEAUTHPASS=` grep -v localclient ~/.config/deluge2/auth | head -n1 | awk -F ":" '{print $2}' `
+DE2AUTHNAME=` grep -v localclient ~/.config/deluge2/auth | head -n1 | awk -F ":" '{print $1}' `
+DE2AUTHPASS=` grep -v localclient ~/.config/deluge2/auth | head -n1 | awk -F ":" '{print $2}' `
 
 if [[ ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep de2 ` ]]; then
     echo -e "\n${bold}${green}第二个 Deluge 已安装完成！${jiacu}\n"
-    echo -e "WebUI   网址  ${cyan}http://$(hostname -f)/$(whoami)/deluge${jiacu}"
-    echo -e "WebUI   密码  ${cyan}和第一个 Deluge WebUI 的密码一样${jiacu}"
-    echo -e "WebUI 主机名  ${cyan}127.0.0.1 或 10.0.0.1${jiacu}"
-    echo -e "GtkUI 主机名  ${cyan}$(hostname -f)${jiacu}"
-    echo -e "daemon  账号  ${cyan}$DEAUTHNAME${jiacu}"
-    echo -e "daemon  密码  ${cyan}$DEAUTHPASS${jiacu}"
-    echo -e "daemon  端口  ${cyan}$DE2PORT${normal}"
+    echo -e "WebUI  网址  ${cyan}http://$(hostname -f)/$(whoami)/deluge${jiacu}"
+    echo -e "WebUI  密码  ${cyan}和第一个 Deluge WebUI 的密码一样${jiacu}"
+    echo -e "WebUI  主机  ${cyan}127.0.0.1 或 10.0.0.1${jiacu}"
+    echo -e "GtkUI  主机  ${cyan}$(hostname -f)${jiacu}"
+    echo -e "daemon 账号  ${cyan}$DE2AUTHNAME${jiacu}"
+    echo -e "daemon 密码  ${cyan}$DE2AUTHPASS${jiacu}"
+    echo -e "daemon 端口  ${cyan}$DE2PORT${normal}"
 else
     echo -e "${error} 第二个 Deluge 安装完成，但无法正常运行。\n不要问我为什么和怎么办，你自己看着办吧！${normal}"
 fi ; }
