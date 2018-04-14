@@ -143,13 +143,19 @@ case $response in
             getent passwd | grep -v $(whoami) | grep $current_disk/ | awk -F ":" '{print $1}' | pr -3 -t ; echo
             echo -e "${bold}${cayn}以下是整个盒子上所有的邻居${normal}\n"
             getent passwd | grep -v $(whoami) | grep -E 'home[0-9]+|media' | awk -F ':' '{print $1}' | sort -u | pr -3 -t ; echo
+          # getent passwd | grep -Ev "$(whoami)|nologin|/bin/false|/bin/sync|/var/lib/libuuid|root" | awk -F ':' '{print $6}' | sort -u | pr -3 -t ; echo
             _main_menu ;;
         10) _set_profile ; _main_menu ;;
+        11) _set_zsh ; _main_menu ;;
     99| "") clear ; exit 0 ;;
     *     ) clear ; exit 0 ;;
 esac
 
 echo ; }
+
+
+
+
 
 
 
@@ -288,10 +294,11 @@ sed -i "/        ctx = SSL.Context(SSL.SSLv23_METHOD)/a\        ctx.set_options(
 python setup.py install --user >/dev/null 2>&1
 cd && rm -rf ~/deluge-"${DEVERSION}" ~/deluge-"${DEVERSION}".tar.gz
 
+rm -f ~/bin/{de2,dew2} >/dev/null 2>&1
 mv -f ~/.local/bin/deluged ~/bin/de2 >/dev/null 2>&1
 mv -f ~/.local/bin/deluge-web ~/bin/dew2 >/dev/null 2>&1
-chmod 700 ~/bin/{de2,dew2}
-[[ ! -e ~/bin/dew2 ]] && { echo -e "${error} 第二个 Deluged 安装失败！\n不要问我为什么和怎么办，你自己看着办吧！${normal}" ; exit 1 ; }
+chmod 700 ~/bin/{de2,dew2} >/dev/null 2>&1
+[[ ! -e ~/bin/de2 ]] && { echo -e "${error} 第二个 Deluged 安装失败！\n不要问我为什么和怎么办，你自己看着办吧！${normal}" ; exit 1 ; }
 
 # 询问是否覆盖原配置信息
 if [[ -e ~/.config/deluge2/core.conf ]]; then
@@ -319,11 +326,10 @@ if [[ $deconfig == new ]]; then
 
   # 直接 sed 路径无法替换，需要用这种方式来实现，比较蛋疼
     cat ~/.config/deluge2/core.conf | sed -e "s/USERPATH/${USERPATHSED}/g" > ~/.config/deluge2/core2.conf
-    cat ~/.config/deluge2/core2.conf
     mv ~/.config/deluge2/core2.conf ~/.config/deluge2/core.conf
-  # sed -i "s/DWSALT/${DWSALT}/g" ~/.config/deluge2/web.conf
-  # sed -i "s/DWP/${DWP}/g" ~/.config/deluge2/web.conf
-  # portGenerator2 && portCheck2 && sed -i 's|"port":.*,|"port": '$portGen2',|g' ~/.config/deluge2/web.conf
+    sed -i "s/DWSALT/${DWSALT}/g" ~/.config/deluge2/web.conf
+    sed -i "s/DWP/${DWP}/g" ~/.config/deluge2/web.conf
+    portGenerator2 && portCheck2 && sed -i 's|"port":.*,|"port": '$portGen2',|g' ~/.config/deluge2/web.conf
     echo "$(whoami):${DEPASS}:10" > ~/.config/deluge2/auth
 fi
 
