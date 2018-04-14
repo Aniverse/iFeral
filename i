@@ -4,7 +4,7 @@
 #
 #
 iFeralVer=0.4.2
-iFeralDate=2018.04.14.3
+iFeralDate=2018.04.14.4
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -288,8 +288,10 @@ sed -i "/        ctx = SSL.Context(SSL.SSLv23_METHOD)/a\        ctx.set_options(
 python setup.py install --user >/dev/null 2>&1
 cd && rm -rf ~/deluge-"${DEVERSION}" ~/deluge-"${DEVERSION}".tar.gz
 
-mv -f ~/.local/bin/deluged ~/bin/de2
-mv -f ~/.local/bin/deluge-web ~/bin/dew2
+mv -f ~/.local/bin/deluged ~/bin/de2 >/dev/null 2>&1
+mv -f ~/.local/bin/deluge-web ~/bin/dew2 >/dev/null 2>&1
+chmod 700 ~/bin/{de2,dew2}
+[[ ! -e ~/bin/dew2 ]] && { echo -e "${error} 第二个 Deluged 安装失败！\n不要问我为什么和怎么办，你自己看着办吧！${normal}" ; exit 1 ; }
 
 # 询问是否覆盖原配置信息
 if [[ -e ~/.config/deluge2/core.conf ]]; then
