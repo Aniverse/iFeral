@@ -3,8 +3,8 @@
 # https://github.com/Aniverse/iFeral
 #
 #
-iFeralVer=0.4.5
-iFeralDate=2018.04.14.11
+iFeralVer=0.4.6
+iFeralDate=2018.04.15.1
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -187,14 +187,15 @@ fi
 [[ $Seedbox == FH ]] && QB_supported_versions="3.3.0-3.3.16，4.0.0-4.0.4"
 [[ $Seedbox == SH ]] && QB_supported_versions="3.3.0-3.3.16（不含 3.3.13）"
 while [[ $QBVERSION = "" ]]; do
-    echo -ne "${bold}${yellow}请输入你要安装的 qBittorrent 版本，只支持 $QB_supported_versions: ${normal}" ; read -e QBVERSION
+    echo -e "${jiacu}当前可用的版本为 $QB_supported_versions"
+    read -ep "${bold}${yellow}请输入你要使用的 qBittorrent 版本： ${normal}" QBVERSION
     [[ ! ` ls ~/iFeral/qb | grep $QBVERSION ` ]] && { echo -e "${error} 你输入的版本不可用，请重新输入！" ; unset QBVERSION ; }
 done
 
 # 询问是否覆盖原配置信息
 if [[ -e ~/.config/qBittorrent/qBittorrent.conf ]]; then
     echo -e "\n${atte} 你以前装过 qBittorrent，那时的配置文件还留着\n其中包含着 qBittorrent 的账号、密码、端口、下载路径等信息"
-    echo -ne "你现在要使用以前留下的配置文件吗？${normal} [${cyan}Y${normal}]es or [N]o: " ; read -e responce
+    read -ep "你现在要使用以前留下的配置文件吗？${normal} [${cyan}Y${normal}/n]: " responce
     case $responce in
         [yY] | [yY][Ee][Ss] | "" ) qbconfig=old ;;
         [nN] | [nN][Oo]          ) qbconfig=new ;;
@@ -206,7 +207,7 @@ fi
 
 # 新建配置文件
 if [[ $qbconfig == new ]]; then
-    read -ep "\n${bold}${yellow}请输入你要用于 qBittorrent WebUI 的密码：${normal}" PASSWORD
+    echo ; read -ep "${bold}${yellow}请输入你要用于 qBittorrent WebUI 的密码：${normal}" PASSWORD
     QBPASS=`  echo -n $PASSWORD | md5sum | awk '{print $1}'  `
     [[ -e ~/.config/qBittorrent/qBittorrent.conf ]] && { rm -rf ~/.config/qBittorrent/qBittorrent.conf.backup ; mv -f ~/.config/qBittorrent/qBittorrent.conf ~/.config/qBittorrent/qBittorrent.conf.backup ; }
     portGenerator && portCheck
@@ -303,7 +304,7 @@ chmod 700 ~/bin/{de2,dew2} >/dev/null 2>&1
 # 询问是否覆盖原配置信息
 if [[ -e ~/.config/deluge2/core.conf ]]; then
     echo -e "\n${atte} 你以前装过第二个 Deluge，那时的配置文件还留着\n其中包含着 Deluge 的账号、密码、端口、下载路径等信息"
-    echo -ne "你现在要使用以前留下的配置文件吗？${normal} [${cyan}Y${normal}]es or [N]o: " ; read -e responce
+    read -ep "你现在要使用以前留下的配置文件吗？${normal} [${cyan}Y${normal}/n]: " responce
     case $responce in
         [yY] | [yY][Ee][Ss] | "" ) deconfig=old ;;
         [nN] | [nN][Oo]          ) deconfig=new ;;
@@ -315,7 +316,7 @@ fi
 
 # 新建配置文件
 if [[ $deconfig == new ]]; then
-    read -ep "\n${bold}${yellow}请输入你要用于 Deluge DAEMON 的密码：${normal}" DEPASS
+    echo ; read -ep "${bold}${yellow}请输入你要用于 Deluge DAEMON 的密码：${normal}" DEPASS
     DWSALT=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n1)
     DWP=$(python "$USERPATH/iFeral/app/deluge.userpass.py" ${DEPASS} ${DWSALT})
     [[ -d ~/.config/deluge2 ]] && { rm -rf ~/.config/deluge2.backup ; mv -f ~/.config/deluge2 ~/.config/deluge2.backup ; }
