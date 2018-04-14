@@ -4,7 +4,7 @@
 #
 #
 iFeralVer=0.4.5
-iFeralDate=2018.04.14.10000
+iFeralDate=2018.04.14.10
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -369,7 +369,7 @@ function _rt_downgrade() {
 echo
 echo -e "${green}01)${normal} rTorrent ${cyan}0.9.4${normal}"
 echo -e "${green}02)${normal} rTorrent ${cyan}0.9.6${normal}"
-echo -ne "${bold}${yellow}你想用哪个版本 的 rTorrent？${normal}：" ; read -e version
+echo -ne "${bold}${yellow}你想用哪个版本的 rTorrent？${normal}：" ; read -e version
 
 case $version in
     01 | 1) SHRTVERSION=0.9.4 && FHRTVERSION=0.9.4_w0.13.4 ;;
@@ -384,7 +384,7 @@ if [[ $Seedbox == FH ]]; then
     echo -n "$FHRTVERSION" > ~/private/rtorrent/.version
     echo -e "\n版本改变完成，需要重启 rTorrent 以生效\n"
 elif [[ $Seedbox == SH ]]; then
-    mkdir -p ~/private/rtorrent
+    mkdir -p ~/.config
     if [[ $SHRTVERSION == 0.9.6 ]];then rm -f ~/.config/.rtversion ; else echo "$SHRTVERSION" > ~/.config/.rtversion ; fi
     echo -e "\n版本改变完成，需要重启 rTorrent 以生效\n"
 else
