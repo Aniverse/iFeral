@@ -3,8 +3,8 @@
 # https://github.com/Aniverse/iFeral
 #
 #
-iFeralVer=0.4.0
-iFeralDate=2018.04.14.1
+iFeralVer=0.4.1
+iFeralDate=2018.04.14.2
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -87,14 +87,12 @@ echo -e "${bold}Ver. $iFeralDate    \n"
 
 # 00. 初始化
 function _init() {  if [[ ! `  ls ~ | grep iFeral  `  ]]; then
-
-git clone --depth=1 https://github.com/Aniverse/iFeral ; chmod -R +x iFeral
+git clone --depth=1 https://github.com/Aniverse/iFeral ; chmod -R +x ~/iFeral/app
 cd ; clear ; wget --timeout=7 -qO- https://github.com/Aniverse/iFeral/raw/master/files/iFeral.logo.1
 echo -e "${bold}Ver. $iFeralDate    \n"
-
-mkdir -p ~/bin ~/lib ~/iFeral/backup ~/iFeral/log
-
-fi ; }
+mkdir -p ~/bin ~/lib ~/iFeral/backup ~/iFeral/log ~/.config ~/iSeed
+fi
+USERPATH=`pwd` ; }
 
 
 
@@ -202,8 +200,9 @@ fi
 
 # 新建配置文件
 if [[ $qbconfig == new ]]; then
-    read -ep "${bold}${yellow}请输入你要用于 qb WebUI 的密码：${normal}" PASSWORD
+    read -ep "${bold}${yellow}请输入你要用于 qBittorrent WebUI 的密码：${normal}" PASSWORD
     QBPASS=`  echo -n $PASSWORD | md5sum | awk '{print $1}'  `
+    [[ -e ~/.config/qBittorrent/qBittorrent.conf ]] && { rm -rf ~/.config/qBittorrent/qBittorrent.conf.backup ; mv -f ~/.config/qBittorrent/qBittorrent.conf ~/.config/qBittorrent/qBittorrent.conf.backup ; }
     portGenerator && portCheck
     portGenerator2 && portCheck2
     cat > ~/.config/qBittorrent/qBittorrent.conf <<EOF
@@ -235,7 +234,7 @@ Connection\GlobalUPLimitAlt=0
 Connection\PortRangeMin=$portGen2
 General\Locale=zh
 Queueing\QueueingEnabled=false
-Downloads\SavePath=~/private/qBittorrent/data
+Downloads\SavePath=${USERPATH}/private/qBittorrent/data
 
 WebUI\Port=$portGen
 WebUI\Password_ha1=@ByteArray($QBPASS)
@@ -243,6 +242,7 @@ WebUI\Username=$(whoami)
 EOF
 fi
 
+# 检查端口与用户名
 QBPORT=` grep "WebUI.Port" ~/.config/qBittorrent/qBittorrent.conf | grep -Po "\d+" `
 QBUSERNAME=` grep "WebUI.Username" ~/.config/qBittorrent/qBittorrent.conf | awk -F "=" '{print $NF}' `
 
@@ -251,14 +251,12 @@ TMPDIR=~/tmp LD_LIBRARY_PATH=~/iFeral/qb/library ~/iFeral/qb/qbittorrent-nox.$QB
 
 # 输出结果
 if [[ ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittorrent ` ]]; then
-    echo -e "\n${bold}${green}"
-    echo -e "qBittorrent 已安装完成！${jiacu}\n"
+    echo -e "\n${bold}${green}qBittorrent 已安装完成！${jiacu}\n"
     echo -e "网址  ${cyan}http://$(hostname -f):$QBPORT${jiacu}"
+    echo -e "账号  ${cyan}$QBUSERNAME${jiacu}"
     [[ $qbconfig == new ]] &&
-    echo -e "账号  ${cyan}$QBUSERNAME${jiacu}" &&
     echo -e "密码  ${cyan}$PASSWORD${normal}"
     [[ $qbconfig == old ]] &&
-    echo -e "账号  ${cyan}$QBUSERNAME${jiacu}" &&
     echo -e "密码  ${cyan}(和以前一样)${normal}"
 else
     echo -e "${error} qBittorrent 安装完成，但无法正常运行。\n不要问我为什么和怎么办，你自己看着办吧！${normal}"
@@ -293,37 +291,52 @@ cd && rm -rf ~/deluge-"${DEVERSION}" ~/deluge-"${DEVERSION}".tar.gz
 mv -f ~/.local/bin/deluged ~/bin/de2
 mv -f ~/.local/bin/deluge-web ~/bin/dew2
 
-# 设置(检查原先有没有配置文件，有的话用之前的)
+# 询问是否覆盖原配置信息
+if [[ -e ~/.config/deluge2/core.conf ]]; then
+    echo -e "${atte} 你以前装过第二个 Deluge，那时的配置文件还留着，包含着 Deluge 的账号、密码、端口、下载路径等信息"
+    echo -ne "你现在要使用以前留下的配置文件吗？${normal} [${cyan}Y${normal}]es or [N]o: " ; read -e responce
+    case $responce in
+        [yY] | [yY][Ee][Ss] | "" ) deconfig=old ;;
+        [nN] | [nN][Oo]          ) deconfig=new ;;
+        *                        ) deconfig=old ;;
+    esac
+else
+    deconfig=new
+fi
 
-#if [[ ]]; then
-
-cp -rf ~/iFeral/template/deluge.config ~/.config/deluge2
-portGenerator && portCheck
-sed -i 's|"daemon_port":.*,|"daemon_port": '$portGen',|g' ~/.config/deluge2/core.conf
-
-DWSALT=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n1)
-DWP=$(python "~/iFeral/app/deluge.userpass.py" ${ANPASS} ${DWSALT})
-echo "$(whoami):${DEPASS}:10" >> ~/.config/deluge2/auth
-sed -i "s/delugeuser/$(whoami)/g" ~/.config/deluge2/core.conf
-sed -i "s/DWSALT/${DWSALT}/g" ~/.config/deluge2/web.conf
-sed -i "s/DWP/${DWP}/g" ~/.config/deluge2/web.conf
-
-#fi
+# 新建配置文件
+if [[ $deconfig == new ]]; then
+    read -ep "${bold}${yellow}请输入你要用于 Deluge DAEMON 的密码：${normal}" DEPASS
+    DWSALT=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n1)
+    DWP=$(python "~/iFeral/app/deluge.userpass.py" ${DEPASS} ${DWSALT})
+    [[ -d ~/.config/deluge2 ]] && { rm -rf ~/.config/deluge2.backup ; mv -f ~/.config/deluge2 ~/.config/deluge2.backup ; }
+    cp -rf ~/iFeral/template/deluge2 ~/.config
+    portGenerator && portCheck
+    sed -i 's|"daemon_port":.*,|"daemon_port": '$portGen',|g' ~/.config/deluge2/core.conf
+    sed -i "s/USERPATH/$USERPATH/g" ~/.config/deluge2/core.conf
+    sed -i "s/DWSALT/${DWSALT}/g" ~/.config/deluge2/web.conf
+    sed -i "s/DWP/${DWP}/g" ~/.config/deluge2/web.conf
+  # portGenerator2 && portCheck2 && sed -i 's|"port":.*,|"port": '$portGen2',|g' ~/.config/deluge2/web.conf
+    echo "$(whoami):${DEPASS}:10" > ~/.config/deluge2/auth
+fi
 
 # 运行
 ~/bin/de2 -c ~/.config/deluge2 >/dev/null 2>&1
 
-if [[ ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep de2 ` ]]; then
-    echo -e "${bold}${green}
-第二个 Deluge 已安装完成！${jiacu}
+# 检查 用户名、密码、端口
+DE2PORT=` grep daemon_port ~/.config/deluge2/core.conf | grep -oP "\d+" `
+DEAUTHNAME=` grep -v localclient ~/.config/deluge2/auth | head -n1 | awk -F ":" '{print $1}' `
+DEAUTHPASS=` grep -v localclient ~/.config/deluge2/auth | head -n1 | awk -F ":" '{print $2}' `
 
-WebUI   网址  ${cyan}http://$(hostname -f)/$(whoami)/deluge (和原先的一样)${jiacu}
-WebUI   密码  ${cyan}和原先的 Deluge WebUI 的密码一样；如果是新安装的话就是 deluge${jiacu}
-WebUI 主机名  ${cyan}127.0.0.1 或 10.0.0.1${jiacu}
-GtkUI 主机名  ${cyan}$(hostname -f)${jiacu}
-daemon  账号  ${cyan}$(whoami)${jiacu}
-daemon  密码  ${cyan}$(sed -rn "s/$(whoami):(.*):(.*)/\1/p" ~/.config/deluge2/auth)${jiacu}
-daemon  端口  ${cyan}$portGen${normal}"
+if [[ ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep de2 ` ]]; then
+    echo -e "\n${bold}${green}第二个 Deluge 已安装完成！${jiacu}\n"
+    echo -e "WebUI   网址  ${cyan}http://$(hostname -f)/$(whoami)/deluge${jiacu}"
+    echo -e "WebUI   密码  ${cyan}和第一个 Deluge WebUI 的密码一样${jiacu}"
+    echo -e "WebUI 主机名  ${cyan}127.0.0.1 或 10.0.0.1${jiacu}"
+    echo -e "GtkUI 主机名  ${cyan}$(hostname -f)${jiacu}"
+    echo -e "daemon  账号  ${cyan}$DEAUTHNAME${jiacu}"
+    echo -e "daemon  密码  ${cyan}$DEAUTHPASS${jiacu}"
+    echo -e "daemon  端口  ${cyan}$DE2PORT${normal}"
 else
     echo -e "${error} 第二个 Deluge 安装完成，但无法正常运行。\n不要问我为什么和怎么办，你自己看着办吧！${normal}"
 fi ; }
