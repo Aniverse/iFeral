@@ -4,7 +4,7 @@
 #
 #
 iFeralVer=0.4.2
-iFeralDate=2018.04.14.4
+iFeralDate=2018.04.14.5
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -177,12 +177,11 @@ if [[ ! `  ls ~/iFeral/qb/library  2>/dev/null  `  ]]; then
 fi
 
 # 询问版本
+[[ $Seedbox == FH ]] && QB_supported_versions="3.3.0-3.3.16，4.0.0-4.0.4"
+[[ $Seedbox == SH ]] && QB_supported_versions="3.3.0-3.3.16"
 while [[ $QBVERSION = "" ]]; do
-    [[ $Seedbox == SH ]] && echo -e "${atte} SH 没有 4.0 及以后的版本可选！"
-    echo -ne "${bold}${yellow}请输入你要安装的 qBittorrent 版本，只支持 3.3.0-4.0.4: ${normal}" ; read -e QBVERSION
-    while [[ $QBVERSION = "" ]]; do
-        [[ ! ` ls ~/iFeral/qb | grep $QBVERSION ` ]] && { echo -e "${error} 你输入的版本不可用，请重新输入！" ; unset QBVERSION ; }
-    done
+    echo -ne "${bold}${yellow}请输入你要安装的 qBittorrent 版本，只支持 $QB_supported_versions: ${normal}" ; read -e QBVERSION
+    [[ ! ` ls ~/iFeral/qb | grep $QBVERSION ` ]] && { echo -e "${error} 你输入的版本不可用，请重新输入！" ; unset QBVERSION ; }
 done
 
 # 询问是否覆盖原配置信息
