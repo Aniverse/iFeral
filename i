@@ -3,8 +3,8 @@
 # https://github.com/Aniverse/iFeral
 #
 #
-iFeralVer=0.4.3
-iFeralDate=2018.04.14.6
+iFeralVer=0.4.5
+iFeralDate=2018.04.14.10000
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -90,7 +90,7 @@ function _init() {  if [[ ! `  ls ~ | grep iFeral  `  ]]; then
 git clone --depth=1 https://github.com/Aniverse/iFeral ; chmod -R +x ~/iFeral/app
 cd ; clear ; wget --timeout=7 -qO- https://github.com/Aniverse/iFeral/raw/master/files/iFeral.logo.1
 echo -e "${bold}Ver. $iFeralDate    \n"
-mkdir -p ~/bin ~/lib ~/iFeral/backup ~/iFeral/log ~/.config ~/iSeed
+mkdir -p ~/bin ~/lib ~/iFeral/backup ~/iFeral/log ~/.config ~/iSeed/{00.Tools,01.Screenshots,02.Torrents,03.BDinfo,04.BluRay}
 fi
 USERPATH=` pwd `
 USERPATHSED=$( echo ${USERPATH} | sed -e 's/\//\\\//g' ) ; }
@@ -495,10 +495,6 @@ EOF
 
 
 
-
-
-
-
 # 07. 安装一些软件
 
 function _install_tools() {
@@ -530,6 +526,23 @@ cd && rm -f ~/p7zip.tar.bz2
 # cd mktorrent/ && PREFIX=$HOME make -j$(nproc)
 # PREFIX=$HOME make install
 # cd .. && rm -rf mktorrent
+
+# Mediainfo
+if [[ $CODENAME == stretch ]]; then
+    wget -q 1.deb https://mediaarea.net/download/binary/libzen0/0.4.37/libzen0v5_0.4.37-1_amd64.Debian_9.0.deb
+    wget -q 2.deb https://mediaarea.net/download/binary/libmediainfo0/18.03.1/libmediainfo0v5_18.03.1-1_amd64.Debian_9.0.deb
+    wget -q 3.deb https://mediaarea.net/download/binary/mediainfo/18.03.1/mediainfo_18.03.1-1_amd64.Debian_9.0.deb
+elif [[ $CODENAME == trusty ]]; then
+    wget -qO 1.deb https://mediaarea.net/download/binary/libzen0/0.4.37/libzen0_0.4.37-1_amd64.xUbuntu_14.04.deb
+    wget -qO 2.deb https://mediaarea.net/download/binary/libmediainfo0/18.03.1/libmediainfo0_18.03.1-1_amd64.xUbuntu_14.04.deb
+    wget -qO 3.deb https://mediaarea.net/download/binary/mediainfo/18.03.1/mediainfo_18.03.1-1_amd64.xUbuntu_14.04.deb
+fi
+dpkg -x 1.deb ~/deb-temp ; dpkg -x 2.deb ~/deb-temp ; dpkg -x 3.deb ~/deb-temp
+mv ~/deb-temp/usr/lib/x86_64-linux-gnu/* ~/lib/
+mv ~/deb-temp/usr/bin/* ~/bin/
+rm -rf ~/*.deb ~/deb-temp
+
+# LD_LIBRARY_PATH=~/lib ~/bin/mediainfo --version
 
 }
 
@@ -636,9 +649,6 @@ echo ; }
 
 
 
-
-
-
 # 10. 设置 bash 环境
 function _set_profile() { 
 
@@ -650,6 +660,7 @@ export LANG=en_US.UTF-8
 export TZ="/usr/share/zoneinfo/Asia/Shanghai"
 
 export PATH=~/FH:~/iFeral/qb:~/iFeral/app:~/bin:~/pip/bin:~/.local/bin:\$PATH
+export LD_LIBRARY_PATH=~/lib:\$LD_LIBRARY_PATH
 
 cdk=\$(df -h | grep `pwd | awk -F '/' '{print \$(NF-1)}'` | awk '{print \$1}' | awk -F '/' '{print \$3}')
 [[ \$(echo \$cdk | grep -E "sd[a-z]+1") ]] && cdk=\$(echo \$cdk | sed "s/1//")
@@ -697,6 +708,7 @@ export LANG=en_US.UTF-8
 export TZ="/usr/share/zoneinfo/Asia/Shanghai"
 
 export PATH=~/FH:~/iFeral/qb:~/iFeral/app:~/bin:~/pip/bin:~/.local/bin:\$PATH
+export LD_LIBRARY_PATH=~/lib:\$LD_LIBRARY_PATH
 
 alias -s sh='bash'
 alias -s log='tail -n50'
