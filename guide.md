@@ -386,8 +386,11 @@ sed -i "s|base_url + '/t|base_url + '/$(whoami)/t|g" \
 
 ### Install Aria2
 ```
-git clone --depth=1 -b release-1.33.1 --single-branch https://github.com/aria2/aria2
+git clone --depth=1 -b master --single-branch https://github.com/aria2/aria2
 cd aria2
+quilt new 64Threads
+quilt add ./src/OptionHandlerFactory.cc
+sed -i s"/1\, 16\,/1\, 64\,/" ./src/OptionHandlerFactory.cc
 autoreconf -i
 ./configure --prefix=$HOME
 make -j$(nproc) && make install
@@ -452,7 +455,7 @@ seed-time=0
 EOF
 
 echo -e "\nhttp://$(whoami).$(hostname -f)/aria2\n"
-aria2c --enable-rpc --rpc-listen-all
+aria2c --enable-rpc --rpc-listen-all -D
 ```
 
 
