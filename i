@@ -4,7 +4,7 @@
 #
 #
 iFeralVer=0.4.8
-iFeralDate=2018.04.16.2
+iFeralDate=2018.04.16.3
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -320,6 +320,7 @@ if [[ $deconfig == new ]]; then
     DWSALT=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n1)
     DWP=$(python "$USERPATH/iFeral/app/deluge.userpass.py" ${DEPASS} ${DWSALT})
     [[ -d ~/.config/deluge2 ]] && { rm -rf ~/.config/deluge2.backup ; mv -f ~/.config/deluge2 ~/.config/deluge2.backup ; }
+    mkdir -p ~/.config
     cp -rf ~/iFeral/template/deluge2 ~/.config
     portGenerator && portCheck
 
