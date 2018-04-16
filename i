@@ -3,8 +3,8 @@
 # https://github.com/Aniverse/iFeral
 #
 #
-iFeralVer=0.4.6
-iFeralDate=2018.04.15.1
+iFeralVer=0.4.8
+iFeralDate=2018.04.16.1
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -174,9 +174,9 @@ for qbpid in ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittor
 if [[ ! `  ls ~/iFeral/qb/library  2>/dev/null  `  ]]; then
     echo -e "${bold}${yellow}下载 qbittorrent-nox ...${normal}\n"
     if   [[ $Seedbox == FH ]]; then
-         git clone --depth=1 -b master --single-branch https://github.com/Aniverse/qBittorrent-nox ~/iFeral/qb
+         git clone --depth=1 -b master  --single-branch https://github.com/Aniverse/qBittorrent-nox ~/iFeral/qb
     elif [[ $Seedbox == SH ]]; then
-         git clone --depth=1 -b trusty --single-branch https://github.com/Aniverse/qBittorrent-nox ~/iFeral/qb
+         git clone --depth=1 -b trusty2 --single-branch https://github.com/Aniverse/qBittorrent-nox ~/iFeral/qb
     else
          echo -e "${bold}${yellow}暂时不支持 FH/SH 以外的盒子 ...${normal}\n" ; exit 1
     fi
@@ -185,7 +185,7 @@ fi
 
 # 询问版本
 [[ $Seedbox == FH ]] && QB_supported_versions="3.3.0-3.3.16，4.0.0-4.0.4"
-[[ $Seedbox == SH ]] && QB_supported_versions="3.3.0-3.3.16（不含 3.3.13）"
+[[ $Seedbox == SH ]] && QB_supported_versions="3.3.2-3.3.16，4.0.0-4.0.4"
 while [[ $QBVERSION = "" ]]; do
     echo -e "${jiacu}当前可用的版本为 $QB_supported_versions"
     read -ep "${bold}${yellow}请输入你要使用的 qBittorrent 版本： ${normal}" QBVERSION
