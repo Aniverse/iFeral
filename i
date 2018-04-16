@@ -4,7 +4,7 @@
 #
 #
 iFeralVer=0.4.8
-iFeralDate=2018.04.16.1
+iFeralDate=2018.04.16.2
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -136,7 +136,7 @@ case $response in
     7 | 07) # 安装 一些工具
             _install_tools ;;
     8 | 08) # 查看 系统信息
-            _stats ; _main_menu ;;
+            _stats ; echo ; _main_menu ;;
     9 | 09) # 查看 所有邻居
             clear
             echo -e "${bold}${cayn}以下是当前和你在同一个硬盘分区上的邻居${normal}\n"
@@ -144,9 +144,9 @@ case $response in
             echo -e "${bold}${cayn}以下是整个盒子上所有的邻居${normal}\n"
             getent passwd | grep -v $(whoami) | grep -E 'home[0-9]+|media' | awk -F ':' '{print $1}' | sort -u | pr -3 -t ; echo
           # getent passwd | grep -Ev "$(whoami)|nologin|/bin/false|/bin/sync|/var/lib/libuuid|root" | awk -F ':' '{print $6}' | sort -u | pr -3 -t ; echo
-            _main_menu ;;
-        10) _set_profile ; _main_menu ;;
-        11) _set_zsh ; _main_menu ;;
+            echo ; _main_menu ;;
+        10) _set_profile ; echo ; _main_menu ;;
+        11) _set_zsh     ; echo ; _main_menu ;;
     99| "") clear ; exit 0 ;;
     *     ) clear ; exit 0 ;;
 esac
