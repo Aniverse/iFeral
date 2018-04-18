@@ -2,7 +2,7 @@
 #
 # https://github.com/Aniverse/iFeral
 # Author: Aniverse
-# 2018.04.17
+# 2018.04.18
 # --------------------------------------------------------------------------------
 # If you would like to change the output path,
 # sets CustomedOutput=1，then write your output path to OUTPUT
@@ -42,8 +42,8 @@ if [[ "$fenbianlv" == "" ]]; then
     DARW=` echo $DAR | sed "s/[0-9]\{1,\}://" `
     DARH=` echo $DAR | sed "s/:[0-9]\{1,\}//" `
   # DH0=` expr $VideoHeight / $DARW  `
-    DH0=` echo "$VideoHeight/$DARH*$DARW" | bc -l | awk '{print int($0)}' `
-    DH=` expr $DH0 \* $DARH  `
+  # DH=` expr $DH0 \* $DARH  `
+    DH=` echo "$VideoHeight/$DARH*$DARW" | bc -l | awk '{print int($0)}' `
     fenbianlv="${DH}x${DW}"
     echo -e "The correct resolution should be ${underline}${bold}${fenbianlv}${normal}${reset_underline}\n"
 fi
