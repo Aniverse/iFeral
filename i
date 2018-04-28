@@ -459,10 +459,15 @@ if [[ $Seedbox == FH ]]; then
     pip install --user --ignore-installed --no-use-wheel virtualenv
     ~/.local/bin/virtualenv ~/pip --system-site-packages
     ~/pip/bin/pip install flexget
-elif [[ $Seedbox == SH ]]; then
-    pip install --user flexget
 else
-    echo "${warn} 不支持非 SH/FH 盒子！${normal}" ; exit 1
+    cd ; wget https://github.com/pypa/pip/archive/10.0.1.tar.gz
+    tar xf 10.0.1.tar.gz ; rm -f 10.0.1.tar.gz
+    cd pip-10.0.1
+    python setup.py install --user ; cd ; rm -rf pip-10.0.1
+    ~/.local/bin/pip install --user --upgrade pip setuptools
+    ~/.local/bin/pip install --user virtualenv
+    virtualenv --system-site-packages ~/flexget/
+    ~/flexget/bin/pip install flexget
 fi
 
 portGenerator && portCheck
