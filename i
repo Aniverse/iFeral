@@ -3,8 +3,8 @@
 # https://github.com/Aniverse/iFeral
 #
 #
-iFeralVer=0.4.8
-iFeralDate=2018.04.16.3
+iFeralVer=0.4.9
+iFeralDate=2018.04.29.1
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -455,20 +455,22 @@ else echo "${atte} 这是为了 FH 盒子设计的，其他盒子就不要用了
 
 function _install_flexget() {
 
-if [[ $Seedbox == FH ]]; then
-    pip install --user --ignore-installed --no-use-wheel virtualenv
-    ~/.local/bin/virtualenv ~/pip --system-site-packages
-    ~/pip/bin/pip install flexget
-else
+#if [[ $Seedbox == FH ]]; then
+#   pip install --user --ignore-installed --no-use-wheel virtualenv
+#   ~/.local/bin/virtualenv ~/pip --system-site-packages
+#   ~/pip/bin/pip install flexget
+#else
     cd ; wget https://github.com/pypa/pip/archive/10.0.1.tar.gz
     tar xf 10.0.1.tar.gz ; rm -f 10.0.1.tar.gz
     cd pip-10.0.1
     python setup.py install --user ; cd ; rm -rf pip-10.0.1
-    ~/.local/bin/pip install --user --upgrade pip setuptools
+    ~/.local/bin/pip install --user --upgrade pip setuptools 
+    ~/.local/bin/pip install --user markdown
     ~/.local/bin/pip install --user virtualenv
-    virtualenv --system-site-packages ~/flexget/
-    ~/flexget/bin/pip install flexget
-fi
+    virtualenv --system-site-packages ~/pip/
+    ~/pip/bin/pip install flexget
+    ~/pip/bin/pip install transmissionrpc
+#fi
 
 portGenerator && portCheck
 deluge_port=` grep daemon_port ~/.config/deluge/core.conf | grep -Eo "[0-9]+" `
@@ -477,6 +479,9 @@ mkdir -p ~/.config/flexget
 cp -f ~/.config/flexget/config.yml ~/.config/flexget/config.yml."$(date "+%Y.%m.%d.%H.%M.%S")".bak >/dev/null 2>&1
 
 cat >  ~/.config/flexget/config.yml <<EOF
+# 这个配置文件只是一个示范，请自己根据情况修改
+# 运行 daemon：~/pip/bin/flexget daemon start --daemonize
+# 设置 WebUI 密码：~/pip/bin/flexget web passwd 密码
 tasks:
   MTeam:
     rss: https://mantou
