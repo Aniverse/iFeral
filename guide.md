@@ -386,18 +386,17 @@ sed -i "s|base_url + '/t|base_url + '/$(whoami)/t|g" \
 
 ### Install Aria2
 ```
-git clone --depth=1 -b master --single-branch https://github.com/aria2/aria2
-cd aria2
-quilt new 64Threads
-quilt add ./src/OptionHandlerFactory.cc
-sed -i s"/1\, 16\,/1\, 64\,/" ./src/OptionHandlerFactory.cc
-autoreconf -i
+wget https://github.com/aria2/aria2/releases/download/release-1.33.1/aria2-1.33.1.tar.gz
+tar xf aria2-1.33.1.tar.gz && rm -f aria2-1.33.1.tar.gz
+cd aria2-1.33.1
 ./configure --prefix=$HOME
 make -j$(nproc) && make install
-cd .. && rm -rf aria2
+cd .. && rm -rf aria2-1.33.1
 
 cd ~/www/$(whoami).$(hostname -f)/* 
-git clone --depth=1 https://github.com/ziahamza/webui-aria2 aria2
+mkdir -p aria2 ; cd aria2
+wget https://github.com/mayswind/AriaNg/releases/download/0.4.0/aria-ng-0.4.0.zip
+unzip aria-ng-0.4.0.zip && rm -f aria-ng-0.4.0.zip
 
 mkdir -p ~/.config/aria2 ~/private/aria2
 cd ~/.config/aria2
@@ -422,6 +421,7 @@ rpc-allow-origin-all=true
 rpc-listen-all=true
 rpc-save-upload-metadata=true
 rpc-secure=false
+rpc-listen-port=10087
  
 # see --split option
 continue=true
