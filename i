@@ -3,8 +3,8 @@
 # https://github.com/Aniverse/iFeral
 #
 #
-iFeralVer=0.4.9
-iFeralDate=2018.04.29.1
+iFeralVer=0.5.0
+iFeralDate=2018.05.10.1
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -78,7 +78,9 @@ function _logo() {
 cd ; clear ; wget --timeout=7 -qO- https://github.com/Aniverse/iFeral/raw/master/files/iFeral.logo.1
 echo -e "${bold}Ver. $iFeralDate    \n"
 [[ $Seedbox == Unknown ]] && echo -e "${warn} 你这个似乎不是 FH 或 SH 的盒子，不保证本脚本能正常工作！\n"
-[[ $Seedbox == SH ]] && echo -e "${atte} 本脚本主要为 FH 盒子设计，不保证所有功能都能在 SH 盒子上正常工作！\n" ; }
+[[ $Seedbox == SH ]] && echo -e "${atte} 本脚本主要为 FH 盒子设计，不保证所有功能都能在 SH 盒子上正常工作！\n"
+# echo -e "${atte} 1 和 2 以外的选项我都没怎么测试过，不保证一定能用\n"
+}
 
 
 
@@ -106,6 +108,7 @@ function _main_menu() {
 
 echo -e "${bold}${green}(01) ${jiacu}安装 qBittorrent     "
 echo -e "${green}(02) ${jiacu}安装 Deluge          "
+echo -e "\n不保证以下功能好用"
 #echo -e "${green}(03) ${jiacu}安装 Transmission   "
 echo -e "${green}(04) ${jiacu}降级 rTorrent        "
 echo -e "${green}(05) ${jiacu}配置 ruTorrent       "
@@ -115,6 +118,7 @@ echo -e "${green}(08) ${jiacu}查看 系统信息        "
 echo -e "${green}(09) ${jiacu}查看 邻居            "
 echo -e "${green}(10) ${jiacu}设置 .profile        "
 echo -e "${green}(11) ${jiacu}使用 zsh             "
+echo -e "${green}(12) ${jiacu}安装 Aria2 & AriaNG  "
 echo -e "${green}(99) ${jiacu}退出脚本             "
 echo -e "${normal}"
 
@@ -147,6 +151,7 @@ case $response in
             echo ; _main_menu ;;
         10) _set_profile ; echo ; _main_menu ;;
         11) _set_zsh     ; echo ; _main_menu ;;
+        12) _install_aria2 ;;
     99| "") clear ; exit 0 ;;
     *     ) clear ; exit 0 ;;
 esac
@@ -455,6 +460,8 @@ else echo "${atte} 这是为了 FH 盒子设计的，其他盒子就不要用了
 
 function _install_flexget() {
 
+echo ; read -ep "${bold}${yellow}请输入你要用于 Flexget WebUI 的密码，不要太简单：${normal}" PASSWORD
+
 #if [[ $Seedbox == FH ]]; then
 #   pip install --user --ignore-installed --no-use-wheel virtualenv
 #   ~/.local/bin/virtualenv ~/pip --system-site-packages
@@ -466,41 +473,57 @@ function _install_flexget() {
     python setup.py install --user ; cd ; rm -rf pip-10.0.1
     ~/.local/bin/pip install --user --upgrade pip setuptools 
     ~/.local/bin/pip install --user markdown
+    ~/.local/bin/pip install --user testresources
     ~/.local/bin/pip install --user virtualenv
-    virtualenv --system-site-packages ~/pip/
+    ~/.local/bin/virtualenv --system-site-packages ~/pip/
     ~/pip/bin/pip install flexget
     ~/pip/bin/pip install transmissionrpc
 #fi
 
 portGenerator && portCheck
-deluge_port=` grep daemon_port ~/.config/deluge/core.conf | grep -Eo "[0-9]+" `
 
 mkdir -p ~/.config/flexget
 cp -f ~/.config/flexget/config.yml ~/.config/flexget/config.yml."$(date "+%Y.%m.%d.%H.%M.%S")".bak >/dev/null 2>&1
 
 cat >  ~/.config/flexget/config.yml <<EOF
-# 这个配置文件只是一个示范，请自己根据情况修改
-# 运行 daemon：~/pip/bin/flexget daemon start --daemonize
-# 设置 WebUI 密码：~/pip/bin/flexget web passwd 密码
 tasks:
   MTeam:
-    rss: https://mantou
+    rss: https://https://tp.m-team.cc/torrentrss.php
     verify_ssl_certificates: no
     regexp:
       accept:
         - OneHD
       reject:
         - MTeamPAD
-    deluge:
-      maxupspeed: 12800.0
-      port: $deluge_port
 web_server:
   port: $portGen
   web_ui: yes
 schedules: no
 EOF
 
-}
+FLPORT=` grep "port" ~/.config/flexget/config.yml | grep -Po "\d+" `
+
+# 运行
+~/pip/bin/flexget web passwd $PASSWORD 2>&1 | tee ~/flex.pass.output
+[[ `grep "not strong enough" /tmp/flex.pass.output` ]] && export FlexPassFail=1
+rm -f ~/flex.pass.output
+~/pip/bin/flexget daemon start --daemonize
+
+# 输出结果
+if [[ -e ~/pip/bin/flexget ]]; then
+    if [[ ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep "flexget daemon" ` ]]; then
+        echo -e "\n${bold}${green}Flexget 已安装完成！${jiacu}\n"
+        echo -e "网址  ${cyan}http://$(hostname -f):$FLPORT${jiacu}"
+        echo -e "账号  ${cyan}$flexget${jiacu}"
+        if [[ $FlexPassFail == 1 ]]; then echo -e "${error}你刚才设的密码太简单了，Flexget 不接受这么简单的密码\n请自行输入 ~/pip/bin/flexget web passwd <密码> 来设置密码\n（方括号部分请改成密码）${normal}\n"
+        else echo -e "密码  ${cyan}$PASSWORD${normal}\n" ; fi
+    else echo -e "${error} Flexget 安装完成，但 daemon 没开起来。\n不要问我为什么和怎么办，你自己看着办吧！${normal}" ; fi
+else
+    echo -e "${error} Flexget 安装失败。\n请尝试手动安装？${normal}"
+fi ; }
+
+
+
 
 
 
@@ -702,7 +725,7 @@ alias gclone="git clone --depth=1"
 EOF
 
 # SH 默认使用的是 bash
-echo -e "\n${atte} 切换到 zsh 需要输入当前 SSH 的密码${normal}\n"
+echo -e "\n${atte} 切换到 bash 可能需要输入当前 SSH 的密码${normal}\n"
 chsh -s /bin/bash ; }
 
 
@@ -795,6 +818,84 @@ else echo -e "\n${error} 你的盒子没有预装 zsh，故无法使用本功能
 
 
 
+# 12. 安装 aria2
+function _install_aria2() { 
+
+# 安装 Aria2
+wget https://github.com/aria2/aria2/releases/download/release-1.33.1/aria2-1.33.1.tar.gz
+tar xf aria2-1.33.1.tar.gz && rm -f aria2-1.33.1.tar.gz
+cd aria2-1.33.1
+./configure --prefix=$HOME
+make -j$(nproc) && make install
+cd .. && rm -rf aria2-1.33.1
+
+# 安装 AiraNG
+cd ~/www/$(whoami).$(hostname -f)/* 
+mkdir -p aria2 ; cd aria2
+wget https://github.com/mayswind/AriaNg/releases/download/0.4.0/aria-ng-0.4.0.zip
+unzip aria-ng-0.4.0.zip && rm -f aria-ng-0.4.0.zip
+
+# 配置 Aira2
+mkdir -p ~/.config/aria2 ~/private/aria2
+cd ~/.config/aria2
+cat >~/.config/aria2/aria2.conf<<EOF
+#Setting
+dir=~/private/aria2
+dht-file-path=~/.config/aria2/dht.dat
+save-session-interval=15
+force-save=false
+log-level=error
+ 
+# Advanced Options
+disable-ipv6=true
+file-allocation=none
+max-download-result=35
+max-download-limit=20M
+ 
+# RPC Options
+enable-rpc=true
+rpc-allow-origin-all=true
+rpc-listen-all=true
+rpc-save-upload-metadata=true
+rpc-secure=false
+rpc-listen-port=10087
+ 
+# see --split option
+continue=true
+max-concurrent-downloads=10
+max-overall-download-limit=0
+max-overall-upload-limit=5
+max-upload-limit=1
+ 
+# Http/FTP options
+split=16
+connect-timeout=120
+max-connection-per-server=16
+max-file-not-found=2
+min-split-size=10M
+check-certificate=false
+http-no-cache=true
+ 
+#BT options
+bt-enable-lpd=true
+bt-max-peers=1024
+bt-require-crypto=true
+follow-torrent=true
+listen-port=6881-6999
+bt-request-peer-speed-limit=256K
+bt-hash-check-seed=true
+bt-seed-unverified=true
+bt-save-metadata=true
+enable-dht=true
+enable-peer-exchange=true
+seed-time=0
+EOF
+
+echo -e "\nhttp://$(whoami).$(hostname -f)/aria2\n"
+aria2c --enable-rpc --rpc-listen-all -D
+
+
+}
 
 
 
