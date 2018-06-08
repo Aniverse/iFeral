@@ -4,7 +4,7 @@
 #
 #
 iFeralVer=0.5.0
-iFeralDate=2018.05.10.1
+iFeralDate=2018.05.15
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -108,7 +108,7 @@ function _main_menu() {
 
 echo -e "${bold}${green}(01) ${jiacu}安装 qBittorrent     "
 echo -e "${green}(02) ${jiacu}安装 Deluge          "
-echo -e "\n不保证以下功能好用"
+echo -e "\n不保证以下功能好用\n"
 #echo -e "${green}(03) ${jiacu}安装 Transmission   "
 echo -e "${green}(04) ${jiacu}降级 rTorrent        "
 echo -e "${green}(05) ${jiacu}配置 ruTorrent       "
