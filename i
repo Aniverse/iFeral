@@ -3,8 +3,8 @@
 # https://github.com/Aniverse/iFeral
 # bash -c "$(wget -qO- https://github.com/Aniverse/iFeral/raw/master/i)"
 #
-iFeralVer=0.5.3
-iFeralDate=2018.06.28
+iFeralVer=0.5.4
+iFeralDate=2018.06.28.3
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -64,7 +64,7 @@ portGenerator() { portGen=$(shuf -i 10001-32001 -n1) ; } ; portGenerator2() { po
 portCheck() { while [[ "$( ~/iFeral/app/netstat -ln | grep ':'"$portGen"'' | grep -c 'LISTEN')" -eq "1" ]]; do portGenerator ; done ; }
 portCheck2() { while [[ "$( ~/iFeral/app/netstat -ln | grep ':'"$portGen2"'' | grep -c 'LISTEN')" -eq "1" ]]; do portGenerator2 ; done ; }
 
-current_disk=`  echo $(pwd) | sed "s/\/$(whoami)//"  `
+cd ; current_disk=`  echo $(pwd) | sed "s/\/$(whoami)//" | sed s"/\/home//"  `
 Seedbox=Unknown ; [[ `  hostname -f | grep feral  ` ]] && Seedbox=FH ; [[ `  hostname -f | grep seedhost  ` ]] && Seedbox=SH
 
 # -----------------------------------------------------------------------------------
@@ -113,7 +113,7 @@ echo -e "\n不保证以下功能好用\n"
 echo -e "${green}(04) ${jiacu}降级 rTorrent        "
 echo -e "${green}(05) ${jiacu}配置 ruTorrent       "
 echo -e "${green}(06) ${jiacu}安装 flexget         "
-echo -e "${green}(07) ${jiacu}安装 ffmpeg          "
+echo -e "${green}(07) ${jiacu}安装 ffmpeg 等软件   "
 echo -e "${green}(08) ${jiacu}查看 系统信息        "
 echo -e "${green}(09) ${jiacu}查看 邻居            "
 echo -e "${green}(10) ${jiacu}设置 .profile        "
@@ -535,20 +535,24 @@ fi ; }
 function _install_tools() {
 
 # ffmpeg
+echo "\n${bold}安装 ffmpeg ...${normal}\n"
 mkdir -p ~/bin
 wget -qO ~/ffmpeg.tar.gz https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-64bit-static.tar.xz
 tar xf ~/ffmpeg.tar.gz && cd && rm -rf ffmpeg-*-64bit-static/{manpages,presets,readme.txt}
-cp ~/ffmpeg-*-64bit-static/* ~/bin
+cp ~/ffmpeg-*-64bit-static/* ~/bin> /dev/null 2>&1
 chmod 700 ~/bin/{ffmpeg,ffprobe,ffmpeg-10bit,qt-faststart}
 cd && rm -rf ffmpeg{.tar.gz,-*-64bit-static}
 
 # p7zip
+echo "\n${bold}安装 p7zip ...${normal}\n"
 wget -qO ~/p7zip.tar.bz2 http://sourceforge.net/projects/p7zip/files/p7zip/9.38.1/p7zip_9.38.1_src_all.tar.bz2
 tar xf ~/p7zip.tar.bz2 && cd ~/p7zip_9.38.1
-make -j$(nproc) && make install DEST_HOME=$HOME
+make -j$(nproc)> /dev/null 2>&1
+make install DEST_HOME=$HOME> /dev/null 2>&1
 cd && rm -f ~/p7zip.tar.bz2
 
 # rclone
+echo -e "\n${bold}安装 rclone ...${normal}\n"
 mkdir -p ~/bin
 wget -qO ~/rclone.zip http://downloads.rclone.org/rclone-current-linux-amd64.zip
 unzip -qq ~/rclone.zip
@@ -557,25 +561,27 @@ rm -rf ~/rclone-v*-linux-amd64 ~/rclone.zip
 chmod +x ~/bin/rclone
 
 # mktorrent
+# echo -e "\n${bold}安装 mktorrent 1.1 ...${normal}\n"
 # git clone --depth=1 https://github.com/Rudde/mktorrent
 # cd mktorrent/ && PREFIX=$HOME make -j$(nproc)
 # PREFIX=$HOME make install
 # cd .. && rm -rf mktorrent
 
 # Mediainfo
+echo -e "\n${bold}安装新版 mediainfo ...${normal}\n"
 if [[ $CODENAME == stretch ]]; then
     wget -qO 1.deb https://mediaarea.net/download/binary/libzen0/0.4.37/libzen0v5_0.4.37-1_amd64.Debian_9.0.deb
-    wget -qO 2.deb https://mediaarea.net/download/binary/libmediainfo0/18.03.1/libmediainfo0v5_18.03.1-1_amd64.Debian_9.0.deb
-    wget -qO 3.deb https://mediaarea.net/download/binary/mediainfo/18.03.1/mediainfo_18.03.1-1_amd64.Debian_9.0.deb
+    wget -qO 2.deb https://mediaarea.net/download/binary/libmediainfo0/18.05/libmediainfo0v5_18.05-1_amd64.Debian_9.0.deb
+    wget -qO 3.deb https://mediaarea.net/download/binary/mediainfo/18.05/mediainfo_18.05-1_amd64.Debian_9.0.deb
 elif [[ $CODENAME == trusty ]]; then
     wget -qO 1.deb https://mediaarea.net/download/binary/libzen0/0.4.37/libzen0_0.4.37-1_amd64.xUbuntu_14.04.deb
-    wget -qO 2.deb https://mediaarea.net/download/binary/libmediainfo0/18.03.1/libmediainfo0_18.03.1-1_amd64.xUbuntu_14.04.deb
-    wget -qO 3.deb https://mediaarea.net/download/binary/mediainfo/18.03.1/mediainfo_18.03.1-1_amd64.xUbuntu_14.04.deb
+    wget -qO 2.deb https://mediaarea.net/download/binary/libmediainfo0/18.05/libmediainfo0_18.05-1_amd64.xUbuntu_14.04.deb
+    wget -qO 3.deb https://mediaarea.net/download/binary/mediainfo/18.05/mediainfo_18.05-1_amd64.xUbuntu_14.04.deb
 fi
 dpkg -x 1.deb ~/deb-temp ; dpkg -x 2.deb ~/deb-temp ; dpkg -x 3.deb ~/deb-temp
 mv ~/deb-temp/usr/lib/x86_64-linux-gnu/* ~/lib/
 mv ~/deb-temp/usr/bin/* ~/bin/
-rm -rf ~/*.deb ~/deb-temp
+rm -rf [123].deb ~/deb-temp
 
 # LD_LIBRARY_PATH=~/lib ~/bin/mediainfo --version
 
@@ -591,7 +597,7 @@ function _stats() {
 
 echo -e "\n${bold}正在检查系统信息，请稍等 ... ${normal}\n"
 
-# current_disk=`  echo $(pwd) | sed "s/\/$(whoami)//"  `
+# current_disk=`  echo $(pwd) | sed "s/\/$(whoami)//" | sed s"/\/home//"  `
 
 serverfqdn=`  hostname -f  `
 serveripv4=$(ip route get 8.8.8.8 | awk 'NR==1 {print $NF}' )
