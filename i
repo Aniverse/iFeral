@@ -1,10 +1,10 @@
 #!/bin/bash
 # Author: Aniverse
 # https://github.com/Aniverse/iFeral
+# bash -c "$(wget -qO- https://github.com/Aniverse/iFeral/raw/master/i)"
 #
-#
-iFeralVer=0.5.0
-iFeralDate=2018.05.15
+iFeralVer=0.5.2
+iFeralDate=2018.06.28
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -514,7 +514,7 @@ if [[ -e ~/pip/bin/flexget ]]; then
     if [[ ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep "flexget daemon" ` ]]; then
         echo -e "\n${bold}${green}Flexget 已安装完成！${jiacu}\n"
         echo -e "网址  ${cyan}http://$(hostname -f):$FLPORT${jiacu}"
-        echo -e "账号  ${cyan}$flexget${jiacu}"
+        echo -e "账号  ${cyan}flexget${jiacu}"
         if [[ $FlexPassFail == 1 ]]; then echo -e "${error}你刚才设的密码太简单了，Flexget 不接受这么简单的密码\n请自行输入 ~/pip/bin/flexget web passwd <密码> 来设置密码\n（方括号部分请改成密码）${normal}\n"
         else echo -e "密码  ${cyan}$PASSWORD${normal}\n" ; fi
     else echo -e "${error} Flexget 安装完成，但 daemon 没开起来。\n不要问我为什么和怎么办，你自己看着办吧！${normal}" ; fi
@@ -549,12 +549,12 @@ make -j$(nproc) && make install DEST_HOME=$HOME
 cd && rm -f ~/p7zip.tar.bz2
 
 # rclone
-# mkdir -p ~/bin
-# wget -qO ~/rclone.zip http://downloads.rclone.org/rclone-current-linux-amd64.zip
-# unzip -qq ~/rclone.zip
-# mv ~/rclone-v*-linux-amd64/rclone ~/bin
-# rm -rf ~/rclone-v*-linux-amd64 ~/rclone.zip
-# chmod +x ~/bin/rclone
+mkdir -p ~/bin
+wget -qO ~/rclone.zip http://downloads.rclone.org/rclone-current-linux-amd64.zip
+unzip -qq ~/rclone.zip
+mv ~/rclone-v*-linux-amd64/rclone ~/bin
+rm -rf ~/rclone-v*-linux-amd64 ~/rclone.zip
+chmod +x ~/bin/rclone
 
 # mktorrent
 # git clone --depth=1 https://github.com/Rudde/mktorrent
@@ -564,9 +564,9 @@ cd && rm -f ~/p7zip.tar.bz2
 
 # Mediainfo
 if [[ $CODENAME == stretch ]]; then
-    wget -q 1.deb https://mediaarea.net/download/binary/libzen0/0.4.37/libzen0v5_0.4.37-1_amd64.Debian_9.0.deb
-    wget -q 2.deb https://mediaarea.net/download/binary/libmediainfo0/18.03.1/libmediainfo0v5_18.03.1-1_amd64.Debian_9.0.deb
-    wget -q 3.deb https://mediaarea.net/download/binary/mediainfo/18.03.1/mediainfo_18.03.1-1_amd64.Debian_9.0.deb
+    wget -qO 1.deb https://mediaarea.net/download/binary/libzen0/0.4.37/libzen0v5_0.4.37-1_amd64.Debian_9.0.deb
+    wget -qO 2.deb https://mediaarea.net/download/binary/libmediainfo0/18.03.1/libmediainfo0v5_18.03.1-1_amd64.Debian_9.0.deb
+    wget -qO 3.deb https://mediaarea.net/download/binary/mediainfo/18.03.1/mediainfo_18.03.1-1_amd64.Debian_9.0.deb
 elif [[ $CODENAME == trusty ]]; then
     wget -qO 1.deb https://mediaarea.net/download/binary/libzen0/0.4.37/libzen0_0.4.37-1_amd64.xUbuntu_14.04.deb
     wget -qO 2.deb https://mediaarea.net/download/binary/libmediainfo0/18.03.1/libmediainfo0_18.03.1-1_amd64.xUbuntu_14.04.deb
@@ -625,8 +625,8 @@ processes=`ps aux | wc -l`
 date=$( date +%Y-%m-%d" "%H:%M:%S )
 arch=$( uname -m )
 
-neighbors_same_disk_num=`  getent passwd | grep -v $(whoami) | grep $current_disk/ | wc -l  `
-neighbors_same_disk_name=`  getent passwd | grep -v $(whoami) | grep $current_disk/ | awk -F ":" '{print $1}'  `
+neighbors_same_disk_num=`  getent passwd | grep -v $(whoami) | grep -v home | grep $current_disk/ | wc -l  `
+neighbors_same_disk_name=`  getent passwd | grep -v $(whoami) | grep -v home | grep $current_disk/ | awk -F ":" '{print $1}'  `
 neighbors_all_num=`  getent passwd | grep -v $(whoami) | grep -E "home[0-9]+|media" | wc -l  `
 disk_num=`  df -lh | grep -E "/home[0-9]+|media" | wc -l  `
 
