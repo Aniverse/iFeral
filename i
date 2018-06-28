@@ -3,7 +3,7 @@
 # https://github.com/Aniverse/iFeral
 # bash -c "$(wget -qO- https://github.com/Aniverse/iFeral/raw/master/i)"
 #
-iFeralVer=0.5.2
+iFeralVer=0.5.3
 iFeralDate=2018.06.28
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
@@ -591,6 +591,8 @@ function _stats() {
 
 echo -e "\n${bold}正在检查系统信息，请稍等 ... ${normal}\n"
 
+# current_disk=`  echo $(pwd) | sed "s/\/$(whoami)//"  `
+
 serverfqdn=`  hostname -f  `
 serveripv4=$(ip route get 8.8.8.8 | awk 'NR==1 {print $NF}' )
 isInternalIpAddress "$serveripv4" || serveripv4=$( wget -t1 -T6 -qO- v4.ipv6-test.com/api/myip.php )
@@ -607,8 +609,8 @@ running_kernel=` uname -r `
 cname=$( awk -F: '/model name/ {name=$2} END {print name}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//' )
 cores=$( awk -F: '/model name/ {core++} END {print core}' /proc/cpuinfo )
 cpucores_single=$( grep 'core id' /proc/cpuinfo | sort -u | wc -l )
-#physical_cpu_number=$( grep 'physical id' /proc/cpuinfo | cut -c15-17 )
-cpu_percent=$( top -b -n 1|grep Cpu|awk '{print $2}'|cut -f 1 -d "." )
+# physical_cpu_number=$( grep 'physical id' /proc/cpuinfo | cut -c15-17 )
+# cpu_percent=$( top -b -n 1|grep Cpu|awk '{print $2}'|cut -f 1 -d "." )
 cpunumbers=$( grep 'physical id' /proc/cpuinfo | sort -u | wc -l )
 cpucores=$( expr $cpucores_single \* $cpunumbers )
 cputhreads=$( grep 'processor' /proc/cpuinfo | sort -u | wc -l )
@@ -625,20 +627,21 @@ processes=`ps aux | wc -l`
 date=$( date +%Y-%m-%d" "%H:%M:%S )
 arch=$( uname -m )
 
-neighbors_same_disk_num=`  getent passwd | grep -v $(whoami) | grep -v home | grep $current_disk/ | wc -l  `
-neighbors_same_disk_name=`  getent passwd | grep -v $(whoami) | grep -v home | grep $current_disk/ | awk -F ":" '{print $1}'  `
+neighbors_same_disk_num=`  getent passwd | grep -v $(whoami) | grep -Pv /bhome/b | grep $current_disk/ | wc -l  `
+neighbors_same_disk_name=`  getent passwd | grep -v $(whoami) | grep -Pv /bhome/b | grep $current_disk/ | awk -F ":" '{print $1}'  `
 neighbors_all_num=`  getent passwd | grep -v $(whoami) | grep -E "home[0-9]+|media" | wc -l  `
 disk_num=`  df -lh | grep -E "/home[0-9]+|media" | wc -l  `
 
-disk_size1=($( LANG=C df -hPl | grep -wvE '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem' | awk '{print $2}' ))
-disk_size2=($( LANG=C df -hPl | grep -wvE '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem' | awk '{print $3}' ))
+# 计算总共空间的时候，排除掉 FH SSD 每个用户限额的空间；计算已用空间的时候不排除（因为原先的单个 md 已用空间只有 128k/256k）
+disk_size1=($( LANG=C df -hPl | grep -wvP '\-|none|root|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|md[0-9]+/[a-z]*' | awk '{print $2}' ))
+disk_size2=($( LANG=C df -hPl | grep -wvP '\-|none|root|tmpfs|devtmpfs|by-uuid|chroot|Filesystem' | awk '{print $3}' ))
 disk_total_size=$( calc_disk ${disk_size1[@]} )
 disk_used_size=$( calc_disk ${disk_size2[@]} )
 
 current_disk_size=($( LANG=C df -hPl | grep $current_disk | awk '{print $2}' ))
 current_disk_total_used=($( LANG=C df -hPl | grep $current_disk | awk '{print $3}' ))
-#current_disk_avai=($( LANG=C df -hPl | grep $current_disk | awk '{print $4}' ))
-#current_disk_perc=($( LANG=C df -hPl | grep $current_disk | awk '{print $5}' ))
+# current_disk_avai=($( LANG=C df -hPl | grep $current_disk | awk '{print $4}' ))
+# current_disk_perc=($( LANG=C df -hPl | grep $current_disk | awk '{print $5}' ))
 current_disk_self_used=` du -sh ~ | awk -F " " '{print $1}' `
 
 tcp_control=` cat /proc/sys/net/ipv4/tcp_congestion_control `
@@ -662,7 +665,7 @@ fi
 echo
 echo -e  "${bold}  CPU 型号      : ${cyan}$CPUNum$cname${normal}"
 echo -e  "${bold}  CPU 核心      : ${cyan}合计 ${cpucores} 核心，${cputhreads} 线程${normal}"
-echo -e  "${bold}  CPU 状态      : ${cyan}当前主频 ${freq} MHz，占用率 ${cpu_percent}%${normal}"
+echo -e  "${bold}  CPU 状态      : ${cyan}当前主频 ${freq} MHz"
 echo -e  "${bold}  内存大小      : ${cyan}$tram MB ($uram MB 已用)${normal}"
 echo -e  "${bold}  运行时间      : ${cyan}$uptime1${normal}"
 echo -e  "${bold}  系统负载      : ${cyan}$load${normal}"
@@ -673,7 +676,7 @@ echo -e  "${bold}  邻居数量      : ${cyan}整台机器共 $neighbors_all_num
 echo
 echo -e  "${bold}  操作系统      : ${cyan}$DISTRO $osversion $CODENAME ($arch)${normal}"
 echo -e  "${bold}  运行内核      : ${cyan}$running_kernel${normal}"
-echo -e  "${bold}  拥塞控制算法  : ${cyan}$tcp_control${normal}"
+echo -e  "${bold}  TCP 拥塞控制  : ${cyan}$tcp_control${normal}"
 echo
 echo -e  "${bold}  服务器时间    : ${cyan}$date${normal}"
 echo ; }
