@@ -189,7 +189,7 @@ if [[ ! `  ls ~/iFeral/qb/library  2>/dev/null  `  ]]; then
 fi
 
 # 询问版本
-[[ $Seedbox == FH ]] && QB_supported_versions="3.3.0-3.3.16，4.0.0-4.0.4"
+[[ $Seedbox == FH ]] && QB_supported_versions="3.3.0-3.3.16，4.0.0-4.1.1"
 [[ $Seedbox == SH ]] && QB_supported_versions="3.3.2-3.3.16，4.0.0-4.0.4"
 while [[ $QBVERSION = "" ]]; do
     echo -e "${jiacu}当前可用的版本为 $QB_supported_versions"
