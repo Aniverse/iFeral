@@ -460,7 +460,7 @@ else echo "${atte} 这是为了 FH 盒子设计的，其他盒子就不要用了
 
 function _install_flexget() {
 
-echo ; read -ep "${bold}${yellow}请输入你要用于 Flexget WebUI 的密码，不要太简单：${normal}" PASSWORD
+echo ; read -ep "${bold}${yellow}请输入你要用于 Flexget WebUI 的密码，不要太简单：${normal}" PASSWORD ; echo
 
 #if [[ $Seedbox == FH ]]; then
 #   pip install --user --ignore-installed --no-use-wheel virtualenv
@@ -505,7 +505,7 @@ FLPORT=` grep "port" ~/.config/flexget/config.yml | grep -Po "\d+" `
 
 # 运行
 ~/pip/bin/flexget web passwd $PASSWORD 2>&1 | tee ~/flex.pass.output
-[[ `grep "not strong enough" /tmp/flex.pass.output` ]] && export FlexPassFail=1
+[[ `grep "not strong enough" ~/flex.pass.output` ]] && export FlexPassFail=1
 rm -f ~/flex.pass.output
 ~/pip/bin/flexget daemon start --daemonize
 
@@ -547,8 +547,8 @@ cd && rm -rf ffmpeg{.tar.gz,-*-64bit-static}
 echo "\n${bold}安装 p7zip ...${normal}\n"
 wget -qO ~/p7zip.tar.bz2 http://sourceforge.net/projects/p7zip/files/p7zip/9.38.1/p7zip_9.38.1_src_all.tar.bz2
 tar xf ~/p7zip.tar.bz2 && cd ~/p7zip_9.38.1
-make -j$(nproc)> /dev/null 2>&1
-make install DEST_HOME=$HOME> /dev/null 2>&1
+make -j$(nproc) > /dev/null 2>&1
+make install DEST_HOME=$HOME > /dev/null 2>&1
 cd && rm -f ~/p7zip.tar.bz2
 
 # rclone
