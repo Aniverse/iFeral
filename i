@@ -3,8 +3,8 @@
 # https://github.com/Aniverse/iFeral
 # bash -c "$(wget -qO- https://github.com/Aniverse/iFeral/raw/master/i)"
 #
-iFeralVer=0.5.4
-iFeralDate=2018.06.28.3
+iFeralVer=0.5.5
+iFeralDate=2018.06.28.4
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -535,7 +535,7 @@ fi ; }
 function _install_tools() {
 
 # ffmpeg
-echo "\n${bold}安装 ffmpeg ...${normal}\n"
+echo -e "\n${bold}安装 ffmpeg ...${normal}\n"
 mkdir -p ~/bin
 wget -qO ~/ffmpeg.tar.gz https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-64bit-static.tar.xz
 tar xf ~/ffmpeg.tar.gz && cd && rm -rf ffmpeg-*-64bit-static/{manpages,presets,readme.txt}
@@ -544,7 +544,7 @@ chmod 700 ~/bin/{ffmpeg,ffprobe,ffmpeg-10bit,qt-faststart}
 cd && rm -rf ffmpeg{.tar.gz,-*-64bit-static}
 
 # p7zip
-echo "\n${bold}安装 p7zip ...${normal}\n"
+echo -e "${bold}安装 p7zip ...${normal}\n"
 wget -qO ~/p7zip.tar.bz2 http://sourceforge.net/projects/p7zip/files/p7zip/9.38.1/p7zip_9.38.1_src_all.tar.bz2
 tar xf ~/p7zip.tar.bz2 && cd ~/p7zip_9.38.1
 make -j$(nproc) > /dev/null 2>&1
@@ -552,7 +552,7 @@ make install DEST_HOME=$HOME > /dev/null 2>&1
 cd && rm -f ~/p7zip.tar.bz2
 
 # rclone
-echo -e "\n${bold}安装 rclone ...${normal}\n"
+echo -e "${bold}安装 rclone ...${normal}\n"
 mkdir -p ~/bin
 wget -qO ~/rclone.zip http://downloads.rclone.org/rclone-current-linux-amd64.zip
 unzip -qq ~/rclone.zip
@@ -561,14 +561,14 @@ rm -rf ~/rclone-v*-linux-amd64 ~/rclone.zip
 chmod +x ~/bin/rclone
 
 # mktorrent
-# echo -e "\n${bold}安装 mktorrent 1.1 ...${normal}\n"
+# echo -e "${bold}安装 mktorrent 1.1 ...${normal}\n"
 # git clone --depth=1 https://github.com/Rudde/mktorrent
 # cd mktorrent/ && PREFIX=$HOME make -j$(nproc)
 # PREFIX=$HOME make install
 # cd .. && rm -rf mktorrent
 
 # Mediainfo
-echo -e "\n${bold}安装新版 mediainfo ...${normal}\n"
+echo -e "${bold}安装新版 mediainfo ...${normal}\n"
 if [[ $CODENAME == stretch ]]; then
     wget -qO 1.deb https://mediaarea.net/download/binary/libzen0/0.4.37/libzen0v5_0.4.37-1_amd64.Debian_9.0.deb
     wget -qO 2.deb https://mediaarea.net/download/binary/libmediainfo0/18.05/libmediainfo0v5_18.05-1_amd64.Debian_9.0.deb
@@ -582,6 +582,9 @@ dpkg -x 1.deb ~/deb-temp ; dpkg -x 2.deb ~/deb-temp ; dpkg -x 3.deb ~/deb-temp
 mv ~/deb-temp/usr/lib/x86_64-linux-gnu/* ~/lib/
 mv ~/deb-temp/usr/bin/* ~/bin/
 rm -rf [123].deb ~/deb-temp
+
+grep -q mediainfo ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/filemanager/flm.class.php &&
+sed -i "s|(getExternal('mediainfo')|(getExternal('$(pwd)/bin/mediainfo')|g" ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/filemanager/flm.class.php
 
 # LD_LIBRARY_PATH=~/lib ~/bin/mediainfo --version
 
@@ -671,7 +674,7 @@ fi
 echo
 echo -e  "${bold}  CPU 型号      : ${cyan}$CPUNum$cname${normal}"
 echo -e  "${bold}  CPU 核心      : ${cyan}合计 ${cpucores} 核心，${cputhreads} 线程${normal}"
-echo -e  "${bold}  CPU 状态      : ${cyan}当前主频 ${freq} MHz"
+echo -e  "${bold}  CPU 状态      : ${cyan}当前主频 ${freq} MHz${normal}"
 echo -e  "${bold}  内存大小      : ${cyan}$tram MB ($uram MB 已用)${normal}"
 echo -e  "${bold}  运行时间      : ${cyan}$uptime1${normal}"
 echo -e  "${bold}  系统负载      : ${cyan}$load${normal}"
