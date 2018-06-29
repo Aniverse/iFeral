@@ -443,8 +443,9 @@ svn co -q https://github.com/ArtyumX/ruTorrent-Themes/trunk/MaterialDesign
 svn co -q https://github.com/ArtyumX/ruTorrent-Themes/trunk/club-QuickBox
 cd
 
-# AutoDL-Irssi
-bash -c "$(wget -qO- http://git.io/oTUCMg)"
+# AutoDL-Irssi，bash -c "$(wget -qO- http://git.io/oTUCMg)"
+wget -qO ~/install.autodl.sh https://bitbucket.org/feralio/wiki/raw/HEAD/src/wiki/software/autodl/autodl.sh
+echo 1 | bash ~/install.autodl.sh
 
 else echo "${atte} 这是为了 FH 盒子设计的，其他盒子就不要用了~${normal}" ; fi ; }
 
@@ -858,7 +859,9 @@ encoding utf8 utf8
 defscrollback 23333
 EOF
 
-else echo -e "\n${error} 你的盒子没有预装 zsh，故无法使用本功能！${normal}\n" ; fi ; }
+else
+
+echo -e "\n${error} 你的盒子没有预装 zsh，故无法使用本功能！${normal}\n" ; fi ; }
 
 
 
