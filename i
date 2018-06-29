@@ -3,8 +3,8 @@
 # https://github.com/Aniverse/iFeral
 # bash -c "$(wget -qO- https://github.com/Aniverse/iFeral/raw/master/i)"
 #
-iFeralVer=0.5.7
-iFeralDate=2018.06.29.2
+iFeralVer=0.5.8
+iFeralDate=2018.06.29.3
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -270,7 +270,7 @@ if [[ ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittorrent ` 
     echo -e "密码  ${cyan}$PASSWORD${normal}"
     [[ $qbconfig == old ]] &&
     echo -e "密码  ${cyan}(和以前一样)${normal}"
-    echo "$QBVERSION" > ~/iFeral/qb/qbversion.lock
+    echo "$QBVERSION" > ~/iFeral/qbversion.lock
 else
     echo -e "${error} qBittorrent 安装完成，但无法正常运行。\n不要问我为什么和怎么办，你自己看着办吧！${normal}"
 fi ; }
@@ -712,7 +712,7 @@ export TZ="/usr/share/zoneinfo/Asia/Shanghai"
 export PATH=~/FH:~/iFeral/qb:~/iFeral/app:~/bin:~/pip/bin:~/.local/bin:\$PATH
 export LD_LIBRARY_PATH=~/lib:\$LD_LIBRARY_PATH
 
-[[ \$(ls ~/iFeral/qb/qbversion.lock) ]] && QBVER=`cat ~/iFeral/qb/qbversion.lock`
+[[ \$(ls ~/iFeral | grep qbversion.lock) ]] && QBVER=\$(cat ~/iFeral/qbversion.lock) && alias runqb='TMPDIR=~/tmp LD_LIBRARY_PATH=~/iFeral/qb/library ~/iFeral/qb/qbittorrent-nox.\$QBVER -d'
 
 cdk=\$(df -h | grep `pwd | awk -F '/' '{print \$2,\$3}' | sed "s/ /\//"` | awk '{print \$1}' | awk -F '/' '{print \$3}')
 [[ \$(echo \$cdk | grep -E "sd[a-z]+1") ]] && cdk=\$(echo \$cdk | sed "s/1//")
@@ -729,7 +729,6 @@ alias killqb='kill \$(pgrep -fu "\$(whoami)" "qbitt")'
 
 alias runde='deluged'
 alias runde2='~/bin/de2 -c ~/.config/deluge2 >/dev/null 2>&1'
-alias runqb='TMPDIR=~/tmp LD_LIBRARY_PATH=~/iFeral/qb/library ~/iFeral/qb/qbittorrent-nox.\$QBVER -d'
 alias runrt='screen -S rtorrent rtorrent'
 
 alias deopen='cat /proc/\$(pgrep -fu "\$(whoami)" "deluged")/limits | grep open | grep -oP "\\d+"'
@@ -746,11 +745,15 @@ alias ll="ls -hAlvZ --color --group-directories-first"
 alias shanchu='rm -rf'
 alias zjpid='ps aux | egrep "$(whoami)|COMMAND" | egrep -v "grep|aux|root"'
 alias pid="ps aux | grep -v grep | grep"
-alias scrgd="screen -U -R gooooogle"
-alias scrgdb="screen -S gooooogle -X quit"
 alias scrl="screen -ls"
 alias quanxian="chmod -R +x"
 alias gclone="git clone --depth=1"
+alias fls="nano ~/.config/flexget/config.yml"
+
+alias scrgd="screen -U -R gooooogle"
+alias scrgdb="screen -S gooooogle -X quit"
+alias scrrt="screen -U -r rtorrent"
+alias scrad="screen -U -r autodl"
 
 alias cdb="cd .."
 alias cdde="cd ~/private/deluge/data"
@@ -804,7 +807,7 @@ alias -s rar='unrar x'
 alias -s zip='unzip'
 alias -s bz2='tar -xjvf'
 
-[[ \$(ls ~/iFeral/qb/qbversion.lock) ]] && QBVER=`cat ~/iFeral/qb/qbversion.lock`
+[[ \$(ls ~/iFeral | grep qbversion.lock) ]] && QBVER=\$(cat ~/iFeral/qbversion.lock) && alias runqb='TMPDIR=~/tmp LD_LIBRARY_PATH=~/iFeral/qb/library ~/iFeral/qb/qbittorrent-nox.\$QBVER -d'
 
 cdk=\$(df -h | grep `pwd | awk -F '/' '{print \$2,\$3}' | sed "s/ /\//"` | awk '{print \$1}' | awk -F '/' '{print \$3}')
 [[ \$(echo \$cdk | grep -E "sd[a-z]+1") ]] && cdk=\$(echo \$cdk | sed "s/1//")
@@ -821,7 +824,6 @@ alias killqb='kill \$(pgrep -fu "\$(whoami)" "qbitt")'
 
 alias runde='deluged'
 alias runde2='~/bin/de2 -c ~/.config/deluge2 >/dev/null 2>&1'
-alias runqb='TMPDIR=~/tmp LD_LIBRARY_PATH=~/iFeral/qb/library ~/iFeral/qb/qbittorrent-nox.\$QBVER -d'
 alias runrt='screen -S rtorrent rtorrent'
 
 alias deopen='cat /proc/\$(pgrep -fu "\$(whoami)" "deluged")/limits | grep open | grep -oP "\\d+"'
@@ -838,11 +840,15 @@ alias ll="ls -hAlvZ --color --group-directories-first"
 alias shanchu='rm -rf'
 alias zjpid='ps aux | egrep "$(whoami)|COMMAND" | egrep -v "grep|aux|root"'
 alias pid="ps aux | grep -v grep | grep"
-alias scrgd="screen -U -R gooooogle"
-alias scrgdb="screen -S gooooogle -X quit"
 alias scrl="screen -ls"
 alias quanxian="chmod -R +x"
 alias gclone="git clone --depth=1"
+alias fls="nano ~/.config/flexget/config.yml"
+
+alias scrgd="screen -U -R gooooogle"
+alias scrgdb="screen -S gooooogle -X quit"
+alias scrrt="screen -U -r rtorrent"
+alias scrad="screen -U -r autodl"
 
 alias cdb="cd .."
 alias cdde="cd ~/private/deluge/data"
