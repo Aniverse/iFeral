@@ -3,8 +3,8 @@
 # https://github.com/Aniverse/iFeral
 # bash -c "$(wget -qO- https://github.com/Aniverse/iFeral/raw/master/i)"
 #
-iFeralVer=0.5.5
-iFeralDate=2018.06.28.4
+iFeralVer=0.5.6
+iFeralDate=2018.06.29.1
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -246,7 +246,7 @@ Connection\GlobalUPLimitAlt=0
 Connection\PortRangeMin=$portGen2
 General\Locale=zh
 Queueing\QueueingEnabled=false
-Downloads\SavePath=${USERPATH}/private/qBittorrent/data
+Downloads\SavePath=${USERPATH}/private/qbittorrent/data
 
 WebUI\Port=$portGen
 WebUI\Password_ha1=@ByteArray($QBPASS)
@@ -601,6 +601,7 @@ function _stats() {
 echo -e "\n${bold}正在检查系统信息，请稍等 ... ${normal}\n"
 
 # current_disk=`  echo $(pwd) | sed "s/\/$(whoami)//" | sed s"/\/home//"  `
+# cdk=$(df -h | grep `pwd | awk -F '/' '{print $2,$3}' | sed "s/ /\//"` | awk '{print $1}' | awk -F '/' '{print $3}')
 
 serverfqdn=`  hostname -f  `
 serveripv4=$(ip route get 8.8.8.8 | awk 'NR==1 {print $NF}' )
@@ -709,9 +710,11 @@ export TZ="/usr/share/zoneinfo/Asia/Shanghai"
 export PATH=~/FH:~/iFeral/qb:~/iFeral/app:~/bin:~/pip/bin:~/.local/bin:\$PATH
 export LD_LIBRARY_PATH=~/lib:\$LD_LIBRARY_PATH
 
-cdk=\$(df -h | grep `pwd | awk -F '/' '{print \$(NF-1)}'` | awk '{print \$1}' | awk -F '/' '{print \$3}')
+cdk=\$(df -h | grep `pwd | awk -F '/' '{print \$2,\$3}' | sed "s/ /\//"` | awk '{print \$1}' | awk -F '/' '{print \$3}')
 [[ \$(echo \$cdk | grep -E "sd[a-z]+1") ]] && cdk=\$(echo \$cdk | sed "s/1//")
 alias io='iostat -d -x -m 1 | grep -E "\$cdk | rMB/s | wMB/s"'
+alias ios="iostat -d -x -m 1"
+alias wangsu='sar -n DEV 1| grep -E "rxkB\/s|txkB\/s|eth0|eth1"'
 
 alias killde='kill "\$(pgrep -fu "\$(whoami)" "deluged")"'
 alias killde2='kill "\$(pgrep -fu "\$(whoami)" "de2")"'
@@ -727,13 +730,28 @@ alias ll="ls -hAlvZ --color --group-directories-first"
 alias shanchu='rm -rf'
 alias zjpid='ps aux | egrep "$(whoami)|COMMAND" | egrep -v "grep|aux|root"'
 alias pid="ps aux | grep -v grep | grep"
-alias ios="iostat -d -x -m 1"
-alias wangsu='sar -n DEV 1| grep -E "rxkB\/s|txkB\/s|eth0|eth1"'
-alias scrgd="screen -R gooooogle"
+alias scrgd="screen -U -R gooooogle"
+alias scrgdb="screen -S gooooogle -X quit"
 alias scrl="screen -ls"
 alias quanxian="chmod -R +x"
-alias cdb="cd .."
 alias gclone="git clone --depth=1"
+
+alias cdb="cd .."
+alias cdde="cd ~/private/deluge/data"
+alias cdrt="cd ~/private/rtorrent/data"
+alias cdtr="cd ~/private/transmission/data"
+alias cdqb="cd ~/private/qbittorrent/data"
+EOF
+
+# screen 设置
+cat>>~/.screenrc<<EOF
+shell -$SHELL
+
+startup_message off
+defutf8 on
+defencoding utf8  
+encoding utf8 utf8 
+defscrollback 23333
 EOF
 
 # SH 默认使用的是 bash
@@ -747,7 +765,7 @@ chsh -s /bin/bash ; }
 
 # 11. 设置 zsh 环境
 function _set_zsh() { if [[ `command -v zsh` ]]; then
-cd ; echo -e "\n${atte} 等会儿切换到 zsh 需要输入当前 SSH 的密码${normal}\n"
+cd ; echo -e "\n${atte} 等会儿切换到 zsh，到时候需要输入当前 SSH 的密码${normal}\n"
 rm -rf ~/.oh-my-zsh .zshrc
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
 wget -qO ~/.oh-my-zsh/themes/agnosterzak.zsh-theme http://raw.github.com/zakaziko99/agnosterzak-ohmyzsh-theme/master/agnosterzak.zsh-theme
@@ -770,9 +788,11 @@ alias -s rar='unrar x'
 alias -s zip='unzip'
 alias -s bz2='tar -xjvf'
 
-cdk=\$(df -h | grep `pwd | awk -F '/' '{print \$(NF-1)}'` | awk '{print \$1}' | awk -F '/' '{print \$3}')
+cdk=\$(df -h | grep `pwd | awk -F '/' '{print \$2,\$3}' | sed "s/ /\//"` | awk '{print \$1}' | awk -F '/' '{print \$3}')
 [[ \$(echo \$cdk | grep -E "sd[a-z]+1") ]] && cdk=\$(echo \$cdk | sed "s/1//")
 alias io='iostat -d -x -m 1 | grep -E "\$cdk | rMB/s | wMB/s"'
+alias ios="iostat -d -x -m 1"
+alias wangsu='sar -n DEV 1| grep -E "rxkB\/s|txkB\/s|eth0|eth1"'
 
 alias killde='kill "\$(pgrep -fu "\$(whoami)" "deluged")"'
 alias killde2='kill "\$(pgrep -fu "\$(whoami)" "de2")"'
@@ -788,13 +808,17 @@ alias ll="ls -hAlvZ --color --group-directories-first"
 alias shanchu='rm -rf'
 alias zjpid='ps aux | egrep "$(whoami)|COMMAND" | egrep -v "grep|aux|root"'
 alias pid="ps aux | grep -v grep | grep"
-alias ios="iostat -d -x -m 1"
-alias wangsu='sar -n DEV 1| grep -E "rxkB\/s|txkB\/s|eth0|eth1"'
-alias scrgd="screen -R gooooogle"
+alias scrgd="screen -U -R gooooogle"
+alias scrgdb="screen -S gooooogle -X quit"
 alias scrl="screen -ls"
 alias quanxian="chmod -R +x"
-alias cdb="cd .."
 alias gclone="git clone --depth=1"
+
+alias cdb="cd .."
+alias cdde="cd ~/private/deluge/data"
+alias cdrt="cd ~/private/rtorrent/data"
+alias cdtr="cd ~/private/transmission/data"
+alias cdqb="cd ~/private/qbittorrent/data"
 
 # Fix numeric keypad  
 # 0 . Enter  
@@ -822,6 +846,17 @@ EOF
 
 chsh -s /usr/bin/zsh
 source ~/.zshrc
+
+# screen 设置
+cat>>~/.screenrc<<EOF
+shell -$SHELL
+
+startup_message off
+defutf8 on
+defencoding utf8  
+encoding utf8 utf8 
+defscrollback 23333
+EOF
 
 else echo -e "\n${error} 你的盒子没有预装 zsh，故无法使用本功能！${normal}\n" ; fi ; }
 
