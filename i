@@ -3,8 +3,8 @@
 # https://github.com/Aniverse/iFeral
 # bash -c "$(wget -qO- https://github.com/Aniverse/iFeral/raw/master/i)"
 #
-iFeralVer=0.5.6
-iFeralDate=2018.06.29.1
+iFeralVer=0.5.7
+iFeralDate=2018.06.29.2
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -270,6 +270,7 @@ if [[ ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittorrent ` 
     echo -e "密码  ${cyan}$PASSWORD${normal}"
     [[ $qbconfig == old ]] &&
     echo -e "密码  ${cyan}(和以前一样)${normal}"
+    echo "$QBVERSION" > ~/iFeral/qb/qbversion.lock
 else
     echo -e "${error} qBittorrent 安装完成，但无法正常运行。\n不要问我为什么和怎么办，你自己看着办吧！${normal}"
 fi ; }
@@ -711,9 +712,12 @@ export TZ="/usr/share/zoneinfo/Asia/Shanghai"
 export PATH=~/FH:~/iFeral/qb:~/iFeral/app:~/bin:~/pip/bin:~/.local/bin:\$PATH
 export LD_LIBRARY_PATH=~/lib:\$LD_LIBRARY_PATH
 
+[[ \$(ls ~/iFeral/qb/qbversion.lock) ]] && QBVER=`cat ~/iFeral/qb/qbversion.lock`
+
 cdk=\$(df -h | grep `pwd | awk -F '/' '{print \$2,\$3}' | sed "s/ /\//"` | awk '{print \$1}' | awk -F '/' '{print \$3}')
 [[ \$(echo \$cdk | grep -E "sd[a-z]+1") ]] && cdk=\$(echo \$cdk | sed "s/1//")
 alias io='iostat -d -x -m 1 | grep -E "\$cdk | rMB/s | wMB/s"'
+
 alias ios="iostat -d -x -m 1"
 alias wangsu='sar -n DEV 1| grep -E "rxkB\/s|txkB\/s|eth0|eth1"'
 
@@ -722,6 +726,17 @@ alias killde2='kill "\$(pgrep -fu "\$(whoami)" "de2")"'
 alias killtr='kill "\$(pgrep -fu "\$(whoami)" "transmission-daemon")"'
 alias killrt='kill "\$(pgrep -fu "\$(whoami)" "/usr/local/bin/rtorrent")"'
 alias killqb='kill \$(pgrep -fu "\$(whoami)" "qbitt")'
+
+alias runde='deluged'
+alias runde2='~/bin/de2 -c ~/.config/deluge2 >/dev/null 2>&1'
+alias runqb='TMPDIR=~/tmp LD_LIBRARY_PATH=~/iFeral/qb/library ~/iFeral/qb/qbittorrent-nox.\$QBVER -d'
+alias runrt='screen -S rtorrent rtorrent'
+
+alias deopen='cat /proc/\$(pgrep -fu "\$(whoami)" "deluged")/limits | grep open | grep -oP "\\d+"'
+alias de2open='cat /proc/\$(pgrep -fu "\$(whoami)" "de2")/limits | grep open | grep -oP "\\d+"'
+alias rtopen='cat /proc/\$(pgrep -fu "\$(whoami)" "/usr/local/bin/rtorrent")/limits | grep open | grep -oP "\\d+"'
+alias tropen='cat /proc/\$(pgrep -fu "\$(whoami)" "transmission-daemon")/limits | grep open | grep -oP "\\d+"'
+alias qbopen='cat /proc/\$(pgrep -fu "\$(whoami)" "qbitt")/limits | grep open | grep -oP "\\d+"'
 
 alias cesu='echo;python ~/iFeral/app/speedtest --share;echo'
 alias cesu2='python ~/iFeral/app/speedtest --share --server'
@@ -789,9 +804,12 @@ alias -s rar='unrar x'
 alias -s zip='unzip'
 alias -s bz2='tar -xjvf'
 
+[[ \$(ls ~/iFeral/qb/qbversion.lock) ]] && QBVER=`cat ~/iFeral/qb/qbversion.lock`
+
 cdk=\$(df -h | grep `pwd | awk -F '/' '{print \$2,\$3}' | sed "s/ /\//"` | awk '{print \$1}' | awk -F '/' '{print \$3}')
 [[ \$(echo \$cdk | grep -E "sd[a-z]+1") ]] && cdk=\$(echo \$cdk | sed "s/1//")
 alias io='iostat -d -x -m 1 | grep -E "\$cdk | rMB/s | wMB/s"'
+
 alias ios="iostat -d -x -m 1"
 alias wangsu='sar -n DEV 1| grep -E "rxkB\/s|txkB\/s|eth0|eth1"'
 
@@ -800,6 +818,17 @@ alias killde2='kill "\$(pgrep -fu "\$(whoami)" "de2")"'
 alias killtr='kill "\$(pgrep -fu "\$(whoami)" "transmission-daemon")"'
 alias killrt='kill "\$(pgrep -fu "\$(whoami)" "/usr/local/bin/rtorrent")"'
 alias killqb='kill \$(pgrep -fu "\$(whoami)" "qbitt")'
+
+alias runde='deluged'
+alias runde2='~/bin/de2 -c ~/.config/deluge2 >/dev/null 2>&1'
+alias runqb='TMPDIR=~/tmp LD_LIBRARY_PATH=~/iFeral/qb/library ~/iFeral/qb/qbittorrent-nox.\$QBVER -d'
+alias runrt='screen -S rtorrent rtorrent'
+
+alias deopen='cat /proc/\$(pgrep -fu "\$(whoami)" "deluged")/limits | grep open | grep -oP "\\d+"'
+alias de2open='cat /proc/\$(pgrep -fu "\$(whoami)" "de2")/limits | grep open | grep -oP "\\d+"'
+alias rtopen='cat /proc/\$(pgrep -fu "\$(whoami)" "/usr/local/bin/rtorrent")/limits | grep open | grep -oP "\\d+"'
+alias tropen='cat /proc/\$(pgrep -fu "\$(whoami)" "transmission-daemon")/limits | grep open | grep -oP "\\d+"'
+alias qbopen='cat /proc/\$(pgrep -fu "\$(whoami)" "qbitt")/limits | grep open | grep -oP "\\d+"'
 
 alias cesu='echo;python ~/iFeral/app/speedtest --share;echo'
 alias cesu2='python ~/iFeral/app/speedtest --share --server'
