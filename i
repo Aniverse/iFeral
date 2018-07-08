@@ -190,7 +190,7 @@ fi
 
 # 询问版本
 [[ $Seedbox == FH ]] && QB_supported_versions="3.3.0-3.3.16，4.0.0-4.1.1"
-[[ $Seedbox == SH ]] && QB_supported_versions="3.3.2-3.3.16，4.0.0-4.0.4"
+[[ $Seedbox == SH ]] && QB_supported_versions="3.3.2-3.3.16，4.0.0-4.1.1"
 while [[ $QBVERSION = "" ]]; do
     echo -e "${jiacu}当前可用的版本为 $QB_supported_versions"
     read -ep "${bold}${yellow}请输入你要使用的 qBittorrent 版本： ${normal}" QBVERSION
@@ -763,7 +763,7 @@ alias cdqb="cd ~/private/qbittorrent/data"
 EOF
 
 # screen 设置
-cat>>~/.screenrc<<EOF
+cat>~/.screenrc<<EOF
 shell -$SHELL
 
 startup_message off
@@ -884,7 +884,7 @@ chsh -s /usr/bin/zsh
 source ~/.zshrc
 
 # screen 设置
-cat>>~/.screenrc<<EOF
+cat>~/.screenrc<<EOF
 shell -$SHELL
 
 startup_message off
