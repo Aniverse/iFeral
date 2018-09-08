@@ -3,8 +3,8 @@
 # https://github.com/Aniverse/iFeral
 # bash -c "$(wget -qO- https://github.com/Aniverse/iFeral/raw/master/i)"
 #
-iFeralVer=0.5.8
-iFeralDate=2018.06.29.3
+iFeralVer=0.6.1
+iFeralDate=2018.09.08
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -66,6 +66,7 @@ portCheck2() { while [[ "$( ~/iFeral/app/netstat -ln | grep ':'"$portGen2"'' | g
 
 cd ; current_disk=`  echo $(pwd) | sed "s/\/$(whoami)//" | sed s"/\/home//"  `
 Seedbox=Unknown ; [[ `  hostname -f | grep feral  ` ]] && Seedbox=FH ; [[ `  hostname -f | grep seedhost  ` ]] && Seedbox=SH
+[[ `  hostname -f | grep ultraseedbox  ` ]] && Seedbox=USB
 
 # -----------------------------------------------------------------------------------
 
@@ -79,6 +80,7 @@ cd ; clear ; wget --timeout=7 -qO- https://github.com/Aniverse/iFeral/raw/master
 echo -e "${bold}Ver. $iFeralDate    \n"
 [[ $Seedbox == Unknown ]] && echo -e "${warn} 你这个似乎不是 FH 或 SH 的盒子，不保证本脚本能正常工作！\n"
 [[ $Seedbox == SH ]] && echo -e "${atte} 本脚本主要为 FH 盒子设计，不保证所有功能都能在 SH 盒子上正常工作！\n"
+[[ $Seedbox == USB ]] && echo -e "${atte} 本脚本主要为 FH 盒子设计，不保证所有功能都能在 USB 盒子上正常工作！\n"
 # echo -e "${atte} 1 和 2 以外的选项我都没怎么测试过，不保证一定能用\n"
 }
 
@@ -645,8 +647,8 @@ neighbors_all_num=`  getent passwd | grep -v $(whoami) | grep -E "home[0-9]+|med
 disk_num=`  df -lh | grep -E "/home[0-9]+|media" | wc -l  `
 
 # 计算总共空间的时候，排除掉 FH SSD 每个用户限额的空间；计算已用空间的时候不排除（因为原先的单个 md 已用空间只有 128k/256k）
-disk_size1=($( LANG=C df -hPl | grep -wvP '\-|none|root|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|md[0-9]+/[a-z]*' | awk '{print $2}' ))
-disk_size2=($( LANG=C df -hPl | grep -wvP '\-|none|root|tmpfs|devtmpfs|by-uuid|chroot|Filesystem' | awk '{print $3}' ))
+disk_size1=($( LANG=C df -hPl | grep -wvP '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker|md[0-9]+/[a-z]*' | awk '{print $2}' ))
+disk_size2=($( LANG=C df -hPl | grep -wvP '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker' | awk '{print $3}' ))
 disk_total_size=$( calc_disk ${disk_size1[@]} )
 disk_used_size=$( calc_disk ${disk_size2[@]} )
 
