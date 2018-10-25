@@ -3,7 +3,7 @@
 # https://github.com/Aniverse/iFeral
 # bash -c "$(wget -qO- https://github.com/Aniverse/iFeral/raw/master/i)"
 #
-iFeralVer=0.6.4
+iFeralVer=0.6.5
 iFeralDate=2018.10.25
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
@@ -60,7 +60,7 @@ function isValidIpAddress() { echo $1 | grep -qE '^[0-9][0-9]?[0-9]?\.[0-9][0-9]
 function isInternalIpAddress() { echo $1 | grep -qE '(192\.168\.((\d{1,2})|(1\d{2})|(2[0-4]\d)|(25[0-5]))\.((\d{1,2})$|(1\d{2})$|(2[0-4]\d)$|(25[0-5])$))|(172\.((1[6-9])|(2\d)|(3[0-1]))\.((\d{1,2})|(1\d{2})|(2[0-4]\d)|(25[0-5]))\.((\d{1,2})$|(1\d{2})$|(2[0-4]\d)$|(25[0-5])$))|(10\.((\d{1,2})|(1\d{2})|(2[0-4]\d)|(25[0-5]))\.((\d{1,2})|(1\d{2})|(2[0-4]\d)|(25[0-5]))\.((\d{1,2})$|(1\d{2})$|(2[0-4]\d)$|(25[0-5])$))' ; }
 
 ### 端口生成与检查 ###
-portGenerator() { portGen=$(shuf -i 10001- 32001 -n1) ; } ; portGenerator2() { portGen2=$(shuf -i 10001-32001 -n1) ; }
+portGenerator() { portGen=$(shuf -i 10001-32001 -n1) ; } ; portGenerator2() { portGen2=$(shuf -i 10001-32001 -n1) ; }
 portCheck() { while [[ "$( ~/iFeral/app/netstat -ln | grep ':'"$portGen"'' | grep -c 'LISTEN')" -eq "1" ]]; do portGenerator ; done ; }
 portCheck2() { while [[ "$( ~/iFeral/app/netstat -ln | grep ':'"$portGen2"'' | grep -c 'LISTEN')" -eq "1" ]]; do portGenerator2 ; done ; }
 
@@ -81,7 +81,7 @@ Seedbox=Unknown
 # 00. Logo
 function _logo() {
 cd ; clear ; wget --timeout=7 -qO- https://github.com/Aniverse/iFeral/raw/master/files/iFeral.logo.1
-echo -e "${bold}Ver. $iFeralDate    \n"
+echo -e "${bold}Ver. $iFeralVer    \n"
 [[ $Seedbox == Unknown ]] && echo -e "${warn} 你这个似乎不是 FH 或 SH 的盒子，不保证本脚本能正常工作！\n"
 [[ $Seedbox == SH ]] && echo -e "${atte} 本脚本主要为 FH 盒子设计，不保证所有功能都能在 SeedHost 盒子上正常工作！\n"
 [[ $Seedbox == USB ]] && echo -e "${atte} 本脚本主要为 FH 盒子设计，不保证所有功能都能在 UltraSeedBox 盒子上正常工作！\n"
@@ -98,7 +98,7 @@ echo -e "${bold}Ver. $iFeralDate    \n"
 function _init() {  if [[ ! `  ls ~ | grep iFeral  `  ]]; then
 git clone --depth=1 https://github.com/Aniverse/iFeral ; chmod -R +x ~/iFeral/app
 cd ; clear ; wget --timeout=7 -qO- https://github.com/Aniverse/iFeral/raw/master/files/iFeral.logo.1
-echo -e "${bold}Ver. $iFeralDate    \n"
+echo -e "${bold}Ver. $iFeralVer    \n"
 mkdir -p ~/bin ~/lib ~/iFeral/backup ~/iFeral/log ~/.config ~/iSeed/{00.Tools,01.Screenshots,02.Torrents,03.BDinfo,04.BluRay}
 fi
 USERPATH=` pwd `
@@ -303,7 +303,7 @@ done
 
 # 下载
 if [[ ! `  ls ~/iFeral/qb/library  2>/dev/null  `  ]]; then
-    echo -e "${bold}${yellow}下载 qbittorrent-nox ...${normal}\n"
+    echo -e "\n${bold}${yellow}下载 qbittorrent-nox ...${normal}\n"
     if   [[ $CODENAME =~ (trusty|jessie|stretch) ]]; then
          svn co -q https://github.com/Aniverse/ygnrmRuUagpgPvr4rW97/trunk/$CODENAME/lib ~/iFeral/qb/library
          wget   -q https://github.com/Aniverse/ygnrmRuUagpgPvr4rW97/raw/master/$CODENAME/qbittorrent-nox.$QBVERSION -O ~/iFeral/qb/qbittorrent-nox.$QBVERSION
@@ -311,12 +311,11 @@ if [[ ! `  ls ~/iFeral/qb/library  2>/dev/null  `  ]]; then
     else
          echo -e "${bold}${yellow}暂时不支持系统非 Debian8/9、Ubuntu 14.04 的盒子 ...${normal}\n" ; exit 1
     fi
-    chmod +x -R ~/iFeral/qb ; echo
 fi
 
 # 询问是否覆盖原配置信息
 if [[ -e ~/.config/qBittorrent/qBittorrent.conf ]]; then
-    echo -e "\n${atte} 你以前装过 qBittorrent，那时的配置文件还留着\n其中包含着 qBittorrent 的账号、密码、端口、下载路径等信息"
+    echo -e "${atte} 你以前装过 qBittorrent，那时的配置文件还留着\n其中包含着 qBittorrent 的账号、密码、端口、下载路径等信息"
     read -ep "你现在要使用以前留下的配置文件吗？${normal} [${cyan}Y${normal}/n]: " responce
     case $responce in
         [yY] | [yY][Ee][Ss] | "" ) qbconfig=old ;;
