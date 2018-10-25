@@ -3,7 +3,7 @@
 # https://github.com/Aniverse/iFeral
 # bash -c "$(wget -qO- https://github.com/Aniverse/iFeral/raw/master/i)"
 #
-iFeralVer=0.6.2
+iFeralVer=0.6.3
 iFeralDate=2018.10.25
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
@@ -296,30 +296,23 @@ echo ; mkdir -p ~/tmp ~/private/qbittorrent/{data,watch,torrents} ~/.config/{qBi
 for qbpid in ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittorrent | awk '{print $2}' ` ; do kill -9 $qbpid ; done
 
 # 询问版本
-QB_supported_versions="3.3.11 3.3.14 3.3.16 4.0.4 4.1.1 4.1.2 4.1.3"
+QB_supported_versions=$( curl -s https://github.com/Aniverse/ygnrmRuUagpgPvr4rW97/tree/master/$CODENAME | grep "$CODENAME/qbit" | grep -oE "[0-9]+\.[0-9]+\.[0-9]+<" | sed "s/</ /" | sed ':t;N;s/\n//;b t' )
+
 while [[ $QBVERSION = "" ]]; do
     echo -e "${jiacu}当前可用的版本为 $QB_supported_versions"
     read -ep "${bold}${yellow}请输入你要使用的 qBittorrent 版本： ${normal}" QBVERSION
-    [[ ! ` ls ~/iFeral/qb | grep $QBVERSION ` ]] && { echo -e "${error} 你输入的版本不可用，请重新输入！" ; unset QBVERSION ; }
+    [[ ! ` echo $QB_supported_versions | grep $QBVERSION ` ]] && { echo -e "${error} 你输入的版本不可用，请重新输入！" ; unset QBVERSION ; }
 done
 
 # 下载
 if [[ ! `  ls ~/iFeral/qb/library  2>/dev/null  `  ]]; then
     echo -e "${bold}${yellow}下载 qbittorrent-nox ...${normal}\n"
-    if   [[ $CODENAME == jessie ]]; then
-         svn co -q https://github.com/Aniverse/ygnrmRuUagpgPvr4rW97/trunk/debian8/lib ~/iFeral/qb/library
-         wget   -q https://github.com/Aniverse/ygnrmRuUagpgPvr4rW97/raw/master/debian8/qbittorrent-nox.$QBVERSION -O ~/iFeral/qb/qbittorrent-nox.$QBVERSION
-         chmod +x ~/iFeral/qb/qbittorrent-nox.$QBVERSION
-    elif [[ $CODENAME == stretch ]]; then
-         svn co -q https://github.com/Aniverse/ygnrmRuUagpgPvr4rW97/trunk/debian9/lib ~/iFeral/qb/library
-         wget   -q https://github.com/Aniverse/ygnrmRuUagpgPvr4rW97/raw/master/debian9/qbittorrent-nox.$QBVERSION -O ~/iFeral/qb/qbittorrent-nox.$QBVERSION
-         chmod +x ~/iFeral/qb/qbittorrent-nox.$QBVERSION
-    elif [[ $CODENAME == trusty ]]; then
-         svn co -q https://github.com/Aniverse/ygnrmRuUagpgPvr4rW97/trunk/ubuntu14.04/lib ~/iFeral/qb/library
-         wget   -q https://github.com/Aniverse/ygnrmRuUagpgPvr4rW97/raw/master/ubuntu14.04/qbittorrent-nox.$QBVERSION -O ~/iFeral/qb/qbittorrent-nox.$QBVERSION
+    if   [[ $CODENAME =~ (trusty|jessie|stretch) ]]; then
+         svn co -q https://github.com/Aniverse/ygnrmRuUagpgPvr4rW97/trunk/$CODENAME/lib ~/iFeral/qb/library
+         wget   -q https://github.com/Aniverse/ygnrmRuUagpgPvr4rW97/raw/master/$CODENAME/qbittorrent-nox.$QBVERSION -O ~/iFeral/qb/qbittorrent-nox.$QBVERSION
          chmod +x ~/iFeral/qb/qbittorrent-nox.$QBVERSION
     else
-         echo -e "${bold}${yellow}暂时不支持系统非 Debian8/9、Ubuntu 14.04 以外的盒子 ...${normal}\n" ; exit 1
+         echo -e "${bold}${yellow}暂时不支持系统非 Debian8/9、Ubuntu 14.04 的盒子 ...${normal}\n" ; exit 1
     fi
     chmod +x -R ~/iFeral/qb ; echo
 fi
