@@ -3,8 +3,8 @@
 # https://github.com/Aniverse/iFeral
 # bash -c "$(wget -qO- https://github.com/Aniverse/iFeral/raw/master/i)"
 #
-iFeralVer=0.6.1
-iFeralDate=2018.09.08
+iFeralVer=0.6.2
+iFeralDate=2018.10.25
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -67,6 +67,7 @@ portCheck2() { while [[ "$( ~/iFeral/app/netstat -ln | grep ':'"$portGen2"'' | g
 cd ; current_disk=`  echo $(pwd) | sed "s/\/$(whoami)//" | sed s"/\/home//"  `
 Seedbox=Unknown ; [[ `  hostname -f | grep feral  ` ]] && Seedbox=FH ; [[ `  hostname -f | grep seedhost  ` ]] && Seedbox=SH
 [[ `  hostname -f | grep ultraseedbox  ` ]] && Seedbox=USB
+[[ `  hostname -f | grep pulsedmedia   ` ]] && Seedbox=PM
 
 # -----------------------------------------------------------------------------------
 
@@ -79,8 +80,9 @@ function _logo() {
 cd ; clear ; wget --timeout=7 -qO- https://github.com/Aniverse/iFeral/raw/master/files/iFeral.logo.1
 echo -e "${bold}Ver. $iFeralDate    \n"
 [[ $Seedbox == Unknown ]] && echo -e "${warn} 你这个似乎不是 FH 或 SH 的盒子，不保证本脚本能正常工作！\n"
-[[ $Seedbox == SH ]] && echo -e "${atte} 本脚本主要为 FH 盒子设计，不保证所有功能都能在 SH 盒子上正常工作！\n"
-[[ $Seedbox == USB ]] && echo -e "${atte} 本脚本主要为 FH 盒子设计，不保证所有功能都能在 USB 盒子上正常工作！\n"
+[[ $Seedbox == SH ]] && echo -e "${atte} 本脚本主要为 FH 盒子设计，不保证所有功能都能在 SeedHost 盒子上正常工作！\n"
+[[ $Seedbox == USB ]] && echo -e "${atte} 本脚本主要为 FH 盒子设计，不保证所有功能都能在 UltraSeedBox 盒子上正常工作！\n"
+[[ $Seedbox == PM ]] && echo -e "${atte} 本脚本主要为 FH 盒子设计，不保证所有功能都能在 PulsedMedia 盒子上正常工作！\n"
 # echo -e "${atte} 1 和 2 以外的选项我都没怎么测试过，不保证一定能用\n"
 }
 
@@ -121,6 +123,7 @@ echo -e "${green}(09) ${jiacu}查看 邻居            "
 echo -e "${green}(10) ${jiacu}设置 .profile        "
 echo -e "${green}(11) ${jiacu}使用 zsh             "
 echo -e "${green}(12) ${jiacu}安装 Aria2 & AriaNG  "
+echo -e "${green}(13) ${jiacu}安装 qBittorrent (test)  "
 echo -e "${green}(99) ${jiacu}退出脚本             "
 echo -e "${normal}"
 
@@ -154,6 +157,7 @@ case $response in
         10) _set_profile ; echo ; _main_menu ;;
         11) _set_zsh     ; echo ; _main_menu ;;
         12) _install_aria2 ;;
+        13) _install_qb_v2 ;;
     99| "") clear ; exit 0 ;;
     *     ) clear ; exit 0 ;;
 esac
@@ -276,6 +280,135 @@ if [[ ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittorrent ` 
 else
     echo -e "${error} qBittorrent 安装完成，但无法正常运行。\n不要问我为什么和怎么办，你自己看着办吧！${normal}"
 fi ; }
+
+
+
+
+
+
+# 01. 安装 qBittorren，V2
+
+function _install_qb_v2() {
+
+echo ; mkdir -p ~/tmp ~/private/qbittorrent/{data,watch,torrents} ~/.config/{qBittorrent,flexget}
+
+# 关掉可能在运行的 qb
+for qbpid in ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittorrent | awk '{print $2}' ` ; do kill -9 $qbpid ; done
+
+# 询问版本
+QB_supported_versions="3.3.11 3.3.14 3.3.16 4.0.4 4.1.1 4.1.2 4.1.3"
+while [[ $QBVERSION = "" ]]; do
+    echo -e "${jiacu}当前可用的版本为 $QB_supported_versions"
+    read -ep "${bold}${yellow}请输入你要使用的 qBittorrent 版本： ${normal}" QBVERSION
+    [[ ! ` ls ~/iFeral/qb | grep $QBVERSION ` ]] && { echo -e "${error} 你输入的版本不可用，请重新输入！" ; unset QBVERSION ; }
+done
+
+# 下载
+if [[ ! `  ls ~/iFeral/qb/library  2>/dev/null  `  ]]; then
+    echo -e "${bold}${yellow}下载 qbittorrent-nox ...${normal}\n"
+    if   [[ $CODENAME == jessie ]]; then
+         svn co -q https://github.com/Aniverse/ygnrmRuUagpgPvr4rW97/trunk/debian8/lib ~/iFeral/qb/library
+         wget   -q https://github.com/Aniverse/ygnrmRuUagpgPvr4rW97/raw/master/debian8/qbittorrent-nox.$QBVERSION -O ~/iFeral/qb/qbittorrent-nox.$QBVERSION
+         chmod +x ~/iFeral/qb/qbittorrent-nox.$QBVERSION
+    elif [[ $CODENAME == stretch ]]; then
+         svn co -q https://github.com/Aniverse/ygnrmRuUagpgPvr4rW97/trunk/debian9/lib ~/iFeral/qb/library
+         wget   -q https://github.com/Aniverse/ygnrmRuUagpgPvr4rW97/raw/master/debian9/qbittorrent-nox.$QBVERSION -O ~/iFeral/qb/qbittorrent-nox.$QBVERSION
+         chmod +x ~/iFeral/qb/qbittorrent-nox.$QBVERSION
+    elif [[ $CODENAME == trusty ]]; then
+         svn co -q https://github.com/Aniverse/ygnrmRuUagpgPvr4rW97/trunk/ubuntu14.04/lib ~/iFeral/qb/library
+         wget   -q https://github.com/Aniverse/ygnrmRuUagpgPvr4rW97/raw/master/ubuntu14.04/qbittorrent-nox.$QBVERSION -O ~/iFeral/qb/qbittorrent-nox.$QBVERSION
+         chmod +x ~/iFeral/qb/qbittorrent-nox.$QBVERSION
+    else
+         echo -e "${bold}${yellow}暂时不支持系统非 Debian8/9、Ubuntu 14.04 以外的盒子 ...${normal}\n" ; exit 1
+    fi
+    chmod +x -R ~/iFeral/qb ; echo
+fi
+
+# 询问是否覆盖原配置信息
+if [[ -e ~/.config/qBittorrent/qBittorrent.conf ]]; then
+    echo -e "\n${atte} 你以前装过 qBittorrent，那时的配置文件还留着\n其中包含着 qBittorrent 的账号、密码、端口、下载路径等信息"
+    read -ep "你现在要使用以前留下的配置文件吗？${normal} [${cyan}Y${normal}/n]: " responce
+    case $responce in
+        [yY] | [yY][Ee][Ss] | "" ) qbconfig=old ;;
+        [nN] | [nN][Oo]          ) qbconfig=new ;;
+        *                        ) qbconfig=old ;;
+    esac
+else
+    qbconfig=new
+fi
+
+# 新建配置文件
+if [[ $qbconfig == new ]]; then
+    echo ; read -ep "${bold}${yellow}请输入你要用于 qBittorrent WebUI 的密码：${normal}" PASSWORD
+    QBPASS=`  echo -n $PASSWORD | md5sum | awk '{print $1}'  `
+    [[ -e ~/.config/qBittorrent/qBittorrent.conf ]] && { rm -rf ~/.config/qBittorrent/qBittorrent.conf.backup ; mv -f ~/.config/qBittorrent/qBittorrent.conf ~/.config/qBittorrent/qBittorrent.conf.backup ; }
+    portGenerator && portCheck
+    portGenerator2 && portCheck2
+
+[[ $Seedbox == FH  ]] && QBDL_PATH="${USERPATH}/private/qbittorrent/data"
+[[ $Seedbox == SH  ]] && QBDL_PATH="${USERPATH}/private/qbittorrent/data"
+[[ $Seedbox == PM  ]] && QBDL_PATH="${USERPATH}/data" # 和 rtorrent 共用
+[[ $Seedbox == SUB ]] && QBDL_PATH="${USERPATH}/data" # 还不知道 USB 的格式是什么样子的
+
+cat > ~/.config/qBittorrent/qBittorrent.conf <<EOF
+[Application]
+FileLogger\Enabled=true
+FileLogger\Age=6
+FileLogger\DeleteOld=true
+FileLogger\Backup=true
+FileLogger\AgeType=1
+FileLogger\Path=~/iFeral/log
+FileLogger\MaxSize=20
+
+[LegalNotice]
+Accepted=true
+
+[Preferences]
+Bittorrent\AddTrackers=false
+Bittorrent\DHT=false
+Bittorrent\Encryption=1
+Bittorrent\LSD=false
+Bittorrent\MaxConnecs=-1
+Bittorrent\MaxConnecsPerTorrent=-1
+Bittorrent\MaxRatioAction=0
+Bittorrent\PeX=false
+Bittorrent\uTP=false
+Bittorrent\uTP_rate_limited=false
+Connection\GlobalDLLimitAlt=0
+Connection\GlobalUPLimitAlt=0
+Connection\PortRangeMin=$portGen2
+General\Locale=zh
+Queueing\QueueingEnabled=false
+Downloads\SavePath=${USERPATH}/private/qbittorrent/data
+
+WebUI\Port=$portGen
+WebUI\Password_ha1=@ByteArray($QBPASS)
+WebUI\Username=$(whoami)
+EOF
+fi
+
+# 检查端口与用户名
+QBPORT=` grep "WebUI.Port" ~/.config/qBittorrent/qBittorrent.conf | grep -Po "\d+" `
+QBUSERNAME=` grep "WebUI.Username" ~/.config/qBittorrent/qBittorrent.conf | awk -F "=" '{print $NF}' `
+
+# 运行 qBittorrent-nox
+TMPDIR=~/tmp LD_LIBRARY_PATH=~/iFeral/qb/library ~/iFeral/qb/qbittorrent-nox.$QBVERSION -d
+
+# 输出结果
+if [[ ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittorrent ` ]]; then
+    echo -e "\n${bold}${green}qBittorrent 已安装完成！${jiacu}\n"
+    echo -e "网址  ${cyan}http://$(hostname -f):$QBPORT${jiacu}"
+    echo -e "账号  ${cyan}$QBUSERNAME${jiacu}"
+    [[ $qbconfig == new ]] &&
+    echo -e "密码  ${cyan}$PASSWORD${normal}"
+    [[ $qbconfig == old ]] &&
+    echo -e "密码  ${cyan}(和以前一样)${normal}"
+    echo "$QBVERSION" > ~/iFeral/qbversion.lock
+else
+    echo -e "${error} qBittorrent 安装完成，但无法正常运行。\n${normal}"
+fi ; }
+
+
 
 
 
