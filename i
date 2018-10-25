@@ -3,7 +3,7 @@
 # https://github.com/Aniverse/iFeral
 # bash -c "$(wget -qO- https://github.com/Aniverse/iFeral/raw/master/i)"
 #
-iFeralVer=0.6.3
+iFeralVer=0.6.4
 iFeralDate=2018.10.25
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
@@ -60,12 +60,15 @@ function isValidIpAddress() { echo $1 | grep -qE '^[0-9][0-9]?[0-9]?\.[0-9][0-9]
 function isInternalIpAddress() { echo $1 | grep -qE '(192\.168\.((\d{1,2})|(1\d{2})|(2[0-4]\d)|(25[0-5]))\.((\d{1,2})$|(1\d{2})$|(2[0-4]\d)$|(25[0-5])$))|(172\.((1[6-9])|(2\d)|(3[0-1]))\.((\d{1,2})|(1\d{2})|(2[0-4]\d)|(25[0-5]))\.((\d{1,2})$|(1\d{2})$|(2[0-4]\d)$|(25[0-5])$))|(10\.((\d{1,2})|(1\d{2})|(2[0-4]\d)|(25[0-5]))\.((\d{1,2})|(1\d{2})|(2[0-4]\d)|(25[0-5]))\.((\d{1,2})$|(1\d{2})$|(2[0-4]\d)$|(25[0-5])$))' ; }
 
 ### 端口生成与检查 ###
-portGenerator() { portGen=$(shuf -i 10001-32001 -n1) ; } ; portGenerator2() { portGen2=$(shuf -i 10001-32001 -n1) ; }
+portGenerator() { portGen=$(shuf -i 10001- 32001 -n1) ; } ; portGenerator2() { portGen2=$(shuf -i 10001-32001 -n1) ; }
 portCheck() { while [[ "$( ~/iFeral/app/netstat -ln | grep ':'"$portGen"'' | grep -c 'LISTEN')" -eq "1" ]]; do portGenerator ; done ; }
 portCheck2() { while [[ "$( ~/iFeral/app/netstat -ln | grep ':'"$portGen2"'' | grep -c 'LISTEN')" -eq "1" ]]; do portGenerator2 ; done ; }
 
 cd ; current_disk=`  echo $(pwd) | sed "s/\/$(whoami)//" | sed s"/\/home//"  `
-Seedbox=Unknown ; [[ `  hostname -f | grep feral  ` ]] && Seedbox=FH ; [[ `  hostname -f | grep seedhost  ` ]] && Seedbox=SH
+[[ $Seedbox == PM ]] && current_disk="/home"
+
+Seedbox=Unknown
+[[ `  hostname -f | grep feral  ` ]] && Seedbox=FH ; [[ `  hostname -f | grep seedhost  ` ]] && Seedbox=SH
 [[ `  hostname -f | grep ultraseedbox  ` ]] && Seedbox=USB
 [[ `  hostname -f | grep pulsedmedia   ` ]] && Seedbox=PM
 
@@ -147,13 +150,7 @@ case $response in
     8 | 08) # 查看 系统信息
             _stats ; echo ; _main_menu ;;
     9 | 09) # 查看 所有邻居
-            clear
-            echo -e "${bold}${cayn}以下是当前和你在同一个硬盘分区上的邻居${normal}\n"
-            getent passwd | grep -v $(whoami) | grep $current_disk/ | awk -F ":" '{print $1}' | pr -3 -t ; echo
-            echo -e "${bold}${cayn}以下是整个盒子上所有的邻居${normal}\n"
-            getent passwd | grep -v $(whoami) | grep -E 'home[0-9]+|media' | awk -F ':' '{print $1}' | sort -u | pr -3 -t ; echo
-          # getent passwd | grep -Ev "$(whoami)|nologin|/bin/false|/bin/sync|/var/lib/libuuid|root" | awk -F ':' '{print $6}' | sort -u | pr -3 -t ; echo
-            echo ; _main_menu ;;
+            _show_neighbor ; echo ; _main_menu ;;
         10) _set_profile ; echo ; _main_menu ;;
         11) _set_zsh     ; echo ; _main_menu ;;
         12) _install_aria2 ;;
@@ -823,6 +820,22 @@ echo ; }
 
 
 
+
+
+# 09. 查看邻居信息
+function _show_neighbor() { clear
+if [[ $Seedbox =~ (FH|SH) ]]; then
+    echo -e "${bold}${cayn}以下是当前和你在同一个硬盘分区上的邻居${normal}\n"
+    getent passwd | grep -v $(whoami) | grep "${current_disk}/" | awk -F ":" '{print $1}' | pr -3 -t ; echo
+    echo -e "${bold}${cayn}以下是整个盒子上所有的邻居${normal}\n"
+    getent passwd | grep -v $(whoami) | grep -E 'home[0-9]+|media' | awk -F ':' '{print $1}' | sort -u | pr -3 -t ; echo
+  # getent passwd | grep -Ev "$(whoami)|nologin|/bin/false|/bin/sync|/var/lib/libuuid|root" | awk -F ':' '{print $6}' | sort -u | pr -3 -t ; echo
+elif [[ $Seedbox == PM ]]; then
+    echo -e "${bold}${cayn}以下是整个盒子上所有的邻居${normal}\n"
+    getent passwd | grep -v $(whoami) | grep "/home/" | awk -F ':' '{print $1}' | sort -u | pr -3 -t ; echo
+else
+    echo -e "${bold}暂不支持你使用的盒子！${normal}\n"
+fi ; }
 
 
 
