@@ -3,8 +3,8 @@
 # https://github.com/Aniverse/iFeral
 # bash -c "$(wget -qO- https://github.com/Aniverse/iFeral/raw/master/i)"
 #
-iFeralVer=0.6.5
-iFeralDate=2018.10.25
+iFeralVer=0.6.8
+iFeralDate=2018.12.02
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -20,24 +20,19 @@ error="${baihongse}${bold} 错误 ${jiacu}" ; warn="${baihongse}${bold} 警告 $
 # 调试 -----------------------------------------------------------------------------------
 DeBUG=0 ; [[ $1 == -d ]] && DeBUG=1
 # 系统检测 -----------------------------------------------------------------------------------
-get_opsy() {
-[[ -f /etc/redhat-release ]] && awk '{print ($1,$3~/^[0-9]/?$3:$4)}' /etc/redhat-release      && return
-[[ -f /etc/os-release     ]] && awk -F'[= "]' '/PRETTY_NAME/{print $3,$4,$5}' /etc/os-release && return
-[[ -f /etc/lsb-release    ]] && awk -F'[="]+' '/DESCRIPTION/{print $2}' /etc/lsb-release      && return ; }
-
-  if [[ -f /etc/redhat-release ]]; then faxingban="centos"
-elif cat /etc/issue | grep -Eqi "debian"; then faxingban="debian"
-elif cat /etc/issue | grep -Eqi "ubuntu"; then faxingban="ubuntu"
-elif cat /etc/issue | grep -Eqi "centos|red hat|redhat"; then faxingban="centos"
-elif cat /proc/version | grep -Eqi "debian"; then faxingban="debian"
-elif cat /proc/version | grep -Eqi "ubuntu"; then faxingban="ubuntu"
-elif cat /proc/version | grep -Eqi "centos|red hat|redhat"; then faxingban="centos" ; fi
-
 DISTRO=`  awk -F'[= "]' '/PRETTY_NAME/{print $3}' /etc/os-release  `
 DISTROL=`  echo $DISTRO | tr 'A-Z' 'a-z'  `
 CODENAME=`  cat /etc/os-release | grep VERSION= | tr '[A-Z]' '[a-z]' | sed 's/\"\|(\|)\|[0-9.,]\|version\|lts//g' | awk '{print $2}'  `
 [[ $DISTRO == Ubuntu ]] && osversion=`  grep Ubuntu /etc/issue | head -1 | grep -oE  "[0-9.]+"  `
 [[ $DISTRO == Debian ]] && osversion=`  cat /etc/debian_version  `
+# 盒子检测 -----------------------------------------------------------------------------------
+serverfqdn=$( hostname -f )
+Seedbox=Unknown
+echo $serverfqdn | grep -q feral          && Seedbox=FH
+echo $serverfqdn | grep -q seedhost       && Seedbox=SH
+echo $serverfqdn | grep -q pulsedmedia    && Seedbox=PM
+echo $serverfqdn | grep -q ultraseedbox   && Seedbox=USB
+[[ $Seedbox == FH ]] && df -hPl | grep -q "/media/md" && FH_SSD=1
 
 # 参数检测 -----------------------------------------------------------------------------------
 
@@ -60,17 +55,55 @@ function isValidIpAddress() { echo $1 | grep -qE '^[0-9][0-9]?[0-9]?\.[0-9][0-9]
 function isInternalIpAddress() { echo $1 | grep -qE '(192\.168\.((\d{1,2})|(1\d{2})|(2[0-4]\d)|(25[0-5]))\.((\d{1,2})$|(1\d{2})$|(2[0-4]\d)$|(25[0-5])$))|(172\.((1[6-9])|(2\d)|(3[0-1]))\.((\d{1,2})|(1\d{2})|(2[0-4]\d)|(25[0-5]))\.((\d{1,2})$|(1\d{2})$|(2[0-4]\d)$|(25[0-5])$))|(10\.((\d{1,2})|(1\d{2})|(2[0-4]\d)|(25[0-5]))\.((\d{1,2})|(1\d{2})|(2[0-4]\d)|(25[0-5]))\.((\d{1,2})$|(1\d{2})$|(2[0-4]\d)$|(25[0-5])$))' ; }
 
 ### 端口生成与检查 ###
+# https://bitbucket.org/feralio/wiki/src/master/src/wiki/software/qbittorrent/qbittorrent.sh?at=master&fileviewer=file-view-default
 portGenerator() { portGen=$(shuf -i 10001-32001 -n1) ; } ; portGenerator2() { portGen2=$(shuf -i 10001-32001 -n1) ; }
-portCheck() { while [[ "$( ~/iFeral/app/netstat -ln | grep ':'"$portGen"'' | grep -c 'LISTEN')" -eq "1" ]]; do portGenerator ; done ; }
-portCheck2() { while [[ "$( ~/iFeral/app/netstat -ln | grep ':'"$portGen2"'' | grep -c 'LISTEN')" -eq "1" ]]; do portGenerator2 ; done ; }
+portCheck() { while [[ "$(ss -ln | grep ':'"$portGen"'' | grep -c 'LISTEN')" -eq "1" ]]; do portGenerator ; done ; }
+portCheck2() { while [[ "$(ss -ln | grep ':'"$portGen2"'' | grep -c 'LISTEN')" -eq "1" ]]; do portGenerator2 ; done ; }
 
-cd ; current_disk=`  echo $(pwd) | sed "s/\/$(whoami)//" | sed s"/\/home//"  `
-[[ $Seedbox == PM ]] && current_disk="/home"
+[[ $Seedbox == USB ]] && current_disk=$(echo $(pwd) | sed "s/\/$(whoami)//") # /home11 这样子的
+[[ $Seedbox == PM  ]] && current_disk=$(echo $(pwd) | sed "s/\/$(whoami)//") # /home   这样子的
+[[ $Seedbox == SH  ]] && current_disk=$(echo $(pwd) | sed "s/\/$(whoami)//") # /home22 这样子的
+[[ $Seedbox == FH  ]] && current_disk=$(echo $(pwd) | sed "s/\/$(whoami)//") # /media/sdk1 这样子的，或者 /media/98811
+[[ $Seedbox == FH  ]] && echo $current_disk | grep -q "/home" && current_disk=$(echo $current_disk | sed "s/\/home//") && FH_HOME=1 # /media/sdr1/home 这样子的，一些老的 FH HDD 会出现这样的
 
-Seedbox=Unknown
-[[ `  hostname -f | grep feral  ` ]] && Seedbox=FH ; [[ `  hostname -f | grep seedhost  ` ]] && Seedbox=SH
-[[ `  hostname -f | grep ultraseedbox  ` ]] && Seedbox=USB
-[[ `  hostname -f | grep pulsedmedia   ` ]] && Seedbox=PM
+# 所有邻居
+
+if [[ $Seedbox == USB ]]; then
+    getent passwd | grep -Ev "$(whoami)|root" | grep -E "/bin/sh|/bin/bash" | grep -E "/home[0-9]+/" | wc -l > ~/neighbors_all
+elif [[ $Seedbox == PM ]]; then
+    getent passwd | grep -Ev "$(whoami)|root" | grep -E "/bin/sh|/bin/bash" | grep -E "/home/" > ~/neighbors_all
+elif [[ $Seedbox == FH ]]; then
+    getent passwd | grep -Ev "$(whoami)|root" | grep -E "/bin/sh|/bin/bash" | grep -E "/media/" > ~/neighbors_all
+elif [[ $Seedbox == SH ]]; then
+    getent passwd | grep -Ev "$(whoami)|root" | grep -E "/bin/sh|/bin/bash" | grep -E "/home|/home[0-9]+" > ~/neighbors_all
+else
+    getent passwd | grep -Ev "$(whoami)|root" | grep -E "/bin/sh|/bin/bash" | grep -E "/home/|/home[0-9]+/|/media/" > ~/neighbors_all
+fi
+
+# 所有硬盘分区
+df -hPl | grep -wvP '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker|md[0-9]+/[a-z].*' | sort -u > ~/par_list
+
+neighbors_all_num=$(cat ~/neighbors_all | wc -l)
+neighbors_same_disk_num=$(cat ~/neighbors_all | grep "${current_disk}/" | wc -l)
+
+# 计算总共空间的时候，排除掉 FH SSD 每个用户限额的空间；计算已用空间的时候不排除（因为原先的单个 md 已用空间只有 128k/256k）
+disk_size1=($( LANG=C df -hPl | grep -wvP '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker|md[0-9]+/[a-z]*' | awk '{print $2}' ))
+disk_size2=($( LANG=C df -hPl | grep -wvP '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker' | awk '{print $3}' ))
+disk_total_size=$( calc_disk ${disk_size1[@]} )
+disk_used_size=$( calc_disk ${disk_size2[@]} )
+
+if [[ $FH_SSD == 1 ]];then
+    current_disk_size=($( LANG=C df -hPl | grep $(pwd) | awk '{print $2}' ))
+    current_disk_total_used=($( LANG=C df -hPl | grep $(pwd) | awk '{print $3}' ))
+    current_disk_self_used=$( du -sh ~ | awk -F " " '{print $1}' )
+else
+    current_disk_size=($( LANG=C df -hPl | grep $current_disk | awk '{print $2}' ))
+    current_disk_total_used=($( LANG=C df -hPl | grep $current_disk | awk '{print $3}' ))
+    current_disk_self_used=$( du -sh ~ | awk -F " " '{print $1}' )
+fi
+
+#current_disk_avai=($( LANG=C df -hPl | grep $current_disk | awk '{print $4}' ))
+#current_disk_perc=($( LANG=C df -hPl | grep $current_disk | awk '{print $5}' ))
 
 # -----------------------------------------------------------------------------------
 
@@ -100,7 +133,9 @@ git clone --depth=1 https://github.com/Aniverse/iFeral ; chmod -R +x ~/iFeral/ap
 cd ; clear ; wget --timeout=7 -qO- https://github.com/Aniverse/iFeral/raw/master/files/iFeral.logo.1
 echo -e "${bold}Ver. $iFeralVer    \n"
 mkdir -p ~/bin ~/lib ~/iFeral/backup ~/iFeral/log ~/.config ~/iSeed/{00.Tools,01.Screenshots,02.Torrents,03.BDinfo,04.BluRay}
+mkdir -p ~/.local/usr/{bin,lib,include} ~/.local/{bin,lib,include}
 fi
+user=$(whoami)
 USERPATH=` pwd `
 USERPATHSED=$( echo ${USERPATH} | sed -e 's/\//\\\//g' ) ; }
 
@@ -117,15 +152,15 @@ echo -e "${bold}${green}(01) ${jiacu}安装 qBittorrent     "
 echo -e "${green}(02) ${jiacu}安装 Deluge          "
 echo -e "\n不保证以下功能好用\n"
 #echo -e "${green}(03) ${jiacu}安装 Transmission   "
-echo -e "${green}(04) ${jiacu}降级 rTorrent        "
-echo -e "${green}(05) ${jiacu}配置 ruTorrent       "
+#echo -e "${green}(04) ${jiacu}降级 rTorrent        "
+#echo -e "${green}(05) ${jiacu}配置 ruTorrent       "
 echo -e "${green}(06) ${jiacu}安装 flexget         "
-echo -e "${green}(07) ${jiacu}安装 ffmpeg 等软件   "
+#echo -e "${green}(07) ${jiacu}安装 ffmpeg 等软件   "
 echo -e "${green}(08) ${jiacu}查看 系统信息        "
 echo -e "${green}(09) ${jiacu}查看 邻居            "
-echo -e "${green}(10) ${jiacu}设置 .profile        "
-echo -e "${green}(11) ${jiacu}使用 zsh             "
-echo -e "${green}(12) ${jiacu}安装 Aria2 & AriaNG  "
+#echo -e "${green}(10) ${jiacu}设置 .profile        "
+#echo -e "${green}(11) ${jiacu}使用 zsh             "
+#echo -e "${green}(12) ${jiacu}安装 Aria2 & AriaNG  "
 echo -e "${green}(13) ${jiacu}安装 qBittorrent (test)  "
 echo -e "${green}(99) ${jiacu}退出脚本             "
 echo -e "${normal}"
@@ -137,8 +172,8 @@ case $response in
             _install_qb ;;
     2 | 02) # 安装 Deluge
             _install_de ;;
-    3 | 03) # 安装 Transmission
-            _install_tr ;;
+    3 | 03) # 
+            clear ; exit 0 ;;
     4 | 04) # 降级 rTorrent
             _rt_downgrade ;;
     5 | 05) # 配置 ruTorrent
@@ -151,8 +186,6 @@ case $response in
             _stats ; echo ; _main_menu ;;
     9 | 09) # 查看 所有邻居
             _show_neighbor ; echo ; _main_menu ;;
-        10) _set_profile ; echo ; _main_menu ;;
-        11) _set_zsh     ; echo ; _main_menu ;;
         12) _install_aria2 ;;
         13) _install_qb_v2 ;;
     99| "") clear ; exit 0 ;;
@@ -763,23 +796,6 @@ processes=`ps aux | wc -l`
 date=$( date +%Y-%m-%d" "%H:%M:%S )
 arch=$( uname -m )
 
-neighbors_same_disk_num=`  getent passwd | grep -v $(whoami) | grep -Pv /bhome/b | grep $current_disk/ | wc -l  `
-neighbors_same_disk_name=`  getent passwd | grep -v $(whoami) | grep -Pv /bhome/b | grep $current_disk/ | awk -F ":" '{print $1}'  `
-neighbors_all_num=`  getent passwd | grep -v $(whoami) | grep -E "home[0-9]+|media" | wc -l  `
-disk_num=`  df -lh | grep -E "/home[0-9]+|media" | wc -l  `
-
-# 计算总共空间的时候，排除掉 FH SSD 每个用户限额的空间；计算已用空间的时候不排除（因为原先的单个 md 已用空间只有 128k/256k）
-disk_size1=($( LANG=C df -hPl | grep -wvP '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker|md[0-9]+/[a-z]*' | awk '{print $2}' ))
-disk_size2=($( LANG=C df -hPl | grep -wvP '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker' | awk '{print $3}' ))
-disk_total_size=$( calc_disk ${disk_size1[@]} )
-disk_used_size=$( calc_disk ${disk_size2[@]} )
-
-current_disk_size=($( LANG=C df -hPl | grep $current_disk | awk '{print $2}' ))
-current_disk_total_used=($( LANG=C df -hPl | grep $current_disk | awk '{print $3}' ))
-# current_disk_avai=($( LANG=C df -hPl | grep $current_disk | awk '{print $4}' ))
-# current_disk_perc=($( LANG=C df -hPl | grep $current_disk | awk '{print $5}' ))
-current_disk_self_used=` du -sh ~ | awk -F " " '{print $1}' `
-
 tcp_control=` cat /proc/sys/net/ipv4/tcp_congestion_control `
 [[ $tcp_control == bbr ]] && tcp_control="BBR (原版)"
 
@@ -825,218 +841,27 @@ echo ; }
 function _show_neighbor() { clear
 if [[ $Seedbox =~ (FH|SH) ]]; then
     echo -e "${bold}${cayn}以下是当前和你在同一个硬盘分区上的邻居${normal}\n"
-    getent passwd | grep -v $(whoami) | grep "${current_disk}/" | awk -F ":" '{print $1}' | pr -3 -t ; echo
+	cat ~/neighbors_all | grep "${current_disk}/" | awk -F ":" '{print $1}' | sort -u | pr -3 -t ; echo
     echo -e "${bold}${cayn}以下是整个盒子上所有的邻居${normal}\n"
-    getent passwd | grep -v $(whoami) | grep -E 'home[0-9]+|media' | awk -F ':' '{print $1}' | sort -u | pr -3 -t ; echo
+    cat ~/neighbors_all | awk -F ":" '{print $1}' | sort -u | pr -3 -t ; echo
   # getent passwd | grep -Ev "$(whoami)|nologin|/bin/false|/bin/sync|/var/lib/libuuid|root" | awk -F ':' '{print $6}' | sort -u | pr -3 -t ; echo
+    echo -e "${bold}${cayn}以下是整个盒子上所有的邻居（带路径）${normal}\n"
+    cat ~/neighbors_all | awk -F ":" '{print $6}' | sort -u | pr -3 -t ; echo
 elif [[ $Seedbox == PM ]]; then
+    echo -e "${bold}${cayn}以下是整个盒子上的邻居${normal}\n"
+    cat ~/neighbors_all | awk -F ":" '{print $1}' | sort -u | pr -3 -t ; echo
+elif [[ $Seedbox == USB ]]; then
+    echo -e "${bold}${cayn}以下是当前和你在同一个硬盘分区上的邻居${normal}\n"
+    cat ~/neighbors_all | grep "${current_disk}/" | awk -F ":" '{print $1}' | sort -u | pr -3 -t ; echo
     echo -e "${bold}${cayn}以下是整个盒子上所有的邻居${normal}\n"
-    getent passwd | grep -v $(whoami) | grep "/home/" | awk -F ':' '{print $1}' | sort -u | pr -3 -t ; echo
+    cat ~/neighbors_all | awk -F ":" '{print $1}' | sort -u | pr -3 -t ; echo
+    echo -e "${bold}${cayn}以下是整个盒子上所有的邻居（带路径）${normal}\n"
+    cat ~/neighbors_all | awk -F ":" '{print $6}' | sort -u | pr -3 -t ; echo
 else
-    echo -e "${bold}暂不支持你使用的盒子！${normal}\n"
+    echo -e "${bold}没适配你所使用的盒子，这个邻居列表不知道准不准，凑合着看下吧${normal}\n"
+    cat ~/neighbors_all | awk -F ":" '{print $1}' | sort -u | pr -3 -t ; echo
 fi ; }
 
-
-
-
-# 10. 设置 bash 环境
-function _set_profile() { 
-
-# 备份下，然后直接覆盖掉原先的内容
-cp -f ~/.profile ~/iFeral/backup/.profile."$(date "+%Y.%m.%d.%H.%M.%S")".bak >/dev/null 2>&1
-cat > ~/.profile <<EOF
-export LC_ALL=en_US.UTF-8
-export LANG=en_US.UTF-8
-export TZ="/usr/share/zoneinfo/Asia/Shanghai"
-
-export PATH=~/FH:~/iFeral/qb:~/iFeral/app:~/bin:~/pip/bin:~/.local/bin:\$PATH
-export LD_LIBRARY_PATH=~/lib:\$LD_LIBRARY_PATH
-
-[[ \$(ls ~/iFeral | grep qbversion.lock) ]] && QBVER=\$(cat ~/iFeral/qbversion.lock) && alias runqb='TMPDIR=~/tmp LD_LIBRARY_PATH=~/iFeral/qb/library ~/iFeral/qb/qbittorrent-nox.\$QBVER -d'
-
-cdk=\$(df -h | grep `pwd | awk -F '/' '{print \$2,\$3}' | sed "s/ /\//"` | awk '{print \$1}' | awk -F '/' '{print \$3}')
-[[ \$(echo \$cdk | grep -E "sd[a-z]+1") ]] && cdk=\$(echo \$cdk | sed "s/1//")
-alias io='iostat -d -x -m 1 | grep -E "\$cdk | rMB/s | wMB/s"'
-
-alias ios="iostat -d -x -m 1"
-alias wangsu='sar -n DEV 1| grep -E "rxkB\/s|txkB\/s|eth0|eth1"'
-
-alias killde='kill "\$(pgrep -fu "\$(whoami)" "deluged")"'
-alias killde2='kill "\$(pgrep -fu "\$(whoami)" "de2")"'
-alias killtr='kill "\$(pgrep -fu "\$(whoami)" "transmission-daemon")"'
-alias killrt='kill "\$(pgrep -fu "\$(whoami)" "/usr/local/bin/rtorrent")"'
-alias killqb='kill \$(pgrep -fu "\$(whoami)" "qbitt")'
-
-alias runde='deluged'
-alias runde2='~/bin/de2 -c ~/.config/deluge2 >/dev/null 2>&1'
-alias runrt='screen -S rtorrent rtorrent'
-
-alias deopen='cat /proc/\$(pgrep -fu "\$(whoami)" "deluged")/limits | grep open | grep -oP "\\d+"'
-alias de2open='cat /proc/\$(pgrep -fu "\$(whoami)" "de2")/limits | grep open | grep -oP "\\d+"'
-alias rtopen='cat /proc/\$(pgrep -fu "\$(whoami)" "/usr/local/bin/rtorrent")/limits | grep open | grep -oP "\\d+"'
-alias tropen='cat /proc/\$(pgrep -fu "\$(whoami)" "transmission-daemon")/limits | grep open | grep -oP "\\d+"'
-alias qbopen='cat /proc/\$(pgrep -fu "\$(whoami)" "qbitt")/limits | grep open | grep -oP "\\d+"'
-
-alias cesu='echo;python ~/iFeral/app/speedtest --share;echo'
-alias cesu2='python ~/iFeral/app/speedtest --share --server'
-alias cesu3="echo;python ~/iFeral/app/speedtest --list 2>&1 | head -n30 | grep --color=always -P '(\d+)\.(\d+)\skm|(\d+)(?=\))';echo"
-alias ls="ls -hAv --color --group-directories-first"
-alias ll="ls -hAlvZ --color --group-directories-first"
-alias shanchu='rm -rf'
-alias zjpid='ps aux | egrep "$(whoami)|COMMAND" | egrep -v "grep|aux|root"'
-alias pid="ps aux | grep -v grep | grep"
-alias scrl="screen -ls"
-alias quanxian="chmod -R +x"
-alias gclone="git clone --depth=1"
-alias fls="nano ~/.config/flexget/config.yml"
-
-alias scrgd="screen -U -R gooooogle"
-alias scrgdb="screen -S gooooogle -X quit"
-alias scrrt="screen -U -r rtorrent"
-alias scrad="screen -U -r autodl"
-
-alias cdb="cd .."
-alias cdde="cd ~/private/deluge/data"
-alias cdrt="cd ~/private/rtorrent/data"
-alias cdtr="cd ~/private/transmission/data"
-alias cdqb="cd ~/private/qbittorrent/data"
-EOF
-
-# screen 设置
-cat>~/.screenrc<<EOF
-shell -$SHELL
-
-startup_message off
-defutf8 on
-defencoding utf8  
-encoding utf8 utf8 
-defscrollback 23333
-EOF
-
-# SH 默认使用的是 bash
-echo -e "\n${atte} 切换到 bash 可能需要输入当前 SSH 的密码${normal}\n"
-chsh -s /bin/bash ; }
-
-
-
-
-
-
-# 11. 设置 zsh 环境
-function _set_zsh() { if [[ `command -v zsh` ]]; then
-cd ; echo -e "\n${atte} 等会儿切换到 zsh，到时候需要输入当前 SSH 的密码${normal}\n"
-rm -rf ~/.oh-my-zsh .zshrc
-sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
-wget -qO ~/.oh-my-zsh/themes/agnosterzak.zsh-theme http://raw.github.com/zakaziko99/agnosterzak-ohmyzsh-theme/master/agnosterzak.zsh-theme
-sed -i "s/robbyrussell/agnosterzak/g" ~/.zshrc
-
-cat >> ~/.zshrc <<EOF
-export LC_ALL=en_US.UTF-8
-export LANG=en_US.UTF-8
-export TZ="/usr/share/zoneinfo/Asia/Shanghai"
-
-export PATH=~/FH:~/iFeral/qb:~/iFeral/app:~/bin:~/pip/bin:~/.local/bin:\$PATH
-export LD_LIBRARY_PATH=~/lib:\$LD_LIBRARY_PATH
-
-alias -s sh='bash'
-alias -s log='tail -n50'
-alias -s gz='tar zxf'
-alias -s xz='tar xf'
-alias -s tgz='tar zxf'
-alias -s rar='unrar x'
-alias -s zip='unzip'
-alias -s bz2='tar -xjvf'
-
-[[ \$(ls ~/iFeral | grep qbversion.lock) ]] && QBVER=\$(cat ~/iFeral/qbversion.lock) && alias runqb='TMPDIR=~/tmp LD_LIBRARY_PATH=~/iFeral/qb/library ~/iFeral/qb/qbittorrent-nox.\$QBVER -d'
-
-cdk=\$(df -h | grep `pwd | awk -F '/' '{print \$2,\$3}' | sed "s/ /\//"` | awk '{print \$1}' | awk -F '/' '{print \$3}')
-[[ \$(echo \$cdk | grep -E "sd[a-z]+1") ]] && cdk=\$(echo \$cdk | sed "s/1//")
-alias io='iostat -d -x -m 1 | grep -E "\$cdk | rMB/s | wMB/s"'
-
-alias ios="iostat -d -x -m 1"
-alias wangsu='sar -n DEV 1| grep -E "rxkB\/s|txkB\/s|eth0|eth1"'
-
-alias killde='kill "\$(pgrep -fu "\$(whoami)" "deluged")"'
-alias killde2='kill "\$(pgrep -fu "\$(whoami)" "de2")"'
-alias killtr='kill "\$(pgrep -fu "\$(whoami)" "transmission-daemon")"'
-alias killrt='kill "\$(pgrep -fu "\$(whoami)" "/usr/local/bin/rtorrent")"'
-alias killqb='kill \$(pgrep -fu "\$(whoami)" "qbitt")'
-
-alias runde='deluged'
-alias runde2='~/bin/de2 -c ~/.config/deluge2 >/dev/null 2>&1'
-alias runrt='screen -S rtorrent rtorrent'
-
-alias deopen='cat /proc/\$(pgrep -fu "\$(whoami)" "deluged")/limits | grep open | grep -oP "\\d+"'
-alias de2open='cat /proc/\$(pgrep -fu "\$(whoami)" "de2")/limits | grep open | grep -oP "\\d+"'
-alias rtopen='cat /proc/\$(pgrep -fu "\$(whoami)" "/usr/local/bin/rtorrent")/limits | grep open | grep -oP "\\d+"'
-alias tropen='cat /proc/\$(pgrep -fu "\$(whoami)" "transmission-daemon")/limits | grep open | grep -oP "\\d+"'
-alias qbopen='cat /proc/\$(pgrep -fu "\$(whoami)" "qbitt")/limits | grep open | grep -oP "\\d+"'
-
-alias cesu='echo;python ~/iFeral/app/speedtest --share;echo'
-alias cesu2='python ~/iFeral/app/speedtest --share --server'
-alias cesu3="echo;python ~/iFeral/app/speedtest --list 2>&1 | head -n30 | grep --color=always -P '(\d+)\.(\d+)\skm|(\d+)(?=\))';echo"
-alias ls="ls -hAv --color --group-directories-first"
-alias ll="ls -hAlvZ --color --group-directories-first"
-alias shanchu='rm -rf'
-alias zjpid='ps aux | egrep "$(whoami)|COMMAND" | egrep -v "grep|aux|root"'
-alias pid="ps aux | grep -v grep | grep"
-alias scrl="screen -ls"
-alias quanxian="chmod -R +x"
-alias gclone="git clone --depth=1"
-alias fls="nano ~/.config/flexget/config.yml"
-
-alias scrgd="screen -U -R gooooogle"
-alias scrgdb="screen -S gooooogle -X quit"
-alias scrrt="screen -U -r rtorrent"
-alias scrad="screen -U -r autodl"
-
-alias cdb="cd .."
-alias cdde="cd ~/private/deluge/data"
-alias cdrt="cd ~/private/rtorrent/data"
-alias cdtr="cd ~/private/transmission/data"
-alias cdqb="cd ~/private/qbittorrent/data"
-
-# Fix numeric keypad  
-# 0 . Enter  
-bindkey -s "^[Op" "0"  
-bindkey -s "^[On" "."  
-bindkey -s "^[OM" "^M"  
-# 1 2 3  
-bindkey -s "^[Oq" "1"  
-bindkey -s "^[Or" "2"  
-bindkey -s "^[Os" "3"  
-# 4 5 6  
-bindkey -s "^[Ot" "4"  
-bindkey -s "^[Ou" "5"  
-bindkey -s "^[Ov" "6"  
-# 7 8 9  
-bindkey -s "^[Ow" "7"  
-bindkey -s "^[Ox" "8"  
-bindkey -s "^[Oy" "9"  
-# + - * /  
-bindkey -s "^[Ol" "+"  
-bindkey -s "^[Om" "-"  
-bindkey -s "^[Oj" "*"  
-bindkey -s "^[Oo" "/"  
-EOF
-
-chsh -s /usr/bin/zsh
-source ~/.zshrc
-
-# screen 设置
-cat>~/.screenrc<<EOF
-shell -$SHELL
-
-startup_message off
-defutf8 on
-defencoding utf8  
-encoding utf8 utf8 
-defscrollback 23333
-EOF
-
-else
-
-echo -e "\n${error} 你的盒子没有预装 zsh，故无法使用本功能！${normal}\n" ; fi ; }
 
 
 
