@@ -3,7 +3,7 @@
 # https://github.com/Aniverse/iFeral
 # bash -c "$(wget -qO- https://github.com/Aniverse/iFeral/raw/master/i)"
 #
-iFeralVer=0.6.9
+iFeralVer=0.7.0
 iFeralDate=2018.12.05
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
@@ -625,19 +625,16 @@ echo ; read -ep "${bold}${yellow}请输入你要用于 Flexget WebUI 的密码�
 #   pip install --user --ignore-installed --no-use-wheel virtualenv
 #   ~/.local/bin/virtualenv ~/pip --system-site-packages
 #   ~/pip/bin/pip install flexget
-#else
-    cd ; wget https://github.com/pypa/pip/archive/10.0.1.tar.gz
-    tar xf 10.0.1.tar.gz ; rm -f 10.0.1.tar.gz
-    cd pip-10.0.1
-    python setup.py install --user ; cd ; rm -rf pip-10.0.1
-    ~/.local/bin/pip install --user --upgrade pip setuptools 
-    ~/.local/bin/pip install --user markdown
-    ~/.local/bin/pip install --user testresources
-    ~/.local/bin/pip install --user virtualenv
-    ~/.local/bin/virtualenv --system-site-packages ~/pip/
-    ~/pip/bin/pip install flexget
-    ~/pip/bin/pip install transmissionrpc
+#
+#~/.local/bin/virtualenv --system-site-packages ~/pip/
+#~/pip/bin/pip install flexget
+#~/pip/bin/pip install transmissionrpc
 #fi
+
+wget -qO- https://bootstrap.pypa.io/get-pip.py | python - --user
+~/.local/bin/pip install --user --upgrade pip setuptools virtualenv
+~/.local/bin/pip install --user --upgrade markdown testresources
+~/.local/bin/pip install --user --upgrade deluge-client flexget transmissionrpc
 
 portGenerator && portCheck
 
