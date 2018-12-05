@@ -3,8 +3,8 @@
 # https://github.com/Aniverse/iFeral
 # bash -c "$(wget -qO- https://github.com/Aniverse/iFeral/raw/master/i)"
 #
-iFeralVer=0.6.8
-iFeralDate=2018.12.02
+iFeralVer=0.6.9
+iFeralDate=2018.12.05
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -69,7 +69,7 @@ portCheck2() { while [[ "$(ss -ln | grep ':'"$portGen2"'' | grep -c 'LISTEN')" -
 # 所有邻居
 
 if [[ $Seedbox == USB ]]; then
-    getent passwd | grep -Ev "$(whoami)|root" | grep -E "/bin/sh|/bin/bash" | grep -E "/home[0-9]+/" | wc -l > ~/neighbors_all
+    getent passwd | grep -Ev "$(whoami)|root" | grep -E "/bin/sh|/bin/bash" | grep -E "/home[0-9]+/" > ~/neighbors_all
 elif [[ $Seedbox == PM ]]; then
     getent passwd | grep -Ev "$(whoami)|root" | grep -E "/bin/sh|/bin/bash" | grep -E "/home/" > ~/neighbors_all
 elif [[ $Seedbox == FH ]]; then
