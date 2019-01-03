@@ -3,7 +3,7 @@
 # https://github.com/Aniverse/iFeral
 # bash -c "$(wget -qO- https://github.com/Aniverse/iFeral/raw/master/i)"
 #
-iFeralVer=0.7.2
+iFeralVer=0.7.3
 iFeralDate=2019.01.03
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
@@ -26,17 +26,29 @@ CODENAME=`  cat /etc/os-release | grep VERSION= | tr '[A-Z]' '[a-z]' | sed 's/\"
 [[ $DISTRO == Ubuntu ]] && osversion=`  grep Ubuntu /etc/issue | head -1 | grep -oE  "[0-9.]+"  `
 [[ $DISTRO == Debian ]] && osversion=`  cat /etc/debian_version  `
 # 盒子检测 -----------------------------------------------------------------------------------
-serverfqdn=$( hostname -f )
 Seedbox=Unknown
+org=$(wget -t1 -T6 -qO- 'http://ip-api.com/json' | awk -F '"' '{print $28}') 2>1
+echo "$org" | grep -q "Dedi Networks LTD" && Seedbox=DSD
+
+serverfqdn=$( hostname -f 2>1 )
+[ -z $serverfqdn ] && serverfqdn=$( hostname 2>1 )
+
 echo $serverfqdn | grep -q feral          && Seedbox=FH
 echo $serverfqdn | grep -q seedhost       && Seedbox=SH
 echo $serverfqdn | grep -q pulsedmedia    && Seedbox=PM
 echo $serverfqdn | grep -q ultraseedbox   && Seedbox=USB
-echo $serverfqdn | grep -q appbox         && Seedbox=AppBox
-echo $serverfqdn | grep -q seedboxes.cc   && Seedbox=Seedboxes.cc # 猜的，没机器测试
-# DediSeedbox 用 hostname -f 检测不到
+echo $serverfqdn | grep -q appbox         && Seedbox=AppBox && Docker=1
+echo $serverfqdn | grep -q seedboxes.cc   && Seedbox=Sbcc   && Docker=1
+
+# Seedboxco.net = vnc.USERNAME.appboxes.co
+# Seedboxes.cc 需要用 hostname 而不是 hostname -f，格式是 USERNAME-seedbox.cloud.seedboxes.cc
+# FH 是 hippolytus.feralhosting.com，用 hostname 的话就只有 hippolytus
+# DediSeedbox 用 hostname 检测不到，结果是 610787a74d5c 这样的
 
 [[ $Seedbox == FH ]] && df -hPl | grep -q "/media/md" && FH_SSD=1
+
+
+grep docker /proc/1/cgroup -qa && SeedboxType=Docker
 
 # 参数检测 -----------------------------------------------------------------------------------
 
@@ -156,7 +168,7 @@ function _main_menu() {
 
 echo -e "${bold}目前本脚本正在被作者 xjb 折腾中，不保证好用"
 echo -e "${bold}什么，你说 xjb 乱改你不会另外开一个 branch 么……"
-echo -e "${bold}作者：懒得管了，反正好像也没什么人用啊……"
+echo -e "${bold}作者：懒得管了，反正好像也没什么人用啊……\n"
 echo -e "${bold}${green}(01) ${jiacu}安装 qBittorrent (v3)    "
 echo -e "${green}(02) ${jiacu}安装 Deluge          "
 #echo -e "\n不保证以下功能好用\n"
@@ -251,12 +263,13 @@ if [[ $qbconfig == new ]]; then
     [[ -e ~/.config/qBittorrent/qBittorrent.conf ]] && { rm -rf ~/.config/qBittorrent/qBittorrent.conf.backup ; mv -f ~/.config/qBittorrent/qBittorrent.conf ~/.config/qBittorrent/qBittorrent.conf.backup ; }
     portGenerator && portCheck
     portGenerator2 && portCheck2
-    [[ $Seedbox == FH  ]] && QBDL_PATH="${USERPATH}/private/qBittorrent/data"
-    [[ $Seedbox == SH  ]] && QBDL_PATH="${USERPATH}/downloads"
-    [[ $Seedbox == PM  ]] && QBDL_PATH="${USERPATH}/data"
-    [[ $Seedbox == USB ]] && QBDL_PATH="${USERPATH}/Downloads"
+    [[ $Seedbox == FH  ]]    && QBDL_PATH="${USERPATH}/private/qBittorrent/data"
+    [[ $Seedbox == SH  ]]    && QBDL_PATH="${USERPATH}/downloads"
+    [[ $Seedbox == PM  ]]    && QBDL_PATH="${USERPATH}/data"
+    [[ $Seedbox == USB ]]    && QBDL_PATH="${USERPATH}/Downloads"
+    [[ $Seedbox == DSD ]]    && QBDL_PATH="/downloads"
+    [[ $Seedbox == Sbcc ]]   && QBDL_PATH="${USERPATH}/files/downloads"
     [[ $Seedbox == AppBox ]] && QBDL_PATH="/APPBOX_DATA/apps/qBittorrent"
-    [[ $Seedbox == sbcc ]] && QBDL_PATH="${USERPATH}/files/downloads"
     mkdir -p $QBDL_PATH ~/.config/qBittorrent
 cat > ~/.config/qBittorrent/qBittorrent.conf <<EOF
 [Application]
@@ -767,8 +780,7 @@ processes=`ps aux | wc -l`
 date=$( date +%Y-%m-%d" "%H:%M:%S )
 arch=$( uname -m )
 
-tcp_control=` cat /proc/sys/net/ipv4/tcp_congestion_control `
-[[ $tcp_control == bbr ]] && tcp_control="BBR (原版)"
+tcp_control=$(cat /proc/sys/net/ipv4/tcp_congestion_control 2>1)
 
 clear ; echo
 
@@ -777,12 +789,10 @@ echo " ${bold}"
 
 echo -e  "${bold}  完全限定域名  : ${cyan}$serverfqdn${normal}"
 echo -e  "${bold}  IPv4 地址     : ${cyan}$serveripv4${normal}"
-echo -ne "${bold}  IPv6 地址     : ${cyan}"
-
 if [[ $serveripv6 ]]; then
-echo -e "$serveripv6${normal}"
+echo -e  "${bold}  IPv6 地址     : ${cyan}$serveripv6${normal}"
 else
-echo -e "IPv6 尚未启用${normal}"
+sleep 0
 fi
 
 echo
@@ -797,9 +807,14 @@ echo -e  "${bold}  总硬盘大小    : ${cyan}共 $disk_num 个硬盘分区，�
 echo -e  "${bold}  当前硬盘大小  : ${cyan}${current_disk_size}B (共 ${current_disk_total_used}B 已用，其中你用了 ${current_disk_self_used}B)${normal}"
 echo -e  "${bold}  邻居数量      : ${cyan}整台机器共 $neighbors_all_num 位邻居，其中同硬盘邻居 $neighbors_same_disk_num 位${normal}"
 echo
-echo -e  "${bold}  操作系统      : ${cyan}$DISTRO $osversion $CODENAME ($arch)${normal}"
+echo -e  "${bold}  操作系统      : ${cyan}$DISTRO $osversion $CODENAME ($arch) ${yellow}$SeedboxType${normal}"
 echo -e  "${bold}  运行内核      : ${cyan}$running_kernel${normal}"
+if [[ $tcp_control ]]; then
 echo -e  "${bold}  TCP 拥塞控制  : ${cyan}$tcp_control${normal}"
+else
+sleep 0
+fi
+
 echo
 echo -e  "${bold}  服务器时间    : ${cyan}$date${normal}"
 echo ; }
