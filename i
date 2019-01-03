@@ -3,8 +3,8 @@
 # https://github.com/Aniverse/iFeral
 # bash -c "$(wget -qO- https://github.com/Aniverse/iFeral/raw/master/i)"
 #
-iFeralVer=0.7.1
-iFeralDate=2018.12.26
+iFeralVer=0.7.2
+iFeralDate=2019.01.03
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -154,6 +154,9 @@ USERPATHSED=$( echo ${USERPATH} | sed -e 's/\//\\\//g' ) ; }
 # 00. 导航菜单
 function _main_menu() {
 
+echo -e "${bold}目前本脚本正在被作者 xjb 折腾中，不保证好用"
+echo -e "${bold}什么，你说 xjb 乱改你不会另外开一个 branch 么……"
+echo -e "${bold}作者：懒得管了，反正好像也没什么人用啊……"
 echo -e "${bold}${green}(01) ${jiacu}安装 qBittorrent (v3)    "
 echo -e "${green}(02) ${jiacu}安装 Deluge          "
 #echo -e "\n不保证以下功能好用\n"
@@ -253,6 +256,7 @@ if [[ $qbconfig == new ]]; then
     [[ $Seedbox == PM  ]] && QBDL_PATH="${USERPATH}/data"
     [[ $Seedbox == USB ]] && QBDL_PATH="${USERPATH}/Downloads"
     [[ $Seedbox == AppBox ]] && QBDL_PATH="/APPBOX_DATA/apps/qBittorrent"
+    [[ $Seedbox == sbcc ]] && QBDL_PATH="${USERPATH}/files/downloads"
     mkdir -p $QBDL_PATH ~/.config/qBittorrent
 cat > ~/.config/qBittorrent/qBittorrent.conf <<EOF
 [Application]
@@ -289,7 +293,6 @@ WebUI\Port=$portGen
 WebUI\Password_ha1=@ByteArray($QBPASS)
 WebUI\Username=$(whoami)
 EOF
-fi
 fi ; }
 
 
