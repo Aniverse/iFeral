@@ -3,7 +3,7 @@
 # https://github.com/Aniverse/iFeral
 # bash -c "$(wget -qO- https://github.com/Aniverse/iFeral/raw/master/i)"
 #
-iFeralVer=0.7.3
+iFeralVer=0.7.4
 iFeralDate=2019.01.03
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
@@ -787,13 +787,19 @@ clear ; echo
 echo " ${bailanse}${bold}                                           08. 系统信息                                            ${normal}"
 echo " ${bold}"
 
+
+if [[ $serverfqdn ]]; then
 echo -e  "${bold}  完全限定域名  : ${cyan}$serverfqdn${normal}"
+else
+sleep 0
+fi
 echo -e  "${bold}  IPv4 地址     : ${cyan}$serveripv4${normal}"
 if [[ $serveripv6 ]]; then
 echo -e  "${bold}  IPv6 地址     : ${cyan}$serveripv6${normal}"
 else
 sleep 0
 fi
+
 
 echo
 echo -e  "${bold}  CPU 型号      : ${cyan}$CPUNum$cname${normal}"
@@ -803,10 +809,18 @@ echo -e  "${bold}  内存大小      : ${cyan}$tram MB ($uram MB 已用)${normal
 echo -e  "${bold}  运行时间      : ${cyan}$uptime1${normal}"
 echo -e  "${bold}  系统负载      : ${cyan}$load${normal}"
 echo
+
+
+if [[ $$SeedboxType == Docker ]]; then
+sleep 0
+else
 echo -e  "${bold}  总硬盘大小    : ${cyan}共 $disk_num 个硬盘分区，合计 $disk_total_size GB ($disk_used_size GB 已用)${normal}"
 echo -e  "${bold}  当前硬盘大小  : ${cyan}${current_disk_size}B (共 ${current_disk_total_used}B 已用，其中你用了 ${current_disk_self_used}B)${normal}"
 echo -e  "${bold}  邻居数量      : ${cyan}整台机器共 $neighbors_all_num 位邻居，其中同硬盘邻居 $neighbors_same_disk_num 位${normal}"
 echo
+fi
+
+
 echo -e  "${bold}  操作系统      : ${cyan}$DISTRO $osversion $CODENAME ($arch) ${yellow}$SeedboxType${normal}"
 echo -e  "${bold}  运行内核      : ${cyan}$running_kernel${normal}"
 if [[ $tcp_control ]]; then
@@ -814,6 +828,7 @@ echo -e  "${bold}  TCP 拥塞控制  : ${cyan}$tcp_control${normal}"
 else
 sleep 0
 fi
+
 
 echo
 echo -e  "${bold}  服务器时间    : ${cyan}$date${normal}"
