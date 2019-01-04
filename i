@@ -3,8 +3,8 @@
 # https://github.com/Aniverse/iFeral
 # bash -c "$(wget -qO- https://github.com/Aniverse/iFeral/raw/master/i)"
 #
-iFeralVer=0.7.4
-iFeralDate=2019.01.03
+iFeralVer=0.7.5
+iFeralDate=2019.01.04
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -76,11 +76,15 @@ portGenerator() { portGen=$(shuf -i 10001-32001 -n1) ; } ; portGenerator2() { po
 portCheck() { while [[ "$(ss -ln | grep ':'"$portGen"'' | grep -c 'LISTEN')" -eq "1" ]]; do portGenerator ; done ; }
 portCheck2() { while [[ "$(ss -ln | grep ':'"$portGen2"'' | grep -c 'LISTEN')" -eq "1" ]]; do portGenerator2 ; done ; }
 
-[[ $Seedbox == USB ]] && current_disk=$(echo $(pwd) | sed "s/\/$(whoami)//") # /home11 这样子的
-[[ $Seedbox == PM  ]] && current_disk=$(echo $(pwd) | sed "s/\/$(whoami)//") # /home   这样子的
-[[ $Seedbox == SH  ]] && current_disk=$(echo $(pwd) | sed "s/\/$(whoami)//") # /home22 这样子的
-[[ $Seedbox == FH  ]] && current_disk=$(echo $(pwd) | sed "s/\/$(whoami)//") # /media/sdk1 这样子的，或者 /media/98811
-[[ $Seedbox == FH  ]] && echo $current_disk | grep -q "/home" && current_disk=$(echo $current_disk | sed "s/\/home//") && FH_HOME=1 # /media/sdr1/home 这样子的，一些老的 FH HDD 会出现这样的
+[[ $Seedbox == USB    ]] && current_disk=$(echo $(pwd) | sed "s/\/$(whoami)//") # /home11    这样子的
+[[ $Seedbox == PM     ]] && current_disk=$(echo $(pwd) | sed "s/\/$(whoami)//") # /home       这样子的
+[[ $Seedbox == SH     ]] && current_disk=$(echo $(pwd) | sed "s/\/$(whoami)//") # /home22     这样子的
+[[ $Seedbox == FH     ]] && current_disk=$(echo $(pwd) | sed "s/\/$(whoami)//") # /media/sdk1 这样子的，或者 /media/98811
+[[ $Seedbox == DSD    ]] && current_disk=$(echo $(pwd) | sed "s/\/$(whoami)//") # /           这样子的
+[[ $Seedbox == Sbcc   ]] && current_disk=$(echo $(pwd) | sed "s/\/$(whoami)//") # /home/user  这样子的
+[[ $Seedbox == AppBox ]] && [[ ! $(whoami) == root  ]] && current_disk=/home/$(whoami)
+[[ $Seedbox == AppBox ]] && [[   $(whoami) == root  ]] && current_disk=/root
+[[ $Seedbox == FH     ]] && echo $current_disk | grep -q "/home" && current_disk=$(echo $current_disk | sed "s/\/home//") && FH_HOME=1 # /media/sdr1/home 这样子的，一些老的 FH HDD 会出现这样的
 
 # 所有邻居
 
@@ -741,7 +745,7 @@ sed -i "s|(getExternal('mediainfo')|(getExternal('$(pwd)/bin/mediainfo')|g" ~/ww
 # 08. 查看盒子信息
 function _stats() { 
 
-echo -e "\n${bold}正在检查系统信息，请稍等 ... ${normal}\n"
+echo -e "\n${bold}正在检查系统信息，请稍等 ... ${normal}"
 
 # current_disk=`  echo $(pwd) | sed "s/\/$(whoami)//" | sed s"/\/home//"  `
 # cdk=$(df -h | grep `pwd | awk -F '/' '{print $2,$3}' | sed "s/ /\//"` | awk '{print $1}' | awk -F '/' '{print $3}')
@@ -782,23 +786,39 @@ arch=$( uname -m )
 
 tcp_control=$(cat /proc/sys/net/ipv4/tcp_congestion_control 2>1)
 
+echo -e "${bold}正在检查服务器的其他 IP 信息 ... (可能比较慢)${normal}\n"
+
+ipip_result=~/ipip_result
+wget --no-check-certificate -qO- https://www.ipip.net/ip.html > $ipip_result 2>&1
+
+# DediSeedbox 这蛋疼玩意儿没法在命令里带中文……
+  ipip_IP=$( cat $ipip_result | grep -A3 IP     | grep -oE "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+" | head -1 )
+ ipip_ASN=$( cat $ipip_result | grep -C7 ASN    | grep -oE "AS[0-9]+" | head -1 )
+ipip_CIDR=$( cat $ipip_result | grep -C7 ASN    | grep -oE "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/[0-9]+" | head -1 )
+  ipip_AS=$( cat $ipip_result | grep -A1 $ipip_CIDR | grep -v $ipip_CIDR | grep -oE ">.*<" | sed "s/>//" | sed "s/<//" | head -1 )
+ipip_rDNS=$( cat $ipip_result | grep -oE "rDNS: [a-zA-Z0-9.-]+" | sed "s/rDNS: //" )
+ ipip_Loc=$( cat $ipip_result | grep -A7 "https://tools.ipip.net/traceroute.php?ip=" | tail -1 | grep -oE ">.*<" | sed "s/>//" | sed "s/<//" )
+ ipip_ISP=$( cat $ipip_result | grep -A9 "$ipip_Loc" | tail -1 | grep -oE ">.*<" | sed "s/>//" | sed "s/<//" )
+
 clear ; echo
 
 echo " ${bailanse}${bold}                                           08. 系统信息                                            ${normal}"
 echo " ${bold}"
 
 
-if [[ $serverfqdn ]]; then
+    if [[ ! $Seedbox == Sbcc ]]; then
 echo -e  "${bold}  完全限定域名  : ${cyan}$serverfqdn${normal}"
-else
-sleep 0
-fi
+    else sleep 0 ; fi
 echo -e  "${bold}  IPv4 地址     : ${cyan}$serveripv4${normal}"
-if [[ $serveripv6 ]]; then
+    if [[ $serveripv6 ]]; then
 echo -e  "${bold}  IPv6 地址     : ${cyan}$serveripv6${normal}"
-else
-sleep 0
-fi
+    else sleep 0 ; fi
+
+
+echo -e  "${bold}  反向域名      : ${cyan}$ipip_rDNS${normal}"
+echo -e  "${bold}  运营商        : ${cyan}$ipip_ISP${normal}"
+echo -e  "${bold}  ASN 信息      : ${cyan}$ipip_ASN, $ipip_AS${normal}"
+echo -e  "${bold}  地理位置      : ${cyan}$ipip_Loc${normal}"
 
 
 echo
@@ -811,9 +831,7 @@ echo -e  "${bold}  系统负载      : ${cyan}$load${normal}"
 echo
 
 
-if [[ $$SeedboxType == Docker ]]; then
-sleep 0
-else
+if [[ $SeedboxType == Docker ]]; then sleep 0 ; else
 echo -e  "${bold}  总硬盘大小    : ${cyan}共 $disk_num 个硬盘分区，合计 $disk_total_size GB ($disk_used_size GB 已用)${normal}"
 echo -e  "${bold}  当前硬盘大小  : ${cyan}${current_disk_size}B (共 ${current_disk_total_used}B 已用，其中你用了 ${current_disk_self_used}B)${normal}"
 echo -e  "${bold}  邻居数量      : ${cyan}整台机器共 $neighbors_all_num 位邻居，其中同硬盘邻居 $neighbors_same_disk_num 位${normal}"
@@ -825,9 +843,7 @@ echo -e  "${bold}  操作系统      : ${cyan}$DISTRO $osversion $CODENAME ($arc
 echo -e  "${bold}  运行内核      : ${cyan}$running_kernel${normal}"
 if [[ $tcp_control ]]; then
 echo -e  "${bold}  TCP 拥塞控制  : ${cyan}$tcp_control${normal}"
-else
-sleep 0
-fi
+else sleep 0 ; fi
 
 
 echo
@@ -840,7 +856,9 @@ echo ; }
 
 # 09. 查看邻居信息
 function _show_neighbor() { clear
-if [[ $Seedbox =~ (FH|SH) ]]; then
+if   [[ $SeedboxType == Docker ]]; then
+    echo -e "${bold}baoqDocker 类型的盒子在我所知范围内没办法看邻居……${normal}\n"
+elif [[ $Seedbox =~ (FH|SH) ]]; then
     echo -e "${bold}${cayn}以下是当前和你在同一个硬盘分区上的邻居${normal}\n"
 	cat ~/neighbors_all | grep "${current_disk}/" | awk -F ":" '{print $1}' | sort -u | pr -3 -t ; echo
     echo -e "${bold}${cayn}以下是整个盒子上所有的邻居${normal}\n"
