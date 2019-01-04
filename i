@@ -3,7 +3,7 @@
 # https://github.com/Aniverse/iFeral
 # bash -c "$(wget -qO- https://github.com/Aniverse/iFeral/raw/master/i)"
 #
-iFeralVer=0.7.6
+iFeralVer=0.7.7
 iFeralDate=2019.01.04
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
@@ -859,7 +859,7 @@ echo ; }
 # 09. 查看邻居信息
 function _show_neighbor() { clear
 if   [[ $SeedboxType == Docker ]]; then
-    echo -e "${bold}baoqDocker 类型的盒子在我所知范围内没办法看邻居……${normal}\n"
+    echo -e "${bold}Docker 类型的盒子在我所知范围内没办法看邻居……${normal}"
 elif [[ $Seedbox =~ (FH|SH) ]]; then
     echo -e "${bold}${cayn}以下是当前和你在同一个硬盘分区上的邻居${normal}\n"
 	cat ~/neighbors_all | grep "${current_disk}/" | awk -F ":" '{print $1}' | sort -u | pr -3 -t ; echo
