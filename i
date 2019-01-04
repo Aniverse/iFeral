@@ -3,7 +3,7 @@
 # https://github.com/Aniverse/iFeral
 # bash -c "$(wget -qO- https://github.com/Aniverse/iFeral/raw/master/i)"
 #
-iFeralVer=0.7.7
+iFeralVer=0.7.8
 iFeralDate=2019.01.04
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
@@ -20,11 +20,11 @@ error="${baihongse}${bold} 错误 ${jiacu}" ; warn="${baihongse}${bold} 警告 $
 # 调试 -----------------------------------------------------------------------------------
 DeBUG=0 ; [[ $1 == -d ]] && DeBUG=1
 # 系统检测 -----------------------------------------------------------------------------------
-DISTRO=`  awk -F'[= "]' '/PRETTY_NAME/{print $3}' /etc/os-release  `
-DISTROL=`  echo $DISTRO | tr 'A-Z' 'a-z'  `
-CODENAME=`  cat /etc/os-release | grep VERSION= | tr '[A-Z]' '[a-z]' | sed 's/\"\|(\|)\|[0-9.,]\|version\|lts//g' | awk '{print $2}'  `
-[[ $DISTRO == Ubuntu ]] && osversion=`  grep Ubuntu /etc/issue | head -1 | grep -oE  "[0-9.]+"  `
-[[ $DISTRO == Debian ]] && osversion=`  cat /etc/debian_version  `
+DISTRO=$(awk -F'[= "]' '/PRETTY_NAME/{print $3}' /etc/os-release)
+DISTROL=$(echo $DISTRO | tr 'A-Z' 'a-z')
+[[ $DISTRO =~ (Ubuntu|Debian) ]]  && CODENAME=$(cat /etc/os-release | grep VERSION= | tr '[A-Z]' '[a-z]' | sed 's/\"\|(\|)\|[0-9.,]\|version\|lts//g' | awk '{print $2}' | head -1)
+[[ $DISTRO == Ubuntu ]] && osversion=$(grep Ubuntu /etc/issue | head -1 | grep -oE  "[0-9.]+")
+[[ $DISTRO == Debian ]] && osversion=$(cat /etc/debian_version)
 # 盒子检测 -----------------------------------------------------------------------------------
 Seedbox=Unknown
 org=$(wget -t1 -T6 -qO- 'http://ip-api.com/json' | awk -F '"' '{print $28}') 2>1
@@ -750,7 +750,6 @@ echo -e "\n${bold}正在检查系统信息，请稍等 ... ${normal}"
 # current_disk=`  echo $(pwd) | sed "s/\/$(whoami)//" | sed s"/\/home//"  `
 # cdk=$(df -h | grep `pwd | awk -F '/' '{print $2,$3}' | sed "s/ /\//"` | awk '{print $1}' | awk -F '/' '{print $3}')
 
-serverfqdn=`  hostname -f  `
 serveripv4=$(ip route get 8.8.8.8 | awk 'NR==1 {print $NF}' )
 isInternalIpAddress "$serveripv4" || serveripv4=$( wget -t1 -T6 -qO- v4.ipv6-test.com/api/myip.php )
 isValidIpAddress "$serveripv4" || serveripv4=$( wget -t1 -T6 -qO- checkip.dyndns.org | sed -e 's/.*Current IP Address: //' -e 's/<.*$//' )
@@ -798,7 +797,7 @@ ipip_CIDR=$( cat $ipip_result | grep -C7 ASN    | grep -oE "[0-9]+\.[0-9]+\.[0-9
   ipip_AS=$( cat $ipip_result | grep -A1 $ipip_CIDR | grep -v $ipip_CIDR | grep -oE ">.*<" | sed "s/>//" | sed "s/<//" | head -1 )
 ipip_rDNS=$( cat $ipip_result | grep -oE "rDNS: [a-zA-Z0-9.-]+" | sed "s/rDNS: //" )
  ipip_Loc=$( cat $ipip_result | grep -A7 "https://tools.ipip.net/traceroute.php?ip=" | tail -1 | grep -oE ">.*<" | sed "s/>//" | sed "s/<//" )
- ipip_ISP=$( cat $ipip_result | grep -A9 "$ipip_Loc" | tail -1 | grep -oE ">.*<" | sed "s/>//" | sed "s/<//" )
+ ipip_ISP=$( cat $ipip_result | grep "display: inline-block;text-align: center;width: 720px;float: left;line-height: 46px" | sed -n '2p' | grep -oE ">.*<" | sed "s/>//" | sed "s/<//" )
 
 rm -rf $ipip_result
 
