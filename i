@@ -3,7 +3,7 @@
 # https://github.com/Aniverse/iFeral
 # bash -c "$(wget -qO- https://github.com/Aniverse/iFeral/raw/master/i)"
 #
-iFeralVer=0.7.5
+iFeralVer=0.7.6
 iFeralDate=2019.01.04
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
@@ -800,13 +800,15 @@ ipip_rDNS=$( cat $ipip_result | grep -oE "rDNS: [a-zA-Z0-9.-]+" | sed "s/rDNS: /
  ipip_Loc=$( cat $ipip_result | grep -A7 "https://tools.ipip.net/traceroute.php?ip=" | tail -1 | grep -oE ">.*<" | sed "s/>//" | sed "s/<//" )
  ipip_ISP=$( cat $ipip_result | grep -A9 "$ipip_Loc" | tail -1 | grep -oE ">.*<" | sed "s/>//" | sed "s/<//" )
 
+rm -rf $ipip_result
+
 clear ; echo
 
 echo " ${bailanse}${bold}                                           08. 系统信息                                            ${normal}"
 echo " ${bold}"
 
 
-    if [[ ! $Seedbox == Sbcc ]]; then
+    if [[ ! $Seedbox == DSD ]]; then
 echo -e  "${bold}  完全限定域名  : ${cyan}$serverfqdn${normal}"
     else sleep 0 ; fi
 echo -e  "${bold}  IPv4 地址     : ${cyan}$serveripv4${normal}"
