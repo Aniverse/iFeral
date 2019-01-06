@@ -5,80 +5,6 @@ chmod -R +x iFeral
 mkdir -p ~/tmp ~/private/qbittorrent/{data,watch,torrents} ~/.config/qBittorrent
 ```
 
-### Configuring qBittorrent
-```
-PASSWORD=<REPLACE HERE WITH YOUR PASSWORD>
-```
-
-```
-QBPASS=`echo -n $PASSWORD | md5sum | awk '{print $1}'`
-
-portGenerator() { portGen=$(shuf -i 10001-32001 -n1) ; }
-portCheck() { while [[ "$(netstat -ln | grep ':'"$portGen"'' | grep -c 'LISTEN')" -eq "1" ]]
-do portGenerator ; done ; } ; portGenerator && portCheck
-
-cat > ~/.config/qBittorrent/qBittorrent.conf <<EOF
-[LegalNotice]
-Accepted=true
-
-[Preferences]
-Bittorrent\AddTrackers=false
-Bittorrent\DHT=false
-Bittorrent\Encryption=1
-Bittorrent\LSD=false
-Bittorrent\MaxConnecs=-1
-Bittorrent\MaxConnecsPerTorrent=-1
-Bittorrent\MaxRatioAction=0
-Bittorrent\PeX=false
-Bittorrent\uTP=false
-Bittorrent\uTP_rate_limited=false
-Connection\GlobalDLLimitAlt=0
-Connection\GlobalUPLimitAlt=0
-General\Locale=zh
-Queueing\QueueingEnabled=false
-Downloads\SavePath=private/qBittorrent/data
-
-WebUI\Port=$portGen
-WebUI\Password_ha1=@ByteArray($QBPASS)
-WebUI\Username=$(whoami)
-EOF
-```
-
-**You can edit QBVERSION to run different version of qBittorrent**  
-```
-export QBVERSION=4.0.4
-```
-```
-bash -c 'export TMPDIR=~/tmp;export LD_LIBRARY_PATH=~/iFeral/qb:$LD_LIBRARY_PATH
-~/iFeral/app/qbittorrent-nox.$QBVERSION -d'
-```
-
-**You could find your qBittorrent WebUI by typing the following command**  
-```
-echo "http://$(hostname -f):$portGen"
-```
-
-**You could stop qBittorrent by typing the following command**  
-```
-kill $(pgrep -fu "$(whoami)" "qbitt")
-```
-
-### qBittorrent 3.3.7 Script
-``` 
-bash -c "$(wget -qO- https://github.com/Aniverse/iFeral/raw/master/app/qb)"
-```
-
-
-
-
-
-
-
-
-
-
-
-
 
 # rTorrent & ruTorrent
 
@@ -466,20 +392,6 @@ unzip -qo ~/h5ai.zip -d ~/www/$(whoami).$(hostname -f)/*/
 echo -e '<Location ~ "/">\n    DirectoryIndex  index.html  index.php  /_h5ai/public/index.php\n</Location>' \
 > ~/.apache2/conf.d/h5ai.conf
 /usr/sbin/apache2ctl -k graceful
-```
-
-
-### Install another version of Transmission
-```
-TRVERSION=2.92
-```
-```
-git clone --depth=1 -b ${TRVERSION} --single-branch https://github.com/transmission/transmission
-cd transmission
-[[ ! "$TRVERSION" = "2.93" ]] && sed -i "s/m4_copy/m4_copy_force/g" m4/glib-gettext.m4
-./autogen.sh && ./configure --prefix=$HOME
-make clean && make -j$(nproc) && make install
-cd; rm -rf transmission*
 ```
 
 
