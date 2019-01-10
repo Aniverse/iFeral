@@ -1,9 +1,11 @@
 #!/bin/bash
 # Author: Aniverse
 # https://github.com/Aniverse/iFeral
-# bash -c "$(wget -qO- https://github.com/Aniverse/iFeral/raw/master/i)"
 #
-iFeralVer=0.8.0
+# bash -c "$(wget -qO- https://github.com/Aniverse/iFeral/raw/master/i)"
+# bash <(curl -s https://raw.githubusercontent.com/Aniverse/iFeral/master/i) -d
+#
+iFeralVer=0.8.1
 iFeralDate=2019.01.10
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
@@ -103,7 +105,7 @@ else
 fi
 
 # 所有硬盘分区
-df -hPl | grep -wvP '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker|md[0-9]+/[a-z].*' | sort -u > ~/par_list
+# df -hPl | grep -wvP '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker|md[0-9]+/[a-z].*' | sort -u > ~/par_list
 
 neighbors_all_num=$(cat ~/neighbors_all | wc -l)
 neighbors_same_disk_num=$(cat ~/neighbors_all | grep "${current_disk}/" | wc -l)
@@ -126,6 +128,10 @@ fi
 
 #current_disk_avai=($( LANG=C df -hPl | grep $current_disk | awk '{print $4}' ))
 #current_disk_perc=($( LANG=C df -hPl | grep $current_disk | awk '{print $5}' ))
+
+# Ctrl+C 时恢复样式，删除无用文件
+cancel() { echo -e "${normal}" ; rm -f ~/neighbors_all ; exit ; }
+trap cancel SIGINT
 
 # -----------------------------------------------------------------------------------
 
@@ -1002,3 +1008,4 @@ _logo
 _init
 _main_menu
 
+rm -f ~/neighbors_all
