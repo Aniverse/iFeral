@@ -166,7 +166,9 @@ mkdir -p ~/bin ~/lib ~/iFeral/backup ~/iFeral/log ~/.config ~/iSeed/{00.Tools,01
 mkdir -p ~/.local/usr/{bin,lib,include} ~/.local/{bin,lib,include}
 fi
 user=$(whoami)
-USERPATH=` pwd `
+#USERPATH=` pwd `
+#USERPATHSED=$( echo ${USERPATH} | sed -e 's/\//\\\//g' )
+USERPATH=$HOME
 USERPATHSED=$( echo ${USERPATH} | sed -e 's/\//\\\//g' ) ; }
 
 
@@ -656,14 +658,14 @@ wget $quietflag -O- https://bootstrap.pypa.io/get-pip.py | python - --user
 ~/.local/bin/pip install --user --upgrade transmissionrpc
 ~/.local/bin/pip install --user --upgrade guessit
 ~/.local/bin/pip install --user --upgrade flexget || Fail_Flexget=1
-alias flexget="~/.local/bin/flexget"
-Flexget_PATH="~/.local/bin/flexget"
+alias flexget="$HOME/.local/bin/flexget"
+Flexget_PATH="$HOME/.local/bin/flexget"
 
 if [[ $Fail_Flexget == 1 ]];then
 ~/.local/bin/virtualenv --system-site-packages ~/.pip/
 ~/.pip/bin/pip install flexget
-alias flexget="~/.pip/bin/flexget"
-Flexget_PATH="~/.pip/bin/flexget"
+alias flexget="$HOME/.pip/bin/flexget"
+Flexget_PATH="$HOME/.pip/bin/flexget"
 fi
 
 portGenerator && portCheck
@@ -707,7 +709,10 @@ if [[ -e $Flexget_PATH ]]; then
     else echo -e "${error} Flexget 安装完成，但 daemon 没开起来。\n不要问我为什么和怎么办，你自己看着办吧！${normal}" ; fi
 else
     echo -e "${error} Flexget 安装失败。请尝试手动安装？${normal}"
-fi ; }
+fi
+
+[[ $DeBUG == 1 ]] && echo -e "Flexget_PATH=$Flexget_PATH"
+}
 
 
 
@@ -935,7 +940,8 @@ cat >> ~/.profile <<EOF
 export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export TZ="/usr/share/zoneinfo/Asia/Shanghai"
-export PATH=~/iFeral/app:~/bin:~/pip/bin:~/.local/bin:\$PATH
+export PATH=~/iFeral/app:~/bin:~/.bin:~/.pip/bin:~/.local/bin:\$PATH
+#export LD_LIBRARY_PATH=$HOME/.local/lib:$HOME/.local/usr/lib:$LD_LIBRARY_PATH
 #export TMPDIR=~/tmp
 
 alias scrgd="screen -R gooooogle"
