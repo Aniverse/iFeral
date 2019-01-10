@@ -5,7 +5,7 @@
 # bash -c "$(wget -qO- https://github.com/Aniverse/iFeral/raw/master/i)"
 # bash <(curl -s https://raw.githubusercontent.com/Aniverse/iFeral/master/i) -d
 #
-iFeralVer=0.8.1
+iFeralVer=0.8.2
 iFeralDate=2019.01.10
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
@@ -21,6 +21,8 @@ shanshuo=$(tput blink); wuguangbiao=$(tput civis); guangbiao=$(tput cnorm)
 error="${baihongse}${bold} 错误 ${jiacu}" ; warn="${baihongse}${bold} 警告 ${jiacu}" ; atte="${baihongse}${bold} 注意 ${jiacu}"
 # 调试 -----------------------------------------------------------------------------------
 DeBUG=0 ; [[ $1 == -d ]] && DeBUG=1
+quietflag=-q
+[[ $DeBUG == 1 ]] && unset quietflag
 # 系统检测 -----------------------------------------------------------------------------------
 DISTRO=$(awk -F'[= "]' '/PRETTY_NAME/{print $3}' /etc/os-release)
 DISTROL=$(echo $DISTRO | tr 'A-Z' 'a-z')
@@ -375,8 +377,8 @@ done
 if [[ ! `  ls ~/iFeral/qb/library  2>/dev/null  `  ]]; then
     echo -e "\n${bold}${yellow}下载 qbittorrent-nox ...${normal}\n"
     if   [[ $CODENAME =~ (trusty|jessie|stretch) ]]; then
-         svn co -q https://github.com/Aniverse/ygnrmRuUagpgPvr4rW97/trunk/$CODENAME/lib ~/iFeral/qb/library
-         wget   -q https://github.com/Aniverse/ygnrmRuUagpgPvr4rW97/raw/master/$CODENAME/qbittorrent-nox.$QBVERSION -O ~/iFeral/qb/qbittorrent-nox.$QBVERSION
+         svn co $quietflag https://github.com/Aniverse/ygnrmRuUagpgPvr4rW97/trunk/$CODENAME/lib ~/iFeral/qb/library
+         wget   $quietflag https://github.com/Aniverse/ygnrmRuUagpgPvr4rW97/raw/master/$CODENAME/qbittorrent-nox.$QBVERSION -O ~/iFeral/qb/qbittorrent-nox.$QBVERSION
          chmod +x ~/iFeral/qb/qbittorrent-nox.$QBVERSION
     else
          echo -e "${bold}${yellow}暂时不支持系统非 Debian8/9、Ubuntu 14.04 的盒子 ...${normal}\n" ; exit 1
@@ -399,17 +401,18 @@ function install_qb_v3() {
 echo ; mkdir -p ~/tmp ~/private/qbittorrent/{data,watch,torrents} ~/.config/{qBittorrent,flexget}
 for qbpid in ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittorrent | awk '{print $2}' ` ; do kill -9 $qbpid ; done
 QBVERSION=4.1.5
+[[ $CODENAME == trusty ]] && QBVERSION=4.1.4
 
 # 下载
 if [[ ! `  ls ~/iFeral/qb/library  2>/dev/null  `  ]]; then
     echo -e "\n${bold}${yellow}下载 qbittorrent-nox ...${normal}\n"
     if [[ $CODENAME =~ (trusty|xenial|bionic|jessie|stretch) ]]; then
         if [[ $(command -v svn) ]]; then
-            svn co -q https://github.com/Aniverse/bbq/trunk/$CODENAME/lib ~/iFeral/qb/library
-            wget   -q https://github.com/Aniverse/bbq/raw/master/$CODENAME/qbittorrent-nox.$QBVERSION -O ~/iFeral/qb/qbittorrent-nox.$QBVERSION
+            svn co $quietflag https://github.com/Aniverse/bbq/trunk/$CODENAME/lib ~/iFeral/qb/library
+            wget   $quietflag https://github.com/Aniverse/bbq/raw/master/$CODENAME/qbittorrent-nox.$QBVERSION -O ~/iFeral/qb/qbittorrent-nox.$QBVERSION
             chmod +x ~/iFeral/qb/qbittorrent-nox.$QBVERSION
         elif [[ ! $(command -v svn) ]] && [[ $(command -v git) ]]; then
-            git clone --depth=1 https://github.com/Aniverse/bbq
+            git clone --depth=1 $quietflag https://github.com/Aniverse/bbq
             cp -rf ~/bbq/$CODENAME ~/iFeral/qb
             chmod +x ~/iFeral/qb/qbittorrent-nox.$QBVERSION
 		else # 难道我要全部 wget？？？
@@ -431,7 +434,7 @@ install_qb_finished
 
 
 
-
+LD_LIBRARY_PATH=~/iFeral/qb/library ldd ~/iFeral/qb/qbittorrent-nox.$QBVERSION
 
 
 # 02. 安装 第二个 Deluge
@@ -446,7 +449,7 @@ for depid in ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep de2 | a
 
 while [[ $DEVERSION = "" ]]; do
     echo -ne "${bold}${yellow}请输入你要安装的第二个 Deluge 的版本 : ${normal}" ; read -e DEVERSION
-    wget -qO ~/deluge-"${DEVERSION}".tar.gz http://download.deluge-torrent.org/source/deluge-"${DEVERSION}".tar.gz || { echo -e "${error} 下载 Deluge 源码失败，可能是这个版本不可用！" ; unset DEVERSION ; }
+    wget $quietflag O ~/deluge-"${DEVERSION}".tar.gz http://download.deluge-torrent.org/source/deluge-"${DEVERSION}".tar.gz || { echo -e "${error} 下载 Deluge 源码失败，可能是这个版本不可用！" ; unset DEVERSION ; }
 done
 
 # 安装
@@ -586,7 +589,7 @@ sed -i "s/\"mkv\"/\"mkv\",\"m2ts\"/g" ~/www/$(whoami).$(hostname -f)/*/rutorrent
 
 # Filemanager
 cd ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/
-svn co -q https://github.com/nelu/rutorrent-thirdparty-plugins/trunk/filemanager
+svn co $quietflag https://github.com/nelu/rutorrent-thirdparty-plugins/trunk/filemanager
 chmod 700 ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/filemanager/scripts/*
 cd && sed -i "s|(getExternal(\"ffprobe\")|(getExternal(\"~/bin/ffprobe\")|g" ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/filemanager/flm.class.php
 sed -i "s|(getExternal('ffmpeg')|(getExternal('$(pwd)/bin/ffmpeg')|g" ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/filemanager/flm.class.php
@@ -595,12 +598,12 @@ sed -i "s|(getExternal('ffmpeg')|(getExternal('$(pwd)/bin/ffmpeg')|g" ~/www/$(wh
 cd ~/www/$(whoami).$(hostname -f)/*/rutorrent
 mkdir -p theme/themes
 cd theme/themes
-svn co -q https://github.com/ArtyumX/ruTorrent-Themes/trunk/MaterialDesign
-svn co -q https://github.com/ArtyumX/ruTorrent-Themes/trunk/club-QuickBox
+svn co $quietflag https://github.com/ArtyumX/ruTorrent-Themes/trunk/MaterialDesign
+svn co $quietflag https://github.com/ArtyumX/ruTorrent-Themes/trunk/club-QuickBox
 cd
 
 # AutoDL-Irssi，bash -c "$(wget -qO- http://git.io/oTUCMg)"
-wget -qO ~/install.autodl.sh https://bitbucket.org/feralio/wiki/raw/HEAD/src/wiki/software/autodl/autodl.sh
+wget $quietflag O ~/install.autodl.sh https://bitbucket.org/feralio/wiki/raw/HEAD/src/wiki/software/autodl/autodl.sh
 echo 1 | bash ~/install.autodl.sh
 
 else echo "${atte} 这是为了 FH 盒子设计的，其他盒子就不要用了~${normal}" ; fi ; }
@@ -629,7 +632,7 @@ echo ; read -ep "${bold}${yellow}请输入你要用于 Flexget WebUI 的密码�
 #~/pip/bin/pip install transmissionrpc
 #fi
 
-wget -qO- https://bootstrap.pypa.io/get-pip.py | python - --user
+wget $quietflag -O- https://bootstrap.pypa.io/get-pip.py | python - --user
 ~/.local/bin/pip install --user --upgrade pip setuptools virtualenv
 ~/.local/bin/pip install --user --upgrade markdown testresources
 ~/.local/bin/pip install --user --upgrade deluge-client flexget transmissionrpc
@@ -691,7 +694,7 @@ function _install_tools() {
 # ffmpeg
 echo -e "\n${bold}安装 ffmpeg ...${normal}\n"
 mkdir -p ~/bin
-wget -qO ~/ffmpeg.tar.gz https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-64bit-static.tar.xz
+wget $quietflag O ~/ffmpeg.tar.gz https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-64bit-static.tar.xz
 tar xf ~/ffmpeg.tar.gz && cd && rm -rf ffmpeg-*-64bit-static/{manpages,presets,readme.txt}
 cp ~/ffmpeg-*-64bit-static/* ~/bin> /dev/null 2>&1
 chmod 700 ~/bin/{ffmpeg,ffprobe,ffmpeg-10bit,qt-faststart}
@@ -699,7 +702,7 @@ cd && rm -rf ffmpeg{.tar.gz,-*-64bit-static}
 
 # p7zip
 echo -e "${bold}安装 p7zip ...${normal}\n"
-wget -qO ~/p7zip.tar.bz2 http://sourceforge.net/projects/p7zip/files/p7zip/9.38.1/p7zip_9.38.1_src_all.tar.bz2
+wget $quietflag O ~/p7zip.tar.bz2 http://sourceforge.net/projects/p7zip/files/p7zip/9.38.1/p7zip_9.38.1_src_all.tar.bz2
 tar xf ~/p7zip.tar.bz2 && cd ~/p7zip_9.38.1
 make -j$(nproc) > /dev/null 2>&1
 make install DEST_HOME=$HOME > /dev/null 2>&1
@@ -708,8 +711,9 @@ cd && rm -f ~/p7zip.tar.bz2
 # rclone
 echo -e "${bold}安装 rclone ...${normal}\n"
 mkdir -p ~/bin
-wget -qO ~/rclone.zip http://downloads.rclone.org/rclone-current-linux-amd64.zip
-unzip -qq ~/rclone.zip
+wget $quietflag O ~/rclone.zip http://downloads.rclone.org/rclone-current-linux-amd64.zip
+
+[[ $DeBUG == 1 ]] && unzip ~/rclone.zip || unzip -qq ~/rclone.zip
 mv ~/rclone-v*-linux-amd64/rclone ~/bin
 rm -rf ~/rclone-v*-linux-amd64 ~/rclone.zip
 chmod +x ~/bin/rclone
@@ -724,13 +728,13 @@ chmod +x ~/bin/rclone
 # Mediainfo
 echo -e "${bold}安装新版 mediainfo ...${normal}\n"
 if [[ $CODENAME == stretch ]]; then
-    wget -qO 1.deb https://mediaarea.net/download/binary/libzen0/0.4.37/libzen0v5_0.4.37-1_amd64.Debian_9.0.deb
-    wget -qO 2.deb https://mediaarea.net/download/binary/libmediainfo0/18.05/libmediainfo0v5_18.05-1_amd64.Debian_9.0.deb
-    wget -qO 3.deb https://mediaarea.net/download/binary/mediainfo/18.05/mediainfo_18.05-1_amd64.Debian_9.0.deb
+    wget $quietflag -O 1.deb https://mediaarea.net/download/binary/libzen0/0.4.37/libzen0v5_0.4.37-1_amd64.Debian_9.0.deb
+    wget $quietflag -O 2.deb https://mediaarea.net/download/binary/libmediainfo0/18.05/libmediainfo0v5_18.05-1_amd64.Debian_9.0.deb
+    wget $quietflag -O 3.deb https://mediaarea.net/download/binary/mediainfo/18.05/mediainfo_18.05-1_amd64.Debian_9.0.deb
 elif [[ $CODENAME == trusty ]]; then
-    wget -qO 1.deb https://mediaarea.net/download/binary/libzen0/0.4.37/libzen0_0.4.37-1_amd64.xUbuntu_14.04.deb
-    wget -qO 2.deb https://mediaarea.net/download/binary/libmediainfo0/18.05/libmediainfo0_18.05-1_amd64.xUbuntu_14.04.deb
-    wget -qO 3.deb https://mediaarea.net/download/binary/mediainfo/18.05/mediainfo_18.05-1_amd64.xUbuntu_14.04.deb
+    wget $quietflag -O 1.deb https://mediaarea.net/download/binary/libzen0/0.4.37/libzen0_0.4.37-1_amd64.xUbuntu_14.04.deb
+    wget $quietflag -O 2.deb https://mediaarea.net/download/binary/libmediainfo0/18.05/libmediainfo0_18.05-1_amd64.xUbuntu_14.04.deb
+    wget $quietflag -O 3.deb https://mediaarea.net/download/binary/mediainfo/18.05/mediainfo_18.05-1_amd64.xUbuntu_14.04.deb
 fi
 dpkg -x 1.deb ~/deb-temp ; dpkg -x 2.deb ~/deb-temp ; dpkg -x 3.deb ~/deb-temp
 mv ~/deb-temp/usr/lib/x86_64-linux-gnu/* ~/lib/
