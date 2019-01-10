@@ -3,8 +3,8 @@
 # https://github.com/Aniverse/iFeral
 # bash -c "$(wget -qO- https://github.com/Aniverse/iFeral/raw/master/i)"
 #
-iFeralVer=0.7.9
-iFeralDate=2019.01.06
+iFeralVer=0.8.0
+iFeralDate=2019.01.10
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -652,13 +652,13 @@ EOF
 FLPORT=` grep "port" ~/.config/flexget/config.yml | grep -Po "\d+" `
 
 # 运行
-~/pip/bin/flexget web passwd $PASSWORD 2>&1 | tee ~/flex.pass.output
+~/.local/bin/flexget web passwd $PASSWORD 2>&1 | tee ~/flex.pass.output
 [[ `grep "not strong enough" ~/flex.pass.output` ]] && export FlexPassFail=1
 rm -f ~/flex.pass.output
-~/pip/bin/flexget daemon start --daemonize
+~/.local/bin/flexget daemon start --daemonize
 
 # 输出结果
-if [[ -e ~/pip/bin/flexget ]]; then
+if [[ -e ~/.local/bin/flexget ]]; then
     if [[ ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep "flexget daemon" ` ]]; then
         echo -e "\n${bold}${green}Flexget 已安装完成！${jiacu}\n"
         echo -e "网址  ${cyan}http://$(hostname -f):$FLPORT${jiacu}"
@@ -889,7 +889,7 @@ fi ; }
 
 # 09. 设置 .profile
 function _bash_settings() {
-chsh -s /usr/bin/bash
+chsh -s /bin/bash
 
 cat >> ~/.profile <<EOF
 export LC_ALL=en_US.UTF-8
