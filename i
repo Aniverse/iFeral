@@ -5,7 +5,7 @@
 # bash -c "$(wget -qO- https://github.com/Aniverse/iFeral/raw/master/i)"
 # bash <(curl -s https://raw.githubusercontent.com/Aniverse/iFeral/master/i) -d
 #
-iFeralVer=0.8.2
+iFeralVer=0.8.3
 iFeralDate=2019.01.10
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
@@ -181,7 +181,7 @@ function _main_menu() {
 echo -e "${bold}目前本脚本正在被作者 xjb 折腾中，不保证好用"
 echo -e "${bold}什么，你说 xjb 乱改你不会另外开一个 branch 么……"
 echo -e "${bold}作者：懒得管了，反正好像也没什么人用啊……\n"
-echo -e "${bold}${green}(01) ${jiacu}安装 qBittorrent (v3)    "
+echo -e "${bold}${green}(01) ${jiacu}安装 qBittorrent (v3，推荐)    "
 echo -e "${green}(02) ${jiacu}安装 Deluge          "
 #echo -e "\n不保证以下功能好用\n"
 #echo -e "${green}(03) ${jiacu}安装 Transmission   "
@@ -251,6 +251,8 @@ else
     qbconfig=new
 fi ; }
 
+
+
  # 输出结果
 function install_qb_finished() {
 QBPORT=` grep "WebUI.Port" ~/.config/qBittorrent/qBittorrent.conf | grep -Po "\d+" `
@@ -267,6 +269,8 @@ if [[ ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittorrent ` 
 else
     echo -e "${error} qBittorrent 安装完成，但无法正常运行。\n不要问我为什么和怎么办，你自己看着办吧！${normal}"
 fi ; }
+
+
 
 # 新建配置文件
 function install_qb_new_config() {
@@ -322,6 +326,8 @@ EOF
 fi ; }
 
 
+
+
 # 01. 安装 qBittorrent，V1
 function install_qb_v1() {
 
@@ -358,6 +364,8 @@ TMPDIR=~/tmp LD_LIBRARY_PATH=~/iFeral/qb/library ~/iFeral/qb/qbittorrent-nox.$QB
 install_qb_finished ; }
 
 
+
+
 # 01. 安装 qBittorren，V2
 function install_qb_v2() {
 
@@ -391,8 +399,10 @@ install_qb_new_config
 # 运行 qBittorrent-nox
 TMPDIR=~/tmp LD_LIBRARY_PATH=~/iFeral/qb/library ~/iFeral/qb/qbittorrent-nox.$QBVERSION -d
 
-install_qb_finished
-}
+install_qb_finished ; }
+
+
+
 
 
 # 01. 安装 qBittorren，V3
@@ -429,12 +439,12 @@ install_qb_new_config
 # 运行 qBittorrent-nox
 TMPDIR=~/tmp LD_LIBRARY_PATH=~/iFeral/qb/library ~/iFeral/qb/qbittorrent-nox.$QBVERSION -d
 
-install_qb_finished
-}
+install_qb_finished ; }
 
 
 
-LD_LIBRARY_PATH=~/iFeral/qb/library ldd ~/iFeral/qb/qbittorrent-nox.$QBVERSION
+
+
 
 
 # 02. 安装 第二个 Deluge
@@ -632,10 +642,29 @@ echo ; read -ep "${bold}${yellow}请输入你要用于 Flexget WebUI 的密码�
 #~/pip/bin/pip install transmissionrpc
 #fi
 
+# rm -rf ~/.pip ~/.local
+# export PYTHONPATH=~/.local/lib/python2.7
+
 wget $quietflag -O- https://bootstrap.pypa.io/get-pip.py | python - --user
-~/.local/bin/pip install --user --upgrade pip setuptools virtualenv
-~/.local/bin/pip install --user --upgrade markdown testresources
-~/.local/bin/pip install --user --upgrade deluge-client flexget transmissionrpc
+~/.local/bin/pip install --user --upgrade pip
+~/.local/bin/pip install --user --upgrade setuptools
+~/.local/bin/pip install --user --upgrade virtualenv
+~/.local/bin/pip install --user --upgrade wheel
+~/.local/bin/pip install --user --upgrade markdown
+~/.local/bin/pip install --user --upgrade testresources
+~/.local/bin/pip install --user --upgrade deluge-client
+~/.local/bin/pip install --user --upgrade transmissionrpc
+~/.local/bin/pip install --user --upgrade guessit
+~/.local/bin/pip install --user --upgrade flexget || Fail_Flexget=1
+alias flexget="~/.local/bin/flexget"
+Flexget_PATH="~/.local/bin/flexget"
+
+if [[ $Fail_Flexget == 1 ]];then
+~/.local/bin/virtualenv --system-site-packages ~/.pip/
+~/.pip/bin/pip install flexget
+alias flexget="~/.pip/bin/flexget"
+Flexget_PATH="~/.pip/bin/flexget"
+fi
 
 portGenerator && portCheck
 
@@ -661,13 +690,14 @@ EOF
 FLPORT=` grep "port" ~/.config/flexget/config.yml | grep -Po "\d+" `
 
 # 运行
-~/.local/bin/flexget web passwd $PASSWORD 2>&1 | tee ~/flex.pass.output
+flexget web passwd $PASSWORD 2>&1 | tee ~/flex.pass.output
 [[ `grep "not strong enough" ~/flex.pass.output` ]] && export FlexPassFail=1
 rm -f ~/flex.pass.output
-~/.local/bin/flexget daemon start --daemonize
+
+flexget daemon start --daemonize
 
 # 输出结果
-if [[ -e ~/.local/bin/flexget ]]; then
+if [[ -e $Flexget_PATH ]]; then
     if [[ ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep "flexget daemon" ` ]]; then
         echo -e "\n${bold}${green}Flexget 已安装完成！${jiacu}\n"
         echo -e "网址  ${cyan}http://$(hostname -f):$FLPORT${jiacu}"
@@ -676,7 +706,7 @@ if [[ -e ~/.local/bin/flexget ]]; then
         else echo -e "密码  ${cyan}$PASSWORD${normal}\n" ; fi
     else echo -e "${error} Flexget 安装完成，但 daemon 没开起来。\n不要问我为什么和怎么办，你自己看着办吧！${normal}" ; fi
 else
-    echo -e "${error} Flexget 安装失败。\n请尝试手动安装？${normal}"
+    echo -e "${error} Flexget 安装失败。请尝试手动安装？${normal}"
 fi ; }
 
 
