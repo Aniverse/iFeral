@@ -5,8 +5,8 @@
 # bash -c "$(wget -qO- https://github.com/Aniverse/iFeral/raw/master/i)"
 # bash <(curl -s https://raw.githubusercontent.com/Aniverse/iFeral/master/i) -d
 #
-iFeralVer=0.8.3
-iFeralDate=2019.01.10
+iFeralVer=0.8.5
+iFeralDate=2019.01.26
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -95,22 +95,22 @@ portCheck2() { while [[ "$(ss -ln | grep ':'"$portGen2"'' | grep -c 'LISTEN')" -
 if [[ $Seedbox == USB ]]; then
     # ls /etc/seedbox/user
     # ls -l /home* | grep -Ev "root|total" | grep -E "home[0-9]+"
-    getent passwd | grep -Ev "$(whoami)|root" | grep -E "/bin/sh|/bin/bash" | grep -E "/home[0-9]+/" > ~/neighbors_all
+    getent passwd | grep -Ev "$(whoami)|root" | grep -E "/bin/sh|/bin/bash" | grep -E "/home[0-9]+/" > $HOME/neighbors_all
 elif [[ $Seedbox == PM ]]; then
-    getent passwd | grep -Ev "$(whoami)|root" | grep -E "/bin/sh|/bin/bash" | grep -E "/home/" > ~/neighbors_all
+    getent passwd | grep -Ev "$(whoami)|root" | grep -E "/bin/sh|/bin/bash" | grep -E "/home/" > $HOME/neighbors_all
 elif [[ $Seedbox == FH ]]; then
-    getent passwd | grep -Ev "$(whoami)|root" | grep -E "/bin/sh|/bin/bash" | grep -E "/media/" > ~/neighbors_all
+    getent passwd | grep -Ev "$(whoami)|root" | grep -E "/bin/sh|/bin/bash" | grep -E "/media/" > $HOME/neighbors_all
 elif [[ $Seedbox == SH ]]; then
-    getent passwd | grep -Ev "$(whoami)|root" | grep -E "/bin/sh|/bin/bash" | grep -E "/home|/home[0-9]+" > ~/neighbors_all
+    getent passwd | grep -Ev "$(whoami)|root" | grep -E "/bin/sh|/bin/bash" | grep -E "/home|/home[0-9]+" > $HOME/neighbors_all
 else
-    getent passwd | grep -Ev "$(whoami)|root" | grep -E "/bin/sh|/bin/bash" | grep -E "/home/|/home[0-9]+/|/media/" > ~/neighbors_all
+    getent passwd | grep -Ev "$(whoami)|root" | grep -E "/bin/sh|/bin/bash" | grep -E "/home/|/home[0-9]+/|/media/" > $HOME/neighbors_all
 fi
 
 # 所有硬盘分区
-# df -hPl | grep -wvP '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker|md[0-9]+/[a-z].*' | sort -u > ~/par_list
+# df -hPl | grep -wvP '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker|md[0-9]+/[a-z].*' | sort -u > $HOME/par_list
 
-neighbors_all_num=$(cat ~/neighbors_all | wc -l)
-neighbors_same_disk_num=$(cat ~/neighbors_all | grep "${current_disk}/" | wc -l)
+neighbors_all_num=$(cat $HOME/neighbors_all | wc -l)
+neighbors_same_disk_num=$(cat $HOME/neighbors_all | grep "${current_disk}/" | wc -l)
 
 # 计算总共空间的时候，排除掉 FH SSD 每个用户限额的空间；计算已用空间的时候不排除（因为原先的单个 md 已用空间只有 128k/256k）
 disk_size1=($( LANG=C df -hPl | grep -wvP '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker|md[0-9]+/[a-z]*' | awk '{print $2}' ))
@@ -121,18 +121,18 @@ disk_used_size=$( calc_disk ${disk_size2[@]} )
 if [[ $FH_SSD == 1 ]];then
     current_disk_size=($( LANG=C df -hPl | grep $(pwd) | awk '{print $2}' ))
     current_disk_total_used=($( LANG=C df -hPl | grep $(pwd) | awk '{print $3}' ))
-    current_disk_self_used=$( du -sh ~ | awk -F " " '{print $1}' )
+    current_disk_self_used=$( du -sh $HOME | awk -F " " '{print $1}' )
 else
     current_disk_size=($( LANG=C df -hPl | grep $current_disk | awk '{print $2}' ))
     current_disk_total_used=($( LANG=C df -hPl | grep $current_disk | awk '{print $3}' ))
-    current_disk_self_used=$( du -sh ~ | awk -F " " '{print $1}' )
+    current_disk_self_used=$( du -sh $HOME | awk -F " " '{print $1}' )
 fi
 
 #current_disk_avai=($( LANG=C df -hPl | grep $current_disk | awk '{print $4}' ))
 #current_disk_perc=($( LANG=C df -hPl | grep $current_disk | awk '{print $5}' ))
 
 # Ctrl+C 时恢复样式，删除无用文件
-cancel() { echo -e "${normal}" ; rm -f ~/neighbors_all ; exit ; }
+cancel() { echo -e "${normal}" ; rm -f $HOME/neighbors_all ; exit ; }
 trap cancel SIGINT
 
 # -----------------------------------------------------------------------------------
@@ -158,12 +158,12 @@ echo -e "${bold}Ver. $iFeralVer    \n"
 
 
 # 00. 初始化
-function _init() {  if [[ ! `  ls ~ | grep iFeral  `  ]]; then
-git clone --depth=1 https://github.com/Aniverse/iFeral ; chmod -R +x ~/iFeral/app
+function _init() {  if [[ ! `  ls $HOME | grep iFeral  `  ]]; then
+git clone --depth=1 https://github.com/Aniverse/iFeral ; chmod -R +x $HOME/iFeral/app
 cd ; clear ; wget --timeout=7 -qO- https://github.com/Aniverse/iFeral/raw/master/files/iFeral.logo.1
 echo -e "${bold}Ver. $iFeralVer    \n"
-mkdir -p ~/bin ~/lib ~/iFeral/backup ~/iFeral/log ~/.config ~/iSeed/{00.Tools,01.Screenshots,02.Torrents,03.BDinfo,04.BluRay}
-mkdir -p ~/.local/usr/{bin,lib,include} ~/.local/{bin,lib,include}
+mkdir -p $HOME/bin $HOME/lib $HOME/iFeral/backup $HOME/iFeral/log $HOME/.config $HOME/iSeed/{00.Tools,01.Screenshots,02.Torrents,03.BDinfo,04.BluRay}
+mkdir -p $HOME/.local/usr/{bin,lib,include} $HOME/.local/{bin,lib,include}
 fi
 user=$(whoami)
 #USERPATH=` pwd `
@@ -241,7 +241,7 @@ echo ; }
 
 # 询问是否覆盖原配置信息
 function install_qb_ask_config() {
-if [[ -e ~/.config/qBittorrent/qBittorrent.conf ]]; then
+if [[ -e $HOME/.config/qBittorrent/qBittorrent.conf ]]; then
     echo -e "\n${atte} 你以前装过 qBittorrent，那时的配置文件还留着\n其中包含着 qBittorrent 的账号、密码、端口、下载路径等信息"
     read -ep "你现在要使用以前留下的配置文件吗？${normal} [${cyan}Y${normal}/n]: " responce
     case $responce in
@@ -257,8 +257,8 @@ fi ; }
 
  # 输出结果
 function install_qb_finished() {
-QBPORT=` grep "WebUI.Port" ~/.config/qBittorrent/qBittorrent.conf | grep -Po "\d+" `
-QBUSERNAME=` grep "WebUI.Username" ~/.config/qBittorrent/qBittorrent.conf | awk -F "=" '{print $NF}' `
+QBPORT=` grep "WebUI.Port" $HOME/.config/qBittorrent/qBittorrent.conf | grep -Po "\d+" `
+QBUSERNAME=` grep "WebUI.Username" $HOME/.config/qBittorrent/qBittorrent.conf | awk -F "=" '{print $NF}' `
 if [[ ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittorrent ` ]]; then
     echo -e "\n${bold}${green}qBittorrent 已安装完成！${jiacu}\n"
     echo -e "网址  ${cyan}http://$(hostname -f):$QBPORT${jiacu}"
@@ -267,7 +267,7 @@ if [[ ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittorrent ` 
     echo -e "密码  ${cyan}$PASSWORD${normal}"
     [[ $qbconfig == old ]] &&
     echo -e "密码  ${cyan}(和以前一样)${normal}"
-    echo "$QBVERSION" > ~/iFeral/qbversion.lock
+    echo "$QBVERSION" > $HOME/iFeral/qbversion.lock
 else
     echo -e "${error} qBittorrent 安装完成，但无法正常运行。\n不要问我为什么和怎么办，你自己看着办吧！${normal}"
 fi ; }
@@ -279,7 +279,7 @@ function install_qb_new_config() {
 if [[ $qbconfig == new ]]; then
     echo ; read -ep "${bold}${yellow}请输入你要用于 qBittorrent WebUI 的密码：${normal}" PASSWORD
     QBPASS=`  echo -n $PASSWORD | md5sum | awk '{print $1}'  `
-    [[ -e ~/.config/qBittorrent/qBittorrent.conf ]] && { rm -rf ~/.config/qBittorrent/qBittorrent.conf.backup ; mv -f ~/.config/qBittorrent/qBittorrent.conf ~/.config/qBittorrent/qBittorrent.conf.backup ; }
+    [[ -e $HOME/.config/qBittorrent/qBittorrent.conf ]] && { rm -rf $HOME/.config/qBittorrent/qBittorrent.conf.backup ; mv -f $HOME/.config/qBittorrent/qBittorrent.conf $HOME/.config/qBittorrent/qBittorrent.conf.backup ; }
     portGenerator && portCheck
     portGenerator2 && portCheck2
     [[ $Seedbox == FH  ]]    && QBDL_PATH="${USERPATH}/private/qBittorrent/data"
@@ -289,15 +289,15 @@ if [[ $qbconfig == new ]]; then
     [[ $Seedbox == DSD ]]    && QBDL_PATH="/downloads"
     [[ $Seedbox == Sbcc ]]   && QBDL_PATH="${USERPATH}/files/downloads"
     [[ $Seedbox == AppBox ]] && QBDL_PATH="/APPBOX_DATA/apps/qBittorrent"
-    mkdir -p $QBDL_PATH ~/.config/qBittorrent
-cat > ~/.config/qBittorrent/qBittorrent.conf <<EOF
+    mkdir -p $QBDL_PATH $HOME/.config/qBittorrent
+cat > $HOME/.config/qBittorrent/qBittorrent.conf <<EOF
 [Application]
 FileLogger\Enabled=true
 FileLogger\Age=6
 FileLogger\DeleteOld=true
 FileLogger\Backup=true
 FileLogger\AgeType=1
-FileLogger\Path=~/iFeral/log
+FileLogger\Path=$HOME/iFeral/log
 FileLogger\MaxSize=20
 
 [LegalNotice]
@@ -333,20 +333,20 @@ fi ; }
 # 01. 安装 qBittorrent，V1
 function install_qb_v1() {
 
-echo ; mkdir -p ~/tmp ~/private/qbittorrent/{data,watch,torrents} ~/.config/{qBittorrent,flexget}
+echo ; mkdir -p $HOME/tmp $HOME/private/qbittorrent/{data,watch,torrents} $HOME/.config/{qBittorrent,flexget}
 for qbpid in ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittorrent | awk '{print $2}' ` ; do kill -9 $qbpid ; done
 
 # 下载
-if [[ ! `  ls ~/iFeral/qb/library  2>/dev/null  `  ]]; then
+if [[ ! `  ls $HOME/iFeral/qb/library  2>/dev/null  `  ]]; then
     echo -e "${bold}${yellow}下载 qbittorrent-nox ...${normal}\n"
     if   [[ $Seedbox == FH ]]; then
-         git clone --depth=1 -b master  --single-branch https://github.com/Aniverse/qBittorrent-nox ~/iFeral/qb
+         git clone --depth=1 -b master  --single-branch https://github.com/Aniverse/qBittorrent-nox $HOME/iFeral/qb
     elif [[ $Seedbox == SH ]]; then
-         git clone --depth=1 -b trusty2 --single-branch https://github.com/Aniverse/qBittorrent-nox ~/iFeral/qb
+         git clone --depth=1 -b trusty2 --single-branch https://github.com/Aniverse/qBittorrent-nox $HOME/iFeral/qb
     else
          echo -e "${bold}${yellow}暂时不支持 FH/SH 以外的盒子 ...${normal}\n" ; exit 1
     fi
-    chmod +x -R ~/iFeral/qb ; echo
+    chmod +x -R $HOME/iFeral/qb ; echo
 fi
 
 # 询问版本
@@ -355,13 +355,13 @@ fi
 while [[ $QBVERSION = "" ]]; do
     echo -e "${jiacu}当前可用的版本为 $QB_supported_versions"
     read -ep "${bold}${yellow}请输入你要使用的 qBittorrent 版本： ${normal}" QBVERSION
-    [[ ! ` ls ~/iFeral/qb | grep $QBVERSION ` ]] && { echo -e "${error} 你输入的版本不可用，请重新输入！" ; unset QBVERSION ; }
+    [[ ! ` ls $HOME/iFeral/qb | grep $QBVERSION ` ]] && { echo -e "${error} 你输入的版本不可用，请重新输入！" ; unset QBVERSION ; }
 done
 
 install_qb_ask_config
 install_qb_new_config
 
-TMPDIR=~/tmp LD_LIBRARY_PATH=~/iFeral/qb/library ~/iFeral/qb/qbittorrent-nox.$QBVERSION -d
+TMPDIR=$HOME/tmp LD_LIBRARY_PATH=$HOME/iFeral/qb/library $HOME/iFeral/qb/qbittorrent-nox.$QBVERSION -d
 
 install_qb_finished ; }
 
@@ -371,7 +371,7 @@ install_qb_finished ; }
 # 01. 安装 qBittorren，V2
 function install_qb_v2() {
 
-echo ; mkdir -p ~/tmp ~/private/qbittorrent/{data,watch,torrents} ~/.config/{qBittorrent,flexget}
+echo ; mkdir -p $HOME/tmp $HOME/private/qbittorrent/{data,watch,torrents} $HOME/.config/{qBittorrent,flexget}
 for qbpid in ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittorrent | awk '{print $2}' ` ; do kill -9 $qbpid ; done
 
 询问版本
@@ -384,12 +384,12 @@ while [[ $QBVERSION = "" ]]; do
 done
 
 # 下载
-if [[ ! `  ls ~/iFeral/qb/library  2>/dev/null  `  ]]; then
+if [[ ! `  ls $HOME/iFeral/qb/library  2>/dev/null  `  ]]; then
     echo -e "\n${bold}${yellow}下载 qbittorrent-nox ...${normal}\n"
     if   [[ $CODENAME =~ (trusty|jessie|stretch) ]]; then
-         svn co $quietflag https://github.com/Aniverse/ygnrmRuUagpgPvr4rW97/trunk/$CODENAME/lib ~/iFeral/qb/library
-         wget   $quietflag https://github.com/Aniverse/ygnrmRuUagpgPvr4rW97/raw/master/$CODENAME/qbittorrent-nox.$QBVERSION -O ~/iFeral/qb/qbittorrent-nox.$QBVERSION
-         chmod +x ~/iFeral/qb/qbittorrent-nox.$QBVERSION
+         svn co $quietflag https://github.com/Aniverse/ygnrmRuUagpgPvr4rW97/trunk/$CODENAME/lib $HOME/iFeral/qb/library
+         wget   $quietflag https://github.com/Aniverse/ygnrmRuUagpgPvr4rW97/raw/master/$CODENAME/qbittorrent-nox.$QBVERSION -O $HOME/iFeral/qb/qbittorrent-nox.$QBVERSION
+         chmod +x $HOME/iFeral/qb/qbittorrent-nox.$QBVERSION
     else
          echo -e "${bold}${yellow}暂时不支持系统非 Debian8/9、Ubuntu 14.04 的盒子 ...${normal}\n" ; exit 1
     fi
@@ -399,7 +399,7 @@ install_qb_ask_config
 install_qb_new_config
 
 # 运行 qBittorrent-nox
-TMPDIR=~/tmp LD_LIBRARY_PATH=~/iFeral/qb/library ~/iFeral/qb/qbittorrent-nox.$QBVERSION -d
+TMPDIR=$HOME/tmp LD_LIBRARY_PATH=$HOME/iFeral/qb/library $HOME/iFeral/qb/qbittorrent-nox.$QBVERSION -d
 
 install_qb_finished ; }
 
@@ -410,23 +410,23 @@ install_qb_finished ; }
 # 01. 安装 qBittorren，V3
 function install_qb_v3() {
 
-echo ; mkdir -p ~/tmp ~/private/qbittorrent/{data,watch,torrents} ~/.config/{qBittorrent,flexget}
+echo ; mkdir -p $HOME/tmp $HOME/private/qbittorrent/{data,watch,torrents} $HOME/.config/{qBittorrent,flexget}
 for qbpid in ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittorrent | awk '{print $2}' ` ; do kill -9 $qbpid ; done
 QBVERSION=4.1.5
 [[ $CODENAME == trusty ]] && QBVERSION=4.1.4
 
 # 下载
-if [[ ! `  ls ~/iFeral/qb/library  2>/dev/null  `  ]]; then
+if [[ ! `  ls $HOME/iFeral/qb/library  2>/dev/null  `  ]]; then
     echo -e "\n${bold}${yellow}下载 qbittorrent-nox ...${normal}\n"
     if [[ $CODENAME =~ (trusty|xenial|bionic|jessie|stretch) ]]; then
         if [[ $(command -v svn) ]]; then
-            svn co $quietflag https://github.com/Aniverse/bbq/trunk/$CODENAME/lib ~/iFeral/qb/library
-            wget   $quietflag https://github.com/Aniverse/bbq/raw/master/$CODENAME/qbittorrent-nox.$QBVERSION -O ~/iFeral/qb/qbittorrent-nox.$QBVERSION
-            chmod +x ~/iFeral/qb/qbittorrent-nox.$QBVERSION
+            svn co $quietflag https://github.com/Aniverse/bbq/trunk/$CODENAME/lib $HOME/iFeral/qb/library
+            wget   $quietflag https://github.com/Aniverse/bbq/raw/master/$CODENAME/qbittorrent-nox.$QBVERSION -O $HOME/iFeral/qb/qbittorrent-nox.$QBVERSION
+            chmod +x $HOME/iFeral/qb/qbittorrent-nox.$QBVERSION
         elif [[ ! $(command -v svn) ]] && [[ $(command -v git) ]]; then
             git clone --depth=1 $quietflag https://github.com/Aniverse/bbq
-            cp -rf ~/bbq/$CODENAME ~/iFeral/qb
-            chmod +x ~/iFeral/qb/qbittorrent-nox.$QBVERSION
+            cp -rf $HOME/bbq/$CODENAME $HOME/iFeral/qb
+            chmod +x $HOME/iFeral/qb/qbittorrent-nox.$QBVERSION
 		else # 难道我要全部 wget？？？
             echo -e "\n无法下载 qBittorrent！\n" ; exit 1
         fi
@@ -439,7 +439,7 @@ install_qb_ask_config
 install_qb_new_config
 
 # 运行 qBittorrent-nox
-TMPDIR=~/tmp LD_LIBRARY_PATH=~/iFeral/qb/library ~/iFeral/qb/qbittorrent-nox.$QBVERSION -d
+TMPDIR=$HOME/tmp LD_LIBRARY_PATH=$HOME/iFeral/qb/library $HOME/iFeral/qb/qbittorrent-nox.$QBVERSION -d
 
 install_qb_finished ; }
 
@@ -461,24 +461,24 @@ for depid in ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep de2 | a
 
 while [[ $DEVERSION = "" ]]; do
     echo -ne "${bold}${yellow}请输入你要安装的第二个 Deluge 的版本 : ${normal}" ; read -e DEVERSION
-    wget $quietflag O ~/deluge-"${DEVERSION}".tar.gz http://download.deluge-torrent.org/source/deluge-"${DEVERSION}".tar.gz || { echo -e "${error} 下载 Deluge 源码失败，可能是这个版本不可用！" ; unset DEVERSION ; }
+    wget $quietflag O $HOME/deluge-"${DEVERSION}".tar.gz http://download.deluge-torrent.org/source/deluge-"${DEVERSION}".tar.gz || { echo -e "${error} 下载 Deluge 源码失败，可能是这个版本不可用！" ; unset DEVERSION ; }
 done
 
 # 安装
-tar zxf ~/deluge-"${DEVERSION}".tar.gz && cd ~/deluge-"${DEVERSION}"
+tar zxf $HOME/deluge-"${DEVERSION}".tar.gz && cd $HOME/deluge-"${DEVERSION}"
 sed -i "s/SSL.SSLv3_METHOD/SSL.SSLv23_METHOD/g" deluge/core/rpcserver.py
 sed -i "/        ctx = SSL.Context(SSL.SSLv23_METHOD)/a\        ctx.set_options(SSL.OP_NO_SSLv2 & SSL.OP_NO_SSLv3)" deluge/core/rpcserver.py
 python setup.py install --user >/dev/null 2>&1
-cd && rm -rf ~/deluge-"${DEVERSION}" ~/deluge-"${DEVERSION}".tar.gz
+cd && rm -rf $HOME/deluge-"${DEVERSION}" $HOME/deluge-"${DEVERSION}".tar.gz
 
-rm -f ~/bin/{de2,dew2} >/dev/null 2>&1
-mv -f ~/.local/bin/deluged ~/bin/de2 >/dev/null 2>&1
-mv -f ~/.local/bin/deluge-web ~/bin/dew2 >/dev/null 2>&1
-chmod 700 ~/bin/{de2,dew2} >/dev/null 2>&1
-[[ ! -e ~/bin/de2 ]] && { echo -e "${error} 第二个 Deluged 安装失败！\n不要问我为什么和怎么办，你自己看着办吧！${normal}" ; exit 1 ; }
+rm -f $HOME/bin/{de2,dew2} >/dev/null 2>&1
+mv -f $HOME/.local/bin/deluged $HOME/bin/de2 >/dev/null 2>&1
+mv -f $HOME/.local/bin/deluge-web $HOME/bin/dew2 >/dev/null 2>&1
+chmod 700 $HOME/bin/{de2,dew2} >/dev/null 2>&1
+[[ ! -e $HOME/bin/de2 ]] && { echo -e "${error} 第二个 Deluged 安装失败！\n不要问我为什么和怎么办，你自己看着办吧！${normal}" ; exit 1 ; }
 
 # 询问是否覆盖原配置信息
-if [[ -e ~/.config/deluge2/core.conf ]]; then
+if [[ -e $HOME/.config/deluge2/core.conf ]]; then
     echo -e "\n${atte} 你以前装过第二个 Deluge，那时的配置文件还留着\n其中包含着 Deluge 的账号、密码、端口、下载路径等信息"
     read -ep "你现在要使用以前留下的配置文件吗？${normal} [${cyan}Y${normal}/n]: " responce
     case $responce in
@@ -494,30 +494,33 @@ fi
 if [[ $deconfig == new ]]; then
     echo ; read -ep "${bold}${yellow}请输入你要用于 Deluge DAEMON 的密码：${normal}" DEPASS
     DWSALT=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n1)
-    DWP=$(python "$USERPATH/iFeral/app/deluge.userpass.py" ${DEPASS} ${DWSALT})
-    [[ -d ~/.config/deluge2 ]] && { rm -rf ~/.config/deluge2.backup ; mv -f ~/.config/deluge2 ~/.config/deluge2.backup ; }
-    mkdir -p ~/.config
-    cp -rf ~/iFeral/template/deluge2 ~/.config
+    DWP=$(python "$HOME/iFeral/app/deluge.userpass.py" ${DEPASS} ${DWSALT})
+    [[ -d $HOME/.config/deluge2 ]] && { rm -rf $HOME/.config/deluge2.backup ; mv -f $HOME/.config/deluge2 $HOME/.config/deluge2.backup ; }
+    mkdir -p $HOME/.config
+    cp -rf $HOME/iFeral/template/deluge2 $HOME/.config
     portGenerator && portCheck
 
-    sed -i 's|"daemon_port":.*,|"daemon_port": '$portGen',|g' ~/.config/deluge2/core.conf
+    sed -i 's|"daemon_port":.*,|"daemon_port": '$portGen',|g' $HOME/.config/deluge2/core.conf
 
   # 直接 sed 路径无法替换，需要用这种方式来实现，比较蛋疼
-    cat ~/.config/deluge2/core.conf | sed -e "s/USERPATH/${USERPATHSED}/g" > ~/.config/deluge2/core2.conf
-    mv ~/.config/deluge2/core2.conf ~/.config/deluge2/core.conf
-    sed -i "s/DWSALT/${DWSALT}/g" ~/.config/deluge2/web.conf
-    sed -i "s/DWP/${DWP}/g" ~/.config/deluge2/web.conf
-    portGenerator2 && portCheck2 && sed -i 's|"port":.*,|"port": '$portGen2',|g' ~/.config/deluge2/web.conf
-    echo "$(whoami):${DEPASS}:10" > ~/.config/deluge2/auth
+  # 2019.01.26 其实应该是可以的，以后改下
+    cat $HOME/.config/deluge2/core.conf | sed -e "s/USERPATH/${USERPATHSED}/g" > $HOME/.config/deluge2/core2.conf
+    mv $HOME/.config/deluge2/core2.conf $HOME/.config/deluge2/core.conf
+    sed -i "s/DWSALT/${DWSALT}/g" $HOME/.config/deluge2/web.conf
+    sed -i "s/DWP/${DWP}/g" $HOME/.config/deluge2/web.conf
+    portGenerator2 && portCheck2 && sed -i 's|"port":.*,|"port": '$portGen2',|g' $HOME/.config/deluge2/web.conf
+    echo "$(whoami):${DEPASS}:10" > $HOME/.config/deluge2/auth
 fi
 
 # 运行
-~/bin/de2 -c ~/.config/deluge2 >/dev/null 2>&1
+$HOME/bin/de2 -c $HOME/.config/deluge2 >/dev/null 2>&1
+
+# $HOME/bin/dew2 -c $HOME/.config/deluge2 -f >/dev/null 2>&1
 
 # 检查 用户名、密码、端口
-DE2PORT=` grep daemon_port ~/.config/deluge2/core.conf | grep -oP "\d+" `
-DE2AUTHNAME=` grep -v localclient ~/.config/deluge2/auth | head -n1 | awk -F ":" '{print $1}' `
-DE2AUTHPASS=` grep -v localclient ~/.config/deluge2/auth | head -n1 | awk -F ":" '{print $2}' `
+DE2PORT=` grep daemon_port $HOME/.config/deluge2/core.conf | grep -oP "\d+" `
+DE2AUTHNAME=` grep -v localclient $HOME/.config/deluge2/auth | head -n1 | awk -F ":" '{print $1}' `
+DE2AUTHPASS=` grep -v localclient $HOME/.config/deluge2/auth | head -n1 | awk -F ":" '{print $2}' `
 
 if [[ ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep de2 ` ]]; then
     echo -e "\n${bold}${green}第二个 Deluge 已安装完成！${jiacu}\n"
@@ -558,12 +561,12 @@ case $version in
 esac
 
 if [[ $Seedbox == FH ]]; then
-    mkdir -p ~/private/rtorrent
-    echo -n "$FHRTVERSION" > ~/private/rtorrent/.version
+    mkdir -p $HOME/private/rtorrent
+    echo -n "$FHRTVERSION" > $HOME/private/rtorrent/.version
     echo -e "\n版本改变完成，需要重启 rTorrent 以生效\n"
 elif [[ $Seedbox == SH ]]; then
-    mkdir -p ~/.config
-    if [[ $SHRTVERSION == 0.9.6 ]];then rm -f ~/.config/.rtversion ; else echo "$SHRTVERSION" > ~/.config/.rtversion ; fi
+    mkdir -p $HOME/.config
+    if [[ $SHRTVERSION == 0.9.6 ]];then rm -f $HOME/.config/.rtversion ; else echo "$SHRTVERSION" > $HOME/.config/.rtversion ; fi
     echo -e "\n版本改变完成，需要重启 rTorrent 以生效\n"
 else
     echo "${warn} 不支持非 SH/FH 盒子！${normal}"
@@ -581,33 +584,33 @@ function _config_rut() { echo
 if [[ $Seedbox == FH ]]; then
 
 # ruTorrent Upgrade
-cd ~/www/$(whoami).$(hostname -f)/*
+cd $HOME/www/$(whoami).$(hostname -f)/*
 git clone --depth=1 https://github.com/Novik/ruTorrent ruTorrent
 cp -r rutorrent/conf/* ruTorrent/conf/
 cp rutorrent/.ht* ruTorrent/
 rm -rf rutorrent/ && mv ruTorrent rutorrent && cd
 
 # sox
-wget http://ftp.debian.org/debian/pool/main/s/sox/libsox3_14.4.2-3_amd64.deb && dpkg -x libsox3_14.4.2-3_amd64.deb ~/deb-temp
-wget http://ftp.debian.org/debian/pool/main/s/sox/sox_14.4.2-3_amd64.deb && dpkg -x sox_14.4.2-3_amd64.deb ~/deb-temp
-mv ~/deb-temp/usr/lib/x86_64-linux-gnu/* ~/lib/
-mv ~/deb-temp/usr/bin/* ~/bin/
-rm -rf ~/*.deb ~/deb-temp
-cd && sed -i "s|sox'] = ''|sox'] = '$(pwd)/bin/sox'|g" ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/spectrogram/conf.php
+wget http://ftp.debian.org/debian/pool/main/s/sox/libsox3_14.4.2-3_amd64.deb && dpkg -x libsox3_14.4.2-3_amd64.deb $HOME/deb-temp
+wget http://ftp.debian.org/debian/pool/main/s/sox/sox_14.4.2-3_amd64.deb && dpkg -x sox_14.4.2-3_amd64.deb $HOME/deb-temp
+mv $HOME/deb-temp/usr/lib/x86_64-linux-gnu/* $HOME/lib/
+mv $HOME/deb-temp/usr/bin/* $HOME/bin/
+rm -rf $HOME/*.deb $HOME/deb-temp
+cd && sed -i "s|sox'] = ''|sox'] = '$(pwd)/bin/sox'|g" $HOME/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/spectrogram/conf.php
 
 # Screenshots ffmpeg and m2ts
-cd && sed -i "s|ffmpeg'] = ''|ffmpeg'] = '$(pwd)/bin/ffmpeg'|g" ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/screenshots/conf.php
-sed -i "s/\"mkv\"/\"mkv\",\"m2ts\"/g" ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/screenshots/conf.php
+cd && sed -i "s|ffmpeg'] = ''|ffmpeg'] = '$(pwd)/bin/ffmpeg'|g" $HOME/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/screenshots/conf.php
+sed -i "s/\"mkv\"/\"mkv\",\"m2ts\"/g" $HOME/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/screenshots/conf.php
 
 # Filemanager
-cd ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/
+cd $HOME/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/
 svn co $quietflag https://github.com/nelu/rutorrent-thirdparty-plugins/trunk/filemanager
-chmod 700 ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/filemanager/scripts/*
-cd && sed -i "s|(getExternal(\"ffprobe\")|(getExternal(\"~/bin/ffprobe\")|g" ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/filemanager/flm.class.php
-sed -i "s|(getExternal('ffmpeg')|(getExternal('$(pwd)/bin/ffmpeg')|g" ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/filemanager/flm.class.php
+chmod 700 $HOME/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/filemanager/scripts/*
+cd && sed -i "s|(getExternal(\"ffprobe\")|(getExternal(\"$HOME/bin/ffprobe\")|g" $HOME/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/filemanager/flm.class.php
+sed -i "s|(getExternal('ffmpeg')|(getExternal('$(pwd)/bin/ffmpeg')|g" $HOME/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/filemanager/flm.class.php
 
 # ruTorrent Themes
-cd ~/www/$(whoami).$(hostname -f)/*/rutorrent
+cd $HOME/www/$(whoami).$(hostname -f)/*/rutorrent
 mkdir -p theme/themes
 cd theme/themes
 svn co $quietflag https://github.com/ArtyumX/ruTorrent-Themes/trunk/MaterialDesign
@@ -615,10 +618,10 @@ svn co $quietflag https://github.com/ArtyumX/ruTorrent-Themes/trunk/club-QuickBo
 cd
 
 # AutoDL-Irssi，bash -c "$(wget -qO- http://git.io/oTUCMg)"
-wget $quietflag O ~/install.autodl.sh https://bitbucket.org/feralio/wiki/raw/HEAD/src/wiki/software/autodl/autodl.sh
-echo 1 | bash ~/install.autodl.sh
+wget $quietflag O $HOME/install.autodl.sh https://bitbucket.org/feralio/wiki/raw/HEAD/src/wiki/software/autodl/autodl.sh
+echo 1 | bash $HOME/install.autodl.sh
 
-else echo "${atte} 这是为了 FH 盒子设计的，其他盒子就不要用了~${normal}" ; fi ; }
+else echo "${atte} 这是为了 FH 盒子设计的，其他盒子就不要用了${normal}" ; fi ; }
 
 
 
@@ -636,44 +639,44 @@ echo ; read -ep "${bold}${yellow}请输入你要用于 Flexget WebUI 的密码�
 
 #if [[ $Seedbox == FH ]]; then
 #   pip install --user --ignore-installed --no-use-wheel virtualenv
-#   ~/.local/bin/virtualenv ~/pip --system-site-packages
-#   ~/pip/bin/pip install flexget
+#   $HOME/.local/bin/virtualenv $HOME/pip --system-site-packages
+#   $HOME/pip/bin/pip install flexget
 #
-#~/.local/bin/virtualenv --system-site-packages ~/pip/
-#~/pip/bin/pip install flexget
-#~/pip/bin/pip install transmissionrpc
+#$HOME/.local/bin/virtualenv --system-site-packages $HOME/pip/
+#$HOME/pip/bin/pip install flexget
+#$HOME/pip/bin/pip install transmissionrpc
 #fi
 
-# rm -rf ~/.pip ~/.local
-# export PYTHONPATH=~/.local/lib/python2.7
+# rm -rf $HOME/.pip $HOME/.local
+# export PYTHONPATH=$HOME/.local/lib/python2.7
 
 wget $quietflag -O- https://bootstrap.pypa.io/get-pip.py | python - --user
-~/.local/bin/pip install --user --upgrade pip
-~/.local/bin/pip install --user --upgrade setuptools
-~/.local/bin/pip install --user --upgrade virtualenv
-~/.local/bin/pip install --user --upgrade wheel
-~/.local/bin/pip install --user --upgrade markdown
-~/.local/bin/pip install --user --upgrade testresources
-~/.local/bin/pip install --user --upgrade deluge-client
-~/.local/bin/pip install --user --upgrade transmissionrpc
-~/.local/bin/pip install --user --upgrade guessit
-~/.local/bin/pip install --user --upgrade flexget || Fail_Flexget=1
+$HOME/.local/bin/pip install --user --upgrade pip
+$HOME/.local/bin/pip install --user --upgrade setuptools
+$HOME/.local/bin/pip install --user --upgrade virtualenv
+$HOME/.local/bin/pip install --user --upgrade wheel
+$HOME/.local/bin/pip install --user --upgrade markdown
+$HOME/.local/bin/pip install --user --upgrade testresources
+$HOME/.local/bin/pip install --user --upgrade deluge-client
+$HOME/.local/bin/pip install --user --upgrade transmissionrpc
+$HOME/.local/bin/pip install --user --upgrade guessit
+$HOME/.local/bin/pip install --user --upgrade flexget || Fail_Flexget=1
 alias flexget="$HOME/.local/bin/flexget"
 Flexget_PATH="$HOME/.local/bin/flexget"
 
 if [[ $Fail_Flexget == 1 ]];then
-~/.local/bin/virtualenv --system-site-packages ~/.pip/
-~/.pip/bin/pip install flexget
+$HOME/.local/bin/virtualenv --system-site-packages $HOME/.pip/
+$HOME/.pip/bin/pip install flexget
 alias flexget="$HOME/.pip/bin/flexget"
 Flexget_PATH="$HOME/.pip/bin/flexget"
 fi
 
 portGenerator && portCheck
 
-mkdir -p ~/.config/flexget
-cp -f ~/.config/flexget/config.yml ~/.config/flexget/config.yml."$(date "+%Y.%m.%d.%H.%M.%S")".bak >/dev/null 2>&1
+mkdir -p $HOME/.config/flexget
+cp -f $HOME/.config/flexget/config.yml $HOME/.config/flexget/config.yml."$(date "+%Y.%m.%d.%H.%M.%S")".bak >/dev/null 2>&1
 
-cat >  ~/.config/flexget/config.yml <<EOF
+cat >  $HOME/.config/flexget/config.yml <<EOF
 tasks:
   MTeam:
     rss: https://https://tp.m-team.cc/torrentrss.php
@@ -689,12 +692,12 @@ web_server:
 schedules: no
 EOF
 
-FLPORT=` grep "port" ~/.config/flexget/config.yml | grep -Po "\d+" `
+FLPORT=` grep "port" $HOME/.config/flexget/config.yml | grep -Po "\d+" `
 
 # 运行
-flexget web passwd $PASSWORD 2>&1 | tee ~/flex.pass.output
-[[ `grep "not strong enough" ~/flex.pass.output` ]] && export FlexPassFail=1
-rm -f ~/flex.pass.output
+flexget web passwd $PASSWORD 2>&1 | tee $HOME/flex.pass.output
+[[ `grep "not strong enough" $HOME/flex.pass.output` ]] && export FlexPassFail=1
+rm -f $HOME/flex.pass.output
 
 flexget daemon start --daemonize
 
@@ -704,7 +707,7 @@ if [[ -e $Flexget_PATH ]]; then
         echo -e "\n${bold}${green}Flexget 已安装完成！${jiacu}\n"
         echo -e "网址  ${cyan}http://$(hostname -f):$FLPORT${jiacu}"
         echo -e "账号  ${cyan}flexget${jiacu}"
-        if [[ $FlexPassFail == 1 ]]; then echo -e "${error}你刚才设的密码太简单了，Flexget 不接受这么简单的密码\n请自行输入 ~/pip/bin/flexget web passwd <密码> 来设置密码\n（方括号部分请改成密码）${normal}\n"
+        if [[ $FlexPassFail == 1 ]]; then echo -e "${error}你刚才设的密码太简单了，Flexget 不接受这么简单的密码\n请自行输入 $HOME/pip/bin/flexget web passwd <密码> 来设置密码\n（方括号部分请改成密码）${normal}\n"
         else echo -e "密码  ${cyan}$PASSWORD${normal}\n" ; fi
     else echo -e "${error} Flexget 安装完成，但 daemon 没开起来。\n不要问我为什么和怎么办，你自己看着办吧！${normal}" ; fi
 else
@@ -728,30 +731,30 @@ function _install_tools() {
 
 # ffmpeg
 echo -e "\n${bold}安装 ffmpeg ...${normal}\n"
-mkdir -p ~/bin
-wget $quietflag O ~/ffmpeg.tar.gz https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-64bit-static.tar.xz
-tar xf ~/ffmpeg.tar.gz && cd && rm -rf ffmpeg-*-64bit-static/{manpages,presets,readme.txt}
-cp ~/ffmpeg-*-64bit-static/* ~/bin> /dev/null 2>&1
-chmod 700 ~/bin/{ffmpeg,ffprobe,ffmpeg-10bit,qt-faststart}
+mkdir -p $HOME/bin
+wget $quietflag O $HOME/ffmpeg.tar.gz https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-64bit-static.tar.xz
+tar xf $HOME/ffmpeg.tar.gz && cd && rm -rf ffmpeg-*-64bit-static/{manpages,presets,readme.txt}
+cp $HOME/ffmpeg-*-64bit-static/* $HOME/bin> /dev/null 2>&1
+chmod 700 $HOME/bin/{ffmpeg,ffprobe,ffmpeg-10bit,qt-faststart}
 cd && rm -rf ffmpeg{.tar.gz,-*-64bit-static}
 
 # p7zip
 echo -e "${bold}安装 p7zip ...${normal}\n"
-wget $quietflag O ~/p7zip.tar.bz2 http://sourceforge.net/projects/p7zip/files/p7zip/9.38.1/p7zip_9.38.1_src_all.tar.bz2
-tar xf ~/p7zip.tar.bz2 && cd ~/p7zip_9.38.1
+wget $quietflag O $HOME/p7zip.tar.bz2 http://sourceforge.net/projects/p7zip/files/p7zip/9.38.1/p7zip_9.38.1_src_all.tar.bz2
+tar xf $HOME/p7zip.tar.bz2 && cd $HOME/p7zip_9.38.1
 make -j$(nproc) > /dev/null 2>&1
 make install DEST_HOME=$HOME > /dev/null 2>&1
-cd && rm -f ~/p7zip.tar.bz2
+cd && rm -f $HOME/p7zip.tar.bz2
 
 # rclone
 echo -e "${bold}安装 rclone ...${normal}\n"
-mkdir -p ~/bin
-wget $quietflag O ~/rclone.zip http://downloads.rclone.org/rclone-current-linux-amd64.zip
+mkdir -p $HOME/bin
+wget $quietflag O $HOME/rclone.zip http://downloads.rclone.org/rclone-current-linux-amd64.zip
 
-[[ $DeBUG == 1 ]] && unzip ~/rclone.zip || unzip -qq ~/rclone.zip
-mv ~/rclone-v*-linux-amd64/rclone ~/bin
-rm -rf ~/rclone-v*-linux-amd64 ~/rclone.zip
-chmod +x ~/bin/rclone
+[[ $DeBUG == 1 ]] && unzip $HOME/rclone.zip || unzip -qq $HOME/rclone.zip
+mv $HOME/rclone-v*-linux-amd64/rclone $HOME/bin
+rm -rf $HOME/rclone-v*-linux-amd64 $HOME/rclone.zip
+chmod +x $HOME/bin/rclone
 
 # mktorrent
 # echo -e "${bold}安装 mktorrent 1.1 ...${normal}\n"
@@ -771,15 +774,15 @@ elif [[ $CODENAME == trusty ]]; then
     wget $quietflag -O 2.deb https://mediaarea.net/download/binary/libmediainfo0/18.05/libmediainfo0_18.05-1_amd64.xUbuntu_14.04.deb
     wget $quietflag -O 3.deb https://mediaarea.net/download/binary/mediainfo/18.05/mediainfo_18.05-1_amd64.xUbuntu_14.04.deb
 fi
-dpkg -x 1.deb ~/deb-temp ; dpkg -x 2.deb ~/deb-temp ; dpkg -x 3.deb ~/deb-temp
-mv ~/deb-temp/usr/lib/x86_64-linux-gnu/* ~/lib/
-mv ~/deb-temp/usr/bin/* ~/bin/
-rm -rf [123].deb ~/deb-temp
+dpkg -x 1.deb $HOME/deb-temp ; dpkg -x 2.deb $HOME/deb-temp ; dpkg -x 3.deb $HOME/deb-temp
+mv $HOME/deb-temp/usr/lib/x86_64-linux-gnu/* $HOME/lib/
+mv $HOME/deb-temp/usr/bin/* $HOME/bin/
+rm -rf [123].deb $HOME/deb-temp
 
-grep -q mediainfo ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/filemanager/flm.class.php &&
-sed -i "s|(getExternal('mediainfo')|(getExternal('$(pwd)/bin/mediainfo')|g" ~/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/filemanager/flm.class.php
+grep -q mediainfo $HOME/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/filemanager/flm.class.php &&
+sed -i "s|(getExternal('mediainfo')|(getExternal('$(pwd)/bin/mediainfo')|g" $HOME/www/$(whoami).$(hostname -f)/*/rutorrent/plugins/filemanager/flm.class.php
 
-# LD_LIBRARY_PATH=~/lib ~/bin/mediainfo --version
+# LD_LIBRARY_PATH=$HOME/lib $HOME/bin/mediainfo --version
 
 }
 
@@ -833,7 +836,7 @@ tcp_control=$(cat /proc/sys/net/ipv4/tcp_congestion_control 2>1)
 
 echo -e "${bold}正在检查服务器的其他 IP 信息 ... (可能比较慢)${normal}\n"
 
-ipip_result=~/ipip_result
+ipip_result=$HOME/ipip_result
 wget --no-check-certificate -qO- https://www.ipip.net/ip.html > $ipip_result 2>&1
 
 # DediSeedbox 这蛋疼玩意儿没法在命令里带中文……
@@ -907,25 +910,25 @@ if   [[ $SeedboxType == Docker ]]; then
     echo -e "${bold}Docker 类型的盒子在我所知范围内没办法看邻居……${normal}"
 elif [[ $Seedbox =~ (FH|SH) ]]; then
     echo -e "${bold}${cayn}以下是当前和你在同一个硬盘分区上的邻居${normal}\n"
-	cat ~/neighbors_all | grep "${current_disk}/" | awk -F ":" '{print $1}' | sort -u | pr -3 -t ; echo
+	cat $HOME/neighbors_all | grep "${current_disk}/" | awk -F ":" '{print $1}' | sort -u | pr -3 -t ; echo
     echo -e "${bold}${cayn}以下是整个盒子上所有的邻居${normal}\n"
-    cat ~/neighbors_all | awk -F ":" '{print $1}' | sort -u | pr -3 -t ; echo
+    cat $HOME/neighbors_all | awk -F ":" '{print $1}' | sort -u | pr -3 -t ; echo
   # getent passwd | grep -Ev "$(whoami)|nologin|/bin/false|/bin/sync|/var/lib/libuuid|root" | awk -F ':' '{print $6}' | sort -u | pr -3 -t ; echo
     echo -e "${bold}${cayn}以下是整个盒子上所有的邻居（带路径）${normal}\n"
-    cat ~/neighbors_all | awk -F ":" '{print $6}' | sort -u | pr -3 -t ; echo
+    cat $HOME/neighbors_all | awk -F ":" '{print $6}' | sort -u | pr -3 -t ; echo
 elif [[ $Seedbox == PM ]]; then
     echo -e "${bold}${cayn}以下是整个盒子上的邻居${normal}\n"
-    cat ~/neighbors_all | awk -F ":" '{print $1}' | sort -u | pr -3 -t ; echo
+    cat $HOME/neighbors_all | awk -F ":" '{print $1}' | sort -u | pr -3 -t ; echo
 elif [[ $Seedbox == USB ]]; then
     echo -e "${bold}${cayn}以下是当前和你在同一个硬盘分区上的邻居${normal}\n"
-    cat ~/neighbors_all | grep "${current_disk}/" | awk -F ":" '{print $1}' | sort -u | pr -3 -t ; echo
+    cat $HOME/neighbors_all | grep "${current_disk}/" | awk -F ":" '{print $1}' | sort -u | pr -3 -t ; echo
     echo -e "${bold}${cayn}以下是整个盒子上所有的邻居${normal}\n"
-    cat ~/neighbors_all | awk -F ":" '{print $1}' | sort -u | pr -3 -t ; echo
+    cat $HOME/neighbors_all | awk -F ":" '{print $1}' | sort -u | pr -3 -t ; echo
     echo -e "${bold}${cayn}以下是整个盒子上所有的邻居（带路径）${normal}\n"
-    cat ~/neighbors_all | awk -F ":" '{print $6}' | sort -u | pr -3 -t ; echo
+    cat $HOME/neighbors_all | awk -F ":" '{print $6}' | sort -u | pr -3 -t ; echo
 else
     echo -e "${bold}没适配你所使用的盒子，这个邻居列表不知道准不准，凑合着看下吧${normal}\n"
-    cat ~/neighbors_all | awk -F ":" '{print $1}' | sort -u | pr -3 -t ; echo
+    cat $HOME/neighbors_all | awk -F ":" '{print $1}' | sort -u | pr -3 -t ; echo
 fi ; }
 
 
@@ -936,16 +939,16 @@ fi ; }
 function _bash_settings() {
 chsh -s /bin/bash
 
-cat >> ~/.profile <<EOF
+cat >> $HOME/.profile <<EOF
 export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export TZ="/usr/share/zoneinfo/Asia/Shanghai"
-export PATH=~/iFeral/app:~/bin:~/.bin:~/.pip/bin:~/.local/bin:\$PATH
+export PATH=$HOME/iFeral/app:$HOME/bin:$HOME/.bin:$HOME/.pip/bin:$HOME/.local/bin:\$PATH
 #export LD_LIBRARY_PATH=$HOME/.local/lib:$HOME/.local/usr/lib:$LD_LIBRARY_PATH
-#export TMPDIR=~/tmp
+#export TMPDIR=$HOME/tmp
 
 alias scrgd="screen -R gooooogle"
-alias yongle='du -sB GB ~/'
+alias yongle='du -sB GB $HOME/'
 alias space='du -sB GB'
 alias scrl="screen -ls"
 alias ls="ls -hAv --color --group-directories-first"
@@ -973,18 +976,18 @@ make -j$(nproc) && make install
 cd .. && rm -rf aria2-1.33.1
 
 # 安装 AiraNG
-cd ~/www/$(whoami).$(hostname -f)/* 
+cd $HOME/www/$(whoami).$(hostname -f)/* 
 mkdir -p aria2 ; cd aria2
 wget https://github.com/mayswind/AriaNg/releases/download/0.4.0/aria-ng-0.4.0.zip
 unzip aria-ng-0.4.0.zip && rm -f aria-ng-0.4.0.zip
 
 # 配置 Aira2
-mkdir -p ~/.config/aria2 ~/private/aria2
-cd ~/.config/aria2
-cat >~/.config/aria2/aria2.conf<<EOF
+mkdir -p $HOME/.config/aria2 $HOME/private/aria2
+cd $HOME/.config/aria2
+cat >$HOME/.config/aria2/aria2.conf<<EOF
 #Setting
-dir=~/private/aria2
-dht-file-path=~/.config/aria2/dht.dat
+dir=$HOME/private/aria2
+dht-file-path=$HOME/.config/aria2/dht.dat
 save-session-interval=15
 force-save=false
 log-level=error
@@ -1048,4 +1051,4 @@ _logo
 _init
 _main_menu
 
-rm -f ~/neighbors_all
+rm -f $HOME/neighbors_all
