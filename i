@@ -9,7 +9,7 @@
 #
 # 下次把 iFeral 弄成 .iferal
 #
-iFeralVer=0.8.6
+iFeralVer=0.8.7
 iFeralDate=2019.02.16
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
@@ -663,6 +663,7 @@ else echo "${atte} 这是为了 FH 盒子设计的，其他盒子就不要用了
 
 function _install_flexget() {
 
+pkill -9 flexget
 echo ; read -ep "${bold}${yellow}请输入你要用于 Flexget WebUI 的密码，不要太简单：${normal}" PASSWORD ; echo
 
 #if [[ $Seedbox == FH ]]; then
@@ -690,13 +691,13 @@ $HOME/.local/bin/pip install --user --upgrade transmissionrpc
 $HOME/.local/bin/pip install --user --upgrade guessit
 $HOME/.local/bin/pip install --user --upgrade flexget || Fail_Flexget=1
 #alias flexget="$HOME/.local/bin/flexget"
-#Flexget_PATH="$HOME/.local/bin/flexget"
+Flexget_PATH="$HOME/.local/bin/flexget"
 
 if [[ $Fail_Flexget == 1 ]];then
 $HOME/.local/bin/virtualenv --system-site-packages $HOME/.pip/
 $HOME/.pip/bin/pip install flexget
 #alias flexget="$HOME/.pip/bin/flexget"
-#Flexget_PATH="$HOME/.pip/bin/flexget"
+Flexget_PATH="$HOME/.pip/bin/flexget"
 fi
 
 portGenerator && portCheck
@@ -723,11 +724,12 @@ EOF
 FLPORT=` grep "port" $HOME/.config/flexget/config.yml | grep -Po "\d+" `
 
 # 运行
+export PATH=$HOME/.pip/bin:$HOME/.local/bin:$PATH 
+
 flexget web passwd $PASSWORD 2>&1 | tee $HOME/flex.pass.output
 [[ `grep "not strong enough" $HOME/flex.pass.output` ]] && export FlexPassFail=1
 rm -f $HOME/flex.pass.output
 
-export PATH=$HOME/.pip/bin:$HOME/.local/bin:$PATH 
 flexget daemon start --daemonize
 #[[ ! $? -eq 0 ]] && $HOME/.local/bin/flexget daemon start --daemonize
 #[[ ! $? -eq 0 ]] && $HOME/.pip/bin/flexget daemon start --daemonize
