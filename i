@@ -4,9 +4,13 @@
 #
 # bash -c "$(wget -qO- https://github.com/Aniverse/iFeral/raw/master/i)"
 # bash <(curl -s https://raw.githubusercontent.com/Aniverse/iFeral/master/i) -d
+# wget -qO i https://github.com/Aniverse/iFeral/raw/master/i && bash i -d
+# rm -rf i ; nano i ; bash i -d
 #
-iFeralVer=0.8.5
-iFeralDate=2019.01.26
+# 下次把 iFeral 弄成 .iferal
+#
+iFeralVer=0.8.6
+iFeralDate=2019.02.16
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -76,6 +80,7 @@ function isInternalIpAddress() { echo $1 | grep -qE '(192\.168\.((\d{1,2})|(1\d{
 
 ### 端口生成与检查 ###
 # https://bitbucket.org/feralio/wiki/src/master/src/wiki/software/qbittorrent/qbittorrent.sh
+
 portGenerator() { portGen=$(shuf -i 10001-32001 -n1) ; } ; portGenerator2() { portGen2=$(shuf -i 10001-32001 -n1) ; }
 portCheck() { while [[ "$(ss -ln | grep ':'"$portGen"'' | grep -c 'LISTEN')" -eq "1" ]]; do portGenerator ; done ; }
 portCheck2() { while [[ "$(ss -ln | grep ':'"$portGen2"'' | grep -c 'LISTEN')" -eq "1" ]]; do portGenerator2 ; done ; }
@@ -158,13 +163,38 @@ echo -e "${bold}Ver. $iFeralVer    \n"
 
 
 # 00. 初始化
-function _init() {  if [[ ! `  ls $HOME | grep iFeral  `  ]]; then
+function _init() {
+
+if [[ ! `  ls $HOME | grep iFeral  `  ]]; then
+
 git clone --depth=1 https://github.com/Aniverse/iFeral ; chmod -R +x $HOME/iFeral/app
 cd ; clear ; wget --timeout=7 -qO- https://github.com/Aniverse/iFeral/raw/master/files/iFeral.logo.1
 echo -e "${bold}Ver. $iFeralVer    \n"
 mkdir -p $HOME/bin $HOME/lib $HOME/iFeral/backup $HOME/iFeral/log $HOME/.config $HOME/iSeed/{00.Tools,01.Screenshots,02.Torrents,03.BDinfo,04.BluRay}
 mkdir -p $HOME/.local/usr/{bin,lib,include} $HOME/.local/{bin,lib,include}
+
+cat >> $HOME/.profile <<EOF
+export LC_ALL=en_US.UTF-8
+export LANG=en_US.UTF-8
+export TZ="/usr/share/zoneinfo/Asia/Shanghai"
+export PATH=$HOME/iFeral/app:$HOME/bin:$HOME/.bin:$HOME/.pip/bin:$HOME/.local/bin:\$PATH
+#export LD_LIBRARY_PATH=$HOME/.local/lib:$HOME/.local/usr/lib:$LD_LIBRARY_PATH
+#export TMPDIR=$HOME/tmp
+
+alias scrgd="screen -R gooooogle"
+alias yongle='du -sB GB $HOME/'
+alias space='du -sB GB'
+alias scrl="screen -ls"
+alias ls="ls -hAv --color --group-directories-first"
+alias ll="ls -hAlvZ --color --group-directories-first"
+alias shanchu='rm -rf'
+alias scrl="screen -ls"
+alias zjpid='ps aux | egrep "$(whoami)|COMMAND" | egrep -v "grep|aux|root"'
+alias pid="ps aux | grep -v grep | grep"
+EOF
+
 fi
+
 user=$(whoami)
 #USERPATH=` pwd `
 #USERPATHSED=$( echo ${USERPATH} | sed -e 's/\//\\\//g' )
@@ -193,7 +223,6 @@ echo -e "${green}(06) ${jiacu}安装 flexget         "
 #echo -e "${green}(07) ${jiacu}安装 ffmpeg 等软件   "
 echo -e "${green}(08) ${jiacu}查看 系统信息        "
 echo -e "${green}(09) ${jiacu}查看 邻居            "
-#echo -e "${green}(10) ${jiacu}设置 .profile        "
 #echo -e "${green}(11) ${jiacu}使用 zsh             "
 #echo -e "${green}(12) ${jiacu}安装 Aria2 & AriaNG  "
 echo -e "${green}(13) ${jiacu}安装 qBittorrent (v1)  "
@@ -222,7 +251,6 @@ case $response in
             _stats ; echo ; _main_menu ;;
     9 | 09) # 查看 所有邻居
             _show_neighbor ; echo ; _main_menu ;;
-        10) _bash_settings ;;
         12) _install_aria2 ;;
         13) install_qb_v1 ;;
         14) install_qb_v2 ;;
@@ -661,14 +689,14 @@ $HOME/.local/bin/pip install --user --upgrade deluge-client
 $HOME/.local/bin/pip install --user --upgrade transmissionrpc
 $HOME/.local/bin/pip install --user --upgrade guessit
 $HOME/.local/bin/pip install --user --upgrade flexget || Fail_Flexget=1
-alias flexget="$HOME/.local/bin/flexget"
-Flexget_PATH="$HOME/.local/bin/flexget"
+#alias flexget="$HOME/.local/bin/flexget"
+#Flexget_PATH="$HOME/.local/bin/flexget"
 
 if [[ $Fail_Flexget == 1 ]];then
 $HOME/.local/bin/virtualenv --system-site-packages $HOME/.pip/
 $HOME/.pip/bin/pip install flexget
-alias flexget="$HOME/.pip/bin/flexget"
-Flexget_PATH="$HOME/.pip/bin/flexget"
+#alias flexget="$HOME/.pip/bin/flexget"
+#Flexget_PATH="$HOME/.pip/bin/flexget"
 fi
 
 portGenerator && portCheck
@@ -699,7 +727,10 @@ flexget web passwd $PASSWORD 2>&1 | tee $HOME/flex.pass.output
 [[ `grep "not strong enough" $HOME/flex.pass.output` ]] && export FlexPassFail=1
 rm -f $HOME/flex.pass.output
 
+export PATH=$HOME/.pip/bin:$HOME/.local/bin:$PATH 
 flexget daemon start --daemonize
+#[[ ! $? -eq 0 ]] && $HOME/.local/bin/flexget daemon start --daemonize
+#[[ ! $? -eq 0 ]] && $HOME/.pip/bin/flexget daemon start --daemonize
 
 # 输出结果
 if [[ -e $Flexget_PATH ]]; then
@@ -714,7 +745,11 @@ else
     echo -e "${error} Flexget 安装失败。请尝试手动安装？${normal}"
 fi
 
-[[ $DeBUG == 1 ]] && echo -e "Flexget_PATH=$Flexget_PATH"
+[[ $DeBUG == 1 ]] && {
+alias flexget
+echo -e "Flexget_PATH=$Flexget_PATH
+Fail_Flexget=$Fail_Flexget" ; }
+
 }
 
 
@@ -930,35 +965,6 @@ else
     echo -e "${bold}没适配你所使用的盒子，这个邻居列表不知道准不准，凑合着看下吧${normal}\n"
     cat $HOME/neighbors_all | awk -F ":" '{print $1}' | sort -u | pr -3 -t ; echo
 fi ; }
-
-
-
-
-
-# 09. 设置 .profile
-function _bash_settings() {
-chsh -s /bin/bash
-
-cat >> $HOME/.profile <<EOF
-export LC_ALL=en_US.UTF-8
-export LANG=en_US.UTF-8
-export TZ="/usr/share/zoneinfo/Asia/Shanghai"
-export PATH=$HOME/iFeral/app:$HOME/bin:$HOME/.bin:$HOME/.pip/bin:$HOME/.local/bin:\$PATH
-#export LD_LIBRARY_PATH=$HOME/.local/lib:$HOME/.local/usr/lib:$LD_LIBRARY_PATH
-#export TMPDIR=$HOME/tmp
-
-alias scrgd="screen -R gooooogle"
-alias yongle='du -sB GB $HOME/'
-alias space='du -sB GB'
-alias scrl="screen -ls"
-alias ls="ls -hAv --color --group-directories-first"
-alias ll="ls -hAlvZ --color --group-directories-first"
-alias shanchu='rm -rf'
-alias scrl="screen -ls"
-alias zjpid='ps aux | egrep "$(whoami)|COMMAND" | egrep -v "grep|aux|root"'
-alias pid="ps aux | grep -v grep | grep"
-EOF
-}
 
 
 
