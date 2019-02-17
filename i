@@ -8,7 +8,7 @@
 # rm -f i ; nano i ; bash i -d
 #
 #
-iFeralVer=0.9.0
+iFeralVer=0.9.1
 iFeralDate=2019.02.17
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
@@ -117,22 +117,15 @@ disk_size2=($( LANG=C df -hPl | grep -wvP '\-|none|tmpfs|devtmpfs|by-uuid|chroot
 disk_total_size=$( calc_disk ${disk_size1[@]} )
 disk_used_size=$( calc_disk ${disk_size2[@]} )
 
-# 其实这个判定对于独服可能不太对
-#disk_par_num=$(df -lh | grep -P "/home[0-9]+|media|home|mnt" | wc -l)
-disk_par_num=$(cat ~/par_list | wc -l)
-# 这个估计没毛病，Docker、独服、KVM 下都没问题的样子，别的不知道
-# disk_par_num=$(lsblk --nodeps --noheadings --output NAME,SIZE,ROTA --exclude 1,2,11 2>1 | wc -l)
-
+disk_par_num=$(df -hPl | grep -wvP '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem|udev|docker|md[0-9]+/[a-z].*' | sort -u | wc -l)
 # / 为最大分区时，数字 +1
 [[ $(df -lh | grep $(df -k | sort -rn -k4 | awk '{print $1}' | head -1) | awk '{print $NF}') == / ]] && disk_par_num=$(expr $disk_par_num + 1)
 
-# lsblk --nodeps --noheadings --exclude 1,2,11 --output NAME,SIZE,ROTA,MODEL 2>1
+disk_num=$( lsblk --nodeps --noheadings --output NAME,SIZE,ROTA --exclude 1,2,11 2>1 | wc -l )
 disk_size=$(lsblk --nodeps --noheadings --output SIZE 2>1 | awk '{print $1}')
 disk_total_size=$( calc_disk ${disk_size[@]} )
-#disk_used_size=$( du -sh ~ 2>1 | awk -F " " '{print $1}' | sed "s/G//" )
 
-#current_disk_avai=($( LANG=C df -hPl | grep $current_disk | awk '{print $4}' ))
-#current_disk_perc=($( LANG=C df -hPl | grep $current_disk | awk '{print $5}' ))
+
 
 # Ctrl+C 时恢复样式，删除无用文件
 cancel() { echo -e "${normal}" ; rm -f $HOME/neighbors_all ; exit ; }
@@ -893,49 +886,42 @@ echo " ${bailanse}${bold}                                           08. 系统�
 echo " ${bold}"
 
 
-    if [[ ! $Seedbox == DSD ]]; then
-echo -e  "${bold}  完全限定域名      ${cyan}$serverfqdn${normal}"
-    else sleep 0 ; fi
-echo -e  "${bold}  IPv4 地址         ${cyan}$serveripv4${normal}"
-    if [[ $serveripv6 ]]; then
-echo -e  "${bold}  IPv6 地址         ${cyan}$serveripv6${normal}"
-    else sleep 0 ; fi
-
-
-echo -e  "${bold}  反向域名          ${cyan}$ipip_rDNS${normal}"
-echo -e  "${bold}  运营商            ${cyan}$ipip_ISP${normal}"
-echo -e  "${bold}  ASN 信息          ${cyan}$ipip_ASN, $ipip_AS${normal}"
-echo -e  "${bold}  地理位置          ${cyan}$ipip_Loc${normal}"
-
-
+echo -e  "${bold}  IPv4 地址           ${cyan}$serveripv4${normal}"
+[[ $serveripv6 ]] &&
+echo -e  "${bold}  IPv6 地址           ${cyan}$serveripv6${normal}"
+[[ ! $Seedbox == DSD ]] &&
+echo -e  "${bold}  盒子域名            ${cyan}$serverfqdn${normal}"
+echo -e  "${bold}  反向域名            ${cyan}$ipip_rDNS${normal}"
+echo -e  "${bold}  运营商              ${cyan}$ipip_ISP${normal}"
+echo -e  "${bold}  ASN 信息            ${cyan}$ipip_ASN, $ipip_AS${normal}"
+echo -e  "${bold}  地理位置            ${cyan}$ipip_Loc${normal}"
 echo
-echo -e  "${bold}  CPU 型号          ${cyan}$CPUNum$cname${normal}"
-echo -e  "${bold}  CPU 核心          ${cyan}合计 ${cpucores} 核心，${cputhreads} 线程${normal}"
-echo -e  "${bold}  CPU 状态          ${cyan}当前主频 ${freq} MHz${normal}"
-echo -e  "${bold}  内存大小          ${cyan}$tram MB ($uram MB 已用)${normal}"
-echo -e  "${bold}  运行时间          ${cyan}$uptime1${normal}"
-echo -e  "${bold}  系统负载          ${cyan}$load${normal}"
+echo -e  "${bold}  CPU 型号            ${cyan}$CPUNum$cname${normal}"
+echo -e  "${bold}  CPU 参数            ${cyan}当前主频 ${freq} MHz，${cpucores} 核心，${cputhreads} 线程${normal}"
+echo -e  "${bold}  内存大小            ${cyan}$tram MB ($uram MB 已用)${normal}"
+echo -e  "${bold}  运行时间            ${cyan}$uptime1${normal}"
+echo -e  "${bold}  系统负载            ${cyan}$load${normal}"
 echo
 
 
 if [[ $SeedboxType == Docker ]]; then sleep 0 ; else
 SeedboxDiskTotalFlagTwo="  "
 [[ $disk_num -ge 2 ]] && DiskNumDisplay="共 $disk_num 块硬盘，合计 " && SeedboxDiskTotalFlagOne="总" && SeedboxDiskTotalFlagTwo=""
-echo -e  "${bold}  ${SeedboxDiskTotalFlagOne}硬盘大小       ${SeedboxDiskTotalFlagTwo}     ${cyan}${DiskNumDisplay}$disk_total_size GB${jiacu}"
-echo -e  "${bold}  当前硬盘分区大小  ${cyan}${current_disk_size}B (共 ${current_disk_total_used}B 已用，其中你用了 ${current_disk_self_used}B)${jiacu}" &&
-echo -e  "${bold}  共享盒子邻居数量  ${cyan}整台机器共 $neighbors_all_num 位邻居，其中同硬盘邻居 $neighbors_same_disk_num 位${jiacu}"
+echo -e  "${bold}  ${SeedboxDiskTotalFlagOne}硬盘大小   ${SeedboxDiskTotalFlagTwo}       ${cyan}${DiskNumDisplay}$disk_total_size GB${jiacu}"
+echo -e  "${bold}  当前硬盘分区大小    ${cyan}${current_disk_size}B (共 ${current_disk_total_used}B 已用，其中你用了 ${current_disk_self_used}B)${jiacu}" &&
+echo -e  "${bold}  共享盒子邻居数量    ${cyan}整台机器共 $neighbors_all_num 位邻居，其中同硬盘邻居 $neighbors_same_disk_num 位${jiacu}"
 echo
 fi
 
-echo -e  "${bold}  操作系统          ${cyan}$DISTRO $osversion $CODENAME ($arch) ${yellow}$SeedboxType${normal}"
-echo -e  "${bold}  运行内核          ${cyan}$running_kernel${normal}"
+echo -e  "${bold}  操作系统            ${cyan}$DISTRO $osversion $CODENAME ($arch) ${yellow}$SeedboxType${normal}"
+echo -e  "${bold}  运行内核            ${cyan}$running_kernel${normal}"
 if [[ $tcp_control ]]; then
-echo -e  "${bold}  TCP 拥塞控制      ${cyan}$tcp_control${normal}"
+echo -e  "${bold}  TCP 拥塞控制算法    ${cyan}$tcp_control${normal}"
 else sleep 0 ; fi
 
 
 echo
-echo -e  "${bold}  服务器时间        ${cyan}$date${normal}"
+echo -e  "${bold}  服务器时间          ${cyan}$date${normal}"
 echo ; }
 
 
