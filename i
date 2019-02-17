@@ -8,7 +8,7 @@
 # rm -f i ; nano i ; bash i -d
 #
 #
-iFeralVer=0.8.8
+iFeralVer=0.8.9
 iFeralDate=2019.02.17
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
@@ -221,7 +221,7 @@ echo -e "${green}(02) ${jiacu}安装 Deluge          "
 #echo -e "${green}(04) ${jiacu}降级 rTorrent        "
 #echo -e "${green}(05) ${jiacu}配置 ruTorrent       "
 echo -e "${green}(06) ${jiacu}安装 flexget         "
-#echo -e "${green}(07) ${jiacu}安装 ffmpeg 等软件   "
+echo -e "${green}(07) ${jiacu}安装 ffmpeg/rclone/p7zip   "
 echo -e "${green}(08) ${jiacu}查看 系统信息        "
 echo -e "${green}(09) ${jiacu}查看 邻居            "
 #echo -e "${green}(11) ${jiacu}使用 zsh             "
@@ -770,7 +770,7 @@ function _install_tools() {
 # ffmpeg
 echo -e "\n${bold}安装 ffmpeg ...${normal}\n"
 mkdir -p $HOME/bin
-wget $quietflag O $HOME/ffmpeg.tar.gz https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-64bit-static.tar.xz
+wget $quietflag -O $HOME/ffmpeg.tar.gz https://johnvansickle.com/ffmpeg/builds/ffmpeg-git-64bit-static.tar.xz
 tar xf $HOME/ffmpeg.tar.gz && cd && rm -rf ffmpeg-*-64bit-static/{manpages,presets,readme.txt}
 cp $HOME/ffmpeg-*-64bit-static/* $HOME/bin> /dev/null 2>&1
 chmod 700 $HOME/bin/{ffmpeg,ffprobe,ffmpeg-10bit,qt-faststart}
@@ -778,7 +778,7 @@ cd && rm -rf ffmpeg{.tar.gz,-*-64bit-static}
 
 # p7zip
 echo -e "${bold}安装 p7zip ...${normal}\n"
-wget $quietflag O $HOME/p7zip.tar.bz2 http://sourceforge.net/projects/p7zip/files/p7zip/9.38.1/p7zip_9.38.1_src_all.tar.bz2
+wget $quietflag -O $HOME/p7zip.tar.bz2 http://sourceforge.net/projects/p7zip/files/p7zip/9.38.1/p7zip_9.38.1_src_all.tar.bz2
 tar xf $HOME/p7zip.tar.bz2 && cd $HOME/p7zip_9.38.1
 make -j$(nproc) > /dev/null 2>&1
 make install DEST_HOME=$HOME > /dev/null 2>&1
@@ -787,7 +787,7 @@ cd && rm -f $HOME/p7zip.tar.bz2
 # rclone
 echo -e "${bold}安装 rclone ...${normal}\n"
 mkdir -p $HOME/bin
-wget $quietflag O $HOME/rclone.zip http://downloads.rclone.org/rclone-current-linux-amd64.zip
+wget $quietflag -O $HOME/rclone.zip http://downloads.rclone.org/rclone-current-linux-amd64.zip
 
 [[ $DeBUG == 1 ]] && unzip $HOME/rclone.zip || unzip -qq $HOME/rclone.zip
 mv $HOME/rclone-v*-linux-amd64/rclone $HOME/bin
