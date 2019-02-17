@@ -3,14 +3,13 @@
 # https://github.com/Aniverse/iFeral
 #
 # bash -c "$(wget -qO- https://github.com/Aniverse/iFeral/raw/master/i)"
-# bash <(curl -s https://raw.githubusercontent.com/Aniverse/iFeral/master/i) -d
+# bash <(curl -s https://raw.githubusercontent.com/Aniverse/iFeral/master/i)
 # wget -qO i https://github.com/Aniverse/iFeral/raw/master/i && bash i -d
-# rm -rf i ; nano i ; bash i -d
+# rm -f i ; nano i ; bash i -d
 #
-# 下次把 iFeral 弄成 .iferal
 #
-iFeralVer=0.8.7
-iFeralDate=2019.02.16
+iFeralVer=0.8.8
+iFeralDate=2019.02.17
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -165,19 +164,23 @@ echo -e "${bold}Ver. $iFeralVer    \n"
 # 00. 初始化
 function _init() {
 
-if [[ ! `  ls $HOME | grep iFeral  `  ]]; then
+if [[ ! $( ls -A $HOME | grep .iferal )  ]]; then
 
-git clone --depth=1 https://github.com/Aniverse/iFeral ; chmod -R +x $HOME/iFeral/app
+git clone --depth=1 https://github.com/Aniverse/iFeral $HOME/.iferal
+chmod -R +x $HOME/.iferal/app
 cd ; clear ; wget --timeout=7 -qO- https://github.com/Aniverse/iFeral/raw/master/files/iFeral.logo.1
 echo -e "${bold}Ver. $iFeralVer    \n"
-mkdir -p $HOME/bin $HOME/lib $HOME/iFeral/backup $HOME/iFeral/log $HOME/.config $HOME/iSeed/{00.Tools,01.Screenshots,02.Torrents,03.BDinfo,04.BluRay}
+mkdir -p $HOME/bin $HOME/lib $HOME/.iferal/backup $HOME/.iferal/log $HOME/.config $HOME/iSeed/{00.Tools,01.Screenshots,02.Torrents,03.BDinfo,04.BluRay}
 mkdir -p $HOME/.local/usr/{bin,lib,include} $HOME/.local/{bin,lib,include}
 
+fi
+
+[[ ! $(grep en_US.UTF-8 $HOME/.profile) ]] &&
 cat >> $HOME/.profile <<EOF
 export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export TZ="/usr/share/zoneinfo/Asia/Shanghai"
-export PATH=$HOME/iFeral/app:$HOME/bin:$HOME/.bin:$HOME/.pip/bin:$HOME/.local/bin:\$PATH
+export PATH=$HOME/.iferal/app:$HOME/bin:$HOME/.bin:$HOME/.pip/bin:$HOME/.local/bin:\$PATH
 #export LD_LIBRARY_PATH=$HOME/.local/lib:$HOME/.local/usr/lib:$LD_LIBRARY_PATH
 #export TMPDIR=$HOME/tmp
 
@@ -192,8 +195,6 @@ alias scrl="screen -ls"
 alias zjpid='ps aux | egrep "$(whoami)|COMMAND" | egrep -v "grep|aux|root"'
 alias pid="ps aux | grep -v grep | grep"
 EOF
-
-fi
 
 user=$(whoami)
 #USERPATH=` pwd `
@@ -295,7 +296,7 @@ if [[ ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittorrent ` 
     echo -e "密码  ${cyan}$PASSWORD${normal}"
     [[ $qbconfig == old ]] &&
     echo -e "密码  ${cyan}(和以前一样)${normal}"
-    echo "$QBVERSION" > $HOME/iFeral/qbversion.lock
+    echo "$QBVERSION" > $HOME/.iferal/qbversion.lock
 else
     echo -e "${error} qBittorrent 安装完成，但无法正常运行。\n不要问我为什么和怎么办，你自己看着办吧！${normal}"
 fi ; }
@@ -325,7 +326,7 @@ FileLogger\Age=6
 FileLogger\DeleteOld=true
 FileLogger\Backup=true
 FileLogger\AgeType=1
-FileLogger\Path=$HOME/iFeral/log
+FileLogger\Path=$HOME/.iferal/log
 FileLogger\MaxSize=20
 
 [LegalNotice]
@@ -365,16 +366,16 @@ echo ; mkdir -p $HOME/tmp $HOME/private/qbittorrent/{data,watch,torrents} $HOME/
 for qbpid in ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittorrent | awk '{print $2}' ` ; do kill -9 $qbpid ; done
 
 # 下载
-if [[ ! `  ls $HOME/iFeral/qb/library  2>/dev/null  `  ]]; then
+if [[ ! `  ls $HOME/.iferal/qb/library  2>/dev/null  `  ]]; then
     echo -e "${bold}${yellow}下载 qbittorrent-nox ...${normal}\n"
     if   [[ $Seedbox == FH ]]; then
-         git clone --depth=1 -b master  --single-branch https://github.com/Aniverse/qBittorrent-nox $HOME/iFeral/qb
+         git clone --depth=1 -b master  --single-branch https://github.com/Aniverse/qBittorrent-nox $HOME/.iferal/qb
     elif [[ $Seedbox == SH ]]; then
-         git clone --depth=1 -b trusty2 --single-branch https://github.com/Aniverse/qBittorrent-nox $HOME/iFeral/qb
+         git clone --depth=1 -b trusty2 --single-branch https://github.com/Aniverse/qBittorrent-nox $HOME/.iferal/qb
     else
          echo -e "${bold}${yellow}暂时不支持 FH/SH 以外的盒子 ...${normal}\n" ; exit 1
     fi
-    chmod +x -R $HOME/iFeral/qb ; echo
+    chmod +x -R $HOME/.iferal/qb ; echo
 fi
 
 # 询问版本
@@ -383,13 +384,13 @@ fi
 while [[ $QBVERSION = "" ]]; do
     echo -e "${jiacu}当前可用的版本为 $QB_supported_versions"
     read -ep "${bold}${yellow}请输入你要使用的 qBittorrent 版本： ${normal}" QBVERSION
-    [[ ! ` ls $HOME/iFeral/qb | grep $QBVERSION ` ]] && { echo -e "${error} 你输入的版本不可用，请重新输入！" ; unset QBVERSION ; }
+    [[ ! ` ls $HOME/.iferal/qb | grep $QBVERSION ` ]] && { echo -e "${error} 你输入的版本不可用，请重新输入！" ; unset QBVERSION ; }
 done
 
 install_qb_ask_config
 install_qb_new_config
 
-TMPDIR=$HOME/tmp LD_LIBRARY_PATH=$HOME/iFeral/qb/library $HOME/iFeral/qb/qbittorrent-nox.$QBVERSION -d
+TMPDIR=$HOME/tmp LD_LIBRARY_PATH=$HOME/.iferal/qb/library $HOME/.iferal/qb/qbittorrent-nox.$QBVERSION -d
 
 install_qb_finished ; }
 
@@ -412,12 +413,12 @@ while [[ $QBVERSION = "" ]]; do
 done
 
 # 下载
-if [[ ! `  ls $HOME/iFeral/qb/library  2>/dev/null  `  ]]; then
+if [[ ! `  ls $HOME/.iferal/qb/library  2>/dev/null  `  ]]; then
     echo -e "\n${bold}${yellow}下载 qbittorrent-nox ...${normal}\n"
     if   [[ $CODENAME =~ (trusty|jessie|stretch) ]]; then
-         svn co $quietflag https://github.com/Aniverse/ygnrmRuUagpgPvr4rW97/trunk/$CODENAME/lib $HOME/iFeral/qb/library
-         wget   $quietflag https://github.com/Aniverse/ygnrmRuUagpgPvr4rW97/raw/master/$CODENAME/qbittorrent-nox.$QBVERSION -O $HOME/iFeral/qb/qbittorrent-nox.$QBVERSION
-         chmod +x $HOME/iFeral/qb/qbittorrent-nox.$QBVERSION
+         svn co $quietflag https://github.com/Aniverse/ygnrmRuUagpgPvr4rW97/trunk/$CODENAME/lib $HOME/.iferal/qb/library
+         wget   $quietflag https://github.com/Aniverse/ygnrmRuUagpgPvr4rW97/raw/master/$CODENAME/qbittorrent-nox.$QBVERSION -O $HOME/.iferal/qb/qbittorrent-nox.$QBVERSION
+         chmod +x $HOME/.iferal/qb/qbittorrent-nox.$QBVERSION
     else
          echo -e "${bold}${yellow}暂时不支持系统非 Debian8/9、Ubuntu 14.04 的盒子 ...${normal}\n" ; exit 1
     fi
@@ -427,7 +428,7 @@ install_qb_ask_config
 install_qb_new_config
 
 # 运行 qBittorrent-nox
-TMPDIR=$HOME/tmp LD_LIBRARY_PATH=$HOME/iFeral/qb/library $HOME/iFeral/qb/qbittorrent-nox.$QBVERSION -d
+TMPDIR=$HOME/tmp LD_LIBRARY_PATH=$HOME/.iferal/qb/library $HOME/.iferal/qb/qbittorrent-nox.$QBVERSION -d
 
 install_qb_finished ; }
 
@@ -444,17 +445,17 @@ QBVERSION=4.1.5
 [[ $CODENAME == trusty ]] && QBVERSION=4.1.4
 
 # 下载
-if [[ ! `  ls $HOME/iFeral/qb/library  2>/dev/null  `  ]]; then
+if [[ ! `  ls $HOME/.iferal/qb/library  2>/dev/null  `  ]]; then
     echo -e "\n${bold}${yellow}下载 qbittorrent-nox ...${normal}\n"
     if [[ $CODENAME =~ (trusty|xenial|bionic|jessie|stretch) ]]; then
         if [[ $(command -v svn) ]]; then
-            svn co $quietflag https://github.com/Aniverse/bbq/trunk/$CODENAME/lib $HOME/iFeral/qb/library
-            wget   $quietflag https://github.com/Aniverse/bbq/raw/master/$CODENAME/qbittorrent-nox.$QBVERSION -O $HOME/iFeral/qb/qbittorrent-nox.$QBVERSION
-            chmod +x $HOME/iFeral/qb/qbittorrent-nox.$QBVERSION
+            svn co $quietflag https://github.com/Aniverse/bbq/trunk/$CODENAME/lib $HOME/.iferal/qb/library
+            wget   $quietflag https://github.com/Aniverse/bbq/raw/master/$CODENAME/qbittorrent-nox.$QBVERSION -O $HOME/.iferal/qb/qbittorrent-nox.$QBVERSION
+            chmod +x $HOME/.iferal/qb/qbittorrent-nox.$QBVERSION
         elif [[ ! $(command -v svn) ]] && [[ $(command -v git) ]]; then
             git clone --depth=1 $quietflag https://github.com/Aniverse/bbq
-            cp -rf $HOME/bbq/$CODENAME $HOME/iFeral/qb
-            chmod +x $HOME/iFeral/qb/qbittorrent-nox.$QBVERSION
+            cp -rf $HOME/bbq/$CODENAME $HOME/.iferal/qb
+            chmod +x $HOME/.iferal/qb/qbittorrent-nox.$QBVERSION
 		else # 难道我要全部 wget？？？
             echo -e "\n无法下载 qBittorrent！\n" ; exit 1
         fi
@@ -467,7 +468,7 @@ install_qb_ask_config
 install_qb_new_config
 
 # 运行 qBittorrent-nox
-TMPDIR=$HOME/tmp LD_LIBRARY_PATH=$HOME/iFeral/qb/library $HOME/iFeral/qb/qbittorrent-nox.$QBVERSION -d
+TMPDIR=$HOME/tmp LD_LIBRARY_PATH=$HOME/.iferal/qb/library $HOME/.iferal/qb/qbittorrent-nox.$QBVERSION -d
 
 install_qb_finished ; }
 
@@ -522,10 +523,10 @@ fi
 if [[ $deconfig == new ]]; then
     echo ; read -ep "${bold}${yellow}请输入你要用于 Deluge DAEMON 的密码：${normal}" DEPASS
     DWSALT=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n1)
-    DWP=$(python "$HOME/iFeral/app/deluge.userpass.py" ${DEPASS} ${DWSALT})
+    DWP=$(python "$HOME/.iferal/app/deluge.userpass.py" ${DEPASS} ${DWSALT})
     [[ -d $HOME/.config/deluge2 ]] && { rm -rf $HOME/.config/deluge2.backup ; mv -f $HOME/.config/deluge2 $HOME/.config/deluge2.backup ; }
     mkdir -p $HOME/.config
-    cp -rf $HOME/iFeral/template/deluge2 $HOME/.config
+    cp -rf $HOME/.iferal/template/deluge2 $HOME/.config
     portGenerator && portCheck
 
     sed -i 's|"daemon_port":.*,|"daemon_port": '$portGen',|g' $HOME/.config/deluge2/core.conf
