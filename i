@@ -8,8 +8,8 @@
 # rm -f i ; nano i ; bash i -d
 #
 #
-iFeralVer=0.9.1
-iFeralDate=2019.02.17
+iFeralVer=0.9.2
+iFeralDate=2019.03.14
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
 blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
@@ -482,11 +482,11 @@ for depid in ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep de2 | a
 
 while [[ $DEVERSION = "" ]]; do
     echo -ne "${bold}${yellow}请输入你要安装的第二个 Deluge 的版本 : ${normal}" ; read -e DEVERSION
-    wget $quietflag O $HOME/deluge-"${DEVERSION}".tar.gz http://download.deluge-torrent.org/source/deluge-"${DEVERSION}".tar.gz || { echo -e "${error} 下载 Deluge 源码失败，可能是这个版本不可用！" ; unset DEVERSION ; }
+    wget $quietflag -O $HOME/deluge-$DEVERSION.tar.gz http://download.deluge-torrent.org/source/deluge-$DEVERSION.tar.gz || { echo -e "${error} 下载 Deluge 源码失败，可能是这个版本不可用！" ; unset DEVERSION ; }
 done
 
 # 安装
-tar zxf $HOME/deluge-"${DEVERSION}".tar.gz && cd $HOME/deluge-"${DEVERSION}"
+tar zxf $HOME/deluge-$DEVERSION.tar.gz && cd $HOME/deluge-$DEVERSION
 sed -i "s/SSL.SSLv3_METHOD/SSL.SSLv23_METHOD/g" deluge/core/rpcserver.py
 sed -i "/        ctx = SSL.Context(SSL.SSLv23_METHOD)/a\        ctx.set_options(SSL.OP_NO_SSLv2 & SSL.OP_NO_SSLv3)" deluge/core/rpcserver.py
 python setup.py install --user >/dev/null 2>&1
