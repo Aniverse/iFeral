@@ -8,7 +8,7 @@
 # rm -f i ; nano i ; bash i -d
 #
 #
-iFeralVer=0.9.8
+iFeralVer=0.9.9
 iFeralDate=2020.02.07
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0)   ; red=$(tput setaf 1)          ; green=$(tput setaf 2)   ; yellow=$(tput setaf 3);  bold=$(tput bold)
@@ -36,17 +36,19 @@ DISTROL=$(echo $DISTRO | tr 'A-Z' 'a-z')
 # 盒子检测 -----------------------------------------------------------------------------------
 Seedbox=Unknown
 org=$(wget -t1 -T6 -qO- 'http://ip-api.com/json' | awk -F '"' '{print $28}') 2>1
-echo "$org" | grep -q "Dedi Networks LTD" && Seedbox=DSD
 
 serverfqdn=$( hostname -f 2>1 )
 [ -z $serverfqdn ] && serverfqdn=$( hostname 2>1 )
 
 echo $serverfqdn | grep -q feral          && Seedbox=FH
 echo $serverfqdn | grep -q seedhost       && Seedbox=SH
-echo $serverfqdn | grep -q pulsedmedia    && Seedbox=PM
 echo $serverfqdn | grep -q ultraseedbox   && Seedbox=USB
+echo $serverfqdn | grep -q swizzin        && Seedbox=swizzin
+echo $serverfqdn | grep -q pulsedmedia    && Seedbox=PM
 echo $serverfqdn | grep -q appbox         && Seedbox=AppBox && Docker=1
 echo $serverfqdn | grep -q seedboxes.cc   && Seedbox=Sbcc   && Docker=1
+echo "$org" | grep -q "Dedi Networks LTD" && Seedbox=DSD    && Docker=1
+grep docker /proc/1/cgroup -qa 2>/dev/null && SeedboxType=Docker
 
 # Seedboxco.net = vnc.USERNAME.appboxes.co
 # Seedboxes.cc 需要用 hostname 而不是 hostname -f，格式是 USERNAME-seedbox.cloud.seedboxes.cc
@@ -56,7 +58,7 @@ echo $serverfqdn | grep -q seedboxes.cc   && Seedbox=Sbcc   && Docker=1
 [[ $Seedbox == FH ]] && df -hPl | grep -q "/media/md" && FH_SSD=1
 
 
-grep docker /proc/1/cgroup -qa && SeedboxType=Docker
+
 
 # 参数检测 -----------------------------------------------------------------------------------
 
@@ -182,6 +184,7 @@ alias qba="systemctl --user start qbittorrent"
 alias qbb="systemctl --user stop qbittorrent"
 alias qbc="systemctl --user status qbittorrent"
 alias qbr="systemctl --user restart qbittorrent"
+alias qbl="tail -300 $HOME/.local/log/qbittorrent.log"
 alias dea="systemctl --user start deluged"
 alias deb="systemctl --user stop deluged"
 alias dec="systemctl --user status deluged"
@@ -286,6 +289,7 @@ function install_qbittorrent() {
 
     qb_version=4.2.1
     mkdir -p $HOME/.local/{bin,lib}
+    echo -e "${bold} 开始下载 qBittorrent 程序 ... ${normal}"
     wget https://sourceforge.net/projects/aboxx/files/qbittorrent/$CODENAME/qbittorrent-nox.$qb_version/download -O $HOME/.local/bin/qbittorrent-nox
     cd $HOME/.local/lib
     curl -s https://sourceforge.net/projects/aboxx/rss?path=/qbittorrent/$CODENAME/library | grep "<link>.*</link>" | sed 's|<link>||;s|</link>||' | grep download | while read url ; do
@@ -298,7 +302,7 @@ function install_qbittorrent() {
     if [[ $systemd == 1 ]] ; then
         install_qbittorrent_systemd
     else
-        TMPDIR=$HOME/.local/tmp    LD_LIBRARY_PATH=$HOME/.iferal/qb/library:$PATH   $HOME/.local/bin/qbittorrent-nox -d
+        TMPDIR=$HOME/.local/tmp    LD_LIBRARY_PATH=$HOME/.local/lib:$LD_LIBRARY_PATH   $HOME/.local/bin/qbittorrent-nox -d
     fi
     install_qb_finished
 }
@@ -340,7 +344,7 @@ EOF
 # 询问是否覆盖原配置信息
 function install_qb_ask_config() {
 if [[ -e $HOME/.config/qBittorrent/qBittorrent.conf ]]; then
-    echo -e "\n${atte} 你以前装过 qBittorrent，那时的配置文件还留着\n其中包含着 qBittorrent 的账号、密码、端口、下载路径等信息"
+    echo -e "\n${ZY} 你以前装过 qBittorrent，那时的配置文件还留着\n其中包含着 qBittorrent 的账号、密码、端口、下载路径等信息"
     read -ep "你现在要使用以前留下的配置文件吗？${normal} [${cyan}Y${normal}/n]: " responce
     case $responce in
         [yY] | [yY][Ee][Ss] | "" ) qbconfig=old ;;
@@ -375,8 +379,7 @@ fi ; }
 # 新建配置文件
 function install_qb_new_config() {
 if [[ $qbconfig == new ]]; then
-    echo ; read -ep "${bold}${yellow}请输入你要用于 qBittorrent WebUI 的密码：${normal}" PASSWORD
-    QBPASS=`  echo -n $PASSWORD | md5sum | awk '{print $1}'  `
+    echo ; read -ep "${bold}${yellow}请输入你要用于 qBittorrent WebUI 的密码：${normal}" PASSWORD ; echo
     [[ -e $HOME/.config/qBittorrent/qBittorrent.conf ]] && { rm -rf $HOME/.config/qBittorrent/qBittorrent.conf.backup ; mv -f $HOME/.config/qBittorrent/qBittorrent.conf $HOME/.config/qBittorrent/qBittorrent.conf.backup ; }
     portGenerator && portCheck
     portGenerator2 && portCheck2
