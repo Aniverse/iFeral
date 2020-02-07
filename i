@@ -8,7 +8,7 @@
 # rm -f i ; nano i ; bash i -d
 #
 #
-iFeralVer=0.9.4
+iFeralVer=0.9.5
 iFeralDate=2020.02.07
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0)   ; red=$(tput setaf 1)          ; green=$(tput setaf 2)   ; yellow=$(tput setaf 3);  bold=$(tput bold)
@@ -157,7 +157,7 @@ function _init() {
         chmod -R +x $HOME/.iferal/app
         cd ; clear ; wget --timeout=7 -qO- https://github.com/Aniverse/iFeral/raw/master/files/iFeral.logo.1
         echo -e "${bold}Ver. $iFeralVer    \n"
-        mkdir -p $HOME/bin $HOME/lib $HOME/.iferal/backup $HOME/.iferal/log $HOME/.config $HOME/iSeed/{00.Tools,01.Screenshots,02.Torrents,03.BDinfo,04.BluRay}
+        mkdir -p $HOME/bin $HOME/lib $HOME/.iferal/backup $HOME/.iferal/log $HOME/.config $HOME/.local/tmp
         mkdir -p $HOME/.local/usr/{bin,lib,include} $HOME/.local/{bin,lib,include}
     fi
     [[ ! $(grep en_US.UTF-8 $HOME/.profile) ]] &&
@@ -166,16 +166,31 @@ export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export TZ="/usr/share/zoneinfo/Asia/Shanghai"
 export PATH=$HOME/.iferal/app:$HOME/bin:$HOME/.bin:$HOME/.pip/bin:$HOME/.local/bin:\$PATH
-#export LD_LIBRARY_PATH=$HOME/.local/lib:$HOME/.local/usr/lib:$LD_LIBRARY_PATH
-#export TMPDIR=$HOME/tmp
+export LD_LIBRARY_PATH=$HOME/.local/lib:$HOME/.local/usr/lib:$LD_LIBRARY_PATH
+export TMPDIR=$HOME/.local/tmp
 
-alias scrgd="screen -R gooooogle"
+alias sysr="systemctl --user daemon-reload"
+alias qba="systemctl --user start qbittorrent"
+alias qbb="systemctl --user stop qbittorrent"
+alias qbc="systemctl --user status qbittorrent"
+alias qbr="systemctl --user restart qbittorrent"
+alias dea="systemctl --user start deluged"
+alias deb="systemctl --user stop deluged"
+alias dec="systemctl --user status deluged"
+alias der="systemctl --user restart deluged"
+alias del="grep -Ev 'TotalTraffic|Successfully loaded|Saving the state|Saving the fastresume|connection made from: 127.0.0.1|non-clean fashion' $HOME/.local/log/deluged.log | tail -300"
+
+alias scrgd="screen -U -R GoogleDrive"
+alias scrgda="screen -U -r -d GoogleDrive"
+alias scrgdb="screen -S GoogleDrive -X quit"
 alias space='du -sB GiB $HOME/'
 alias yongle='du -sB GiB'
+alias dddd='rm -rf'
+alias ..='cd ..'
 alias l="ls -hAv --color --group-directories-first"
 alias ll="ls -hAlvZ --color --group-directories-first"
 alias zjpid='ps aux | egrep "$(whoami)|COMMAND" | egrep -v "grep|aux|root"'
-alias pid="ps aux | grep -v grep | grep"
+alias px="ps aux | grep -v grep | grep"
 EOF
 
     user=$(whoami)
@@ -319,7 +334,7 @@ if [[ ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittorrent ` 
     echo -e "密码  ${cyan}$PASSWORD${normal}"
     [[ $qbconfig == old ]] &&
     echo -e "密码  ${cyan}(和以前一样)${normal}"
-    echo "$QBVERSION" > $HOME/.iferal/qbversion.lock
+    echo "$qb_version" > $HOME/.iferal/qb_version.lock
 else
     echo -e "${error} qBittorrent 安装完成，但无法正常运行。\n不要问我为什么和怎么办，你自己看着办吧！${normal}"
 fi ; }
@@ -423,16 +438,16 @@ fi
 # 询问版本
 [[ $Seedbox == FH ]] && QB_supported_versions="3.3.0-3.3.16，4.0.0-4.1.1"
 [[ $Seedbox == SH ]] && QB_supported_versions="3.3.2-3.3.16，4.0.0-4.1.1"
-while [[ $QBVERSION = "" ]]; do
+while [[ $qb_version = "" ]]; do
     echo -e "${jiacu}当前可用的版本为 $QB_supported_versions"
-    read -ep "${bold}${yellow}请输入你要使用的 qBittorrent 版本： ${normal}" QBVERSION
-    [[ ! ` ls $HOME/.iferal/qb | grep $QBVERSION ` ]] && { echo -e "${error} 你输入的版本不可用，请重新输入！" ; unset QBVERSION ; }
+    read -ep "${bold}${yellow}请输入你要使用的 qBittorrent 版本： ${normal}" qb_version
+    [[ ! ` ls $HOME/.iferal/qb | grep $qb_version ` ]] && { echo -e "${error} 你输入的版本不可用，请重新输入！" ; unset qb_version ; }
 done
 
 install_qb_ask_config
 install_qb_new_config
 
-TMPDIR=$HOME/tmp LD_LIBRARY_PATH=$HOME/.iferal/qb/library $HOME/.iferal/qb/qbittorrent-nox.$QBVERSION -d
+TMPDIR=$HOME/tmp LD_LIBRARY_PATH=$HOME/.iferal/qb/library $HOME/.iferal/qb/qbittorrent-nox.$qb_version -d
 
 install_qb_finished ; }
 
@@ -448,10 +463,10 @@ for qbpid in ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittor
 询问版本
 QB_supported_versions=$( curl -s https://github.com/Aniverse/ygnrmRuUagpgPvr4rW97/tree/master/$CODENAME | grep "$CODENAME/qbit" | grep -oE "[0-9]+\.[0-9]+\.[0-9]+<" | sed "s/</ /" | sed ':t;N;s/\n//;b t' )
 
-while [[ $QBVERSION = "" ]]; do
+while [[ $qb_version = "" ]]; do
     echo -e "${jiacu}当前可用的版本为 $QB_supported_versions"
-    read -ep "${bold}${yellow}请输入你要使用的 qBittorrent 版本： ${normal}" QBVERSION
-    [[ ! ` echo $QB_supported_versions | grep $QBVERSION ` ]] && { echo -e "${error} 你输入的版本不可用，请重新输入！" ; unset QBVERSION ; }
+    read -ep "${bold}${yellow}请输入你要使用的 qBittorrent 版本： ${normal}" qb_version
+    [[ ! ` echo $QB_supported_versions | grep $qb_version ` ]] && { echo -e "${error} 你输入的版本不可用，请重新输入！" ; unset qb_version ; }
 done
 
 # 下载
@@ -459,8 +474,8 @@ if [[ ! `  ls $HOME/.iferal/qb/library  2>/dev/null  `  ]]; then
     echo -e "\n${bold}${yellow}下载 qbittorrent-nox ...${normal}\n"
     if   [[ $CODENAME =~ (trusty|jessie|stretch) ]]; then
          svn co $quietflag https://github.com/Aniverse/ygnrmRuUagpgPvr4rW97/trunk/$CODENAME/lib $HOME/.iferal/qb/library
-         wget   $quietflag https://github.com/Aniverse/ygnrmRuUagpgPvr4rW97/raw/master/$CODENAME/qbittorrent-nox.$QBVERSION -O $HOME/.iferal/qb/qbittorrent-nox.$QBVERSION
-         chmod +x $HOME/.iferal/qb/qbittorrent-nox.$QBVERSION
+         wget   $quietflag https://github.com/Aniverse/ygnrmRuUagpgPvr4rW97/raw/master/$CODENAME/qbittorrent-nox.$qb_version -O $HOME/.iferal/qb/qbittorrent-nox.$qb_version
+         chmod +x $HOME/.iferal/qb/qbittorrent-nox.$qb_version
     else
          echo -e "${bold}${yellow}暂时不支持系统非 Debian8/9、Ubuntu 14.04 的盒子 ...${normal}\n" ; exit 1
     fi
@@ -470,7 +485,7 @@ install_qb_ask_config
 install_qb_new_config
 
 # 运行 qBittorrent-nox
-TMPDIR=$HOME/tmp LD_LIBRARY_PATH=$HOME/.iferal/qb/library $HOME/.iferal/qb/qbittorrent-nox.$QBVERSION -d
+TMPDIR=$HOME/tmp LD_LIBRARY_PATH=$HOME/.iferal/qb/library $HOME/.iferal/qb/qbittorrent-nox.$qb_version -d
 
 install_qb_finished ; }
 
@@ -483,8 +498,8 @@ function install_qb_v3() {
 
 echo ; mkdir -p $HOME/tmp $HOME/private/qbittorrent/{data,watch,torrents} $HOME/.config/{qBittorrent,flexget}
 for qbpid in ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittorrent | awk '{print $2}' ` ; do kill -9 $qbpid ; done
-QBVERSION=4.1.5
-[[ $CODENAME == trusty ]] && QBVERSION=4.1.4
+qb_version=4.1.5
+[[ $CODENAME == trusty ]] && qb_version=4.1.4
 
 # 下载
 if [[ ! `  ls $HOME/.iferal/qb/library  2>/dev/null  `  ]]; then
@@ -492,12 +507,12 @@ if [[ ! `  ls $HOME/.iferal/qb/library  2>/dev/null  `  ]]; then
     if [[ $CODENAME =~ (trusty|xenial|bionic|jessie|stretch) ]]; then
         if [[ $(command -v svn) ]]; then
             svn co $quietflag https://github.com/Aniverse/bbq/trunk/$CODENAME/lib $HOME/.iferal/qb/library
-            wget   $quietflag https://github.com/Aniverse/bbq/raw/master/$CODENAME/qbittorrent-nox.$QBVERSION -O $HOME/.iferal/qb/qbittorrent-nox.$QBVERSION
-            chmod +x $HOME/.iferal/qb/qbittorrent-nox.$QBVERSION
+            wget   $quietflag https://github.com/Aniverse/bbq/raw/master/$CODENAME/qbittorrent-nox.$qb_version -O $HOME/.iferal/qb/qbittorrent-nox.$qb_version
+            chmod +x $HOME/.iferal/qb/qbittorrent-nox.$qb_version
         elif [[ ! $(command -v svn) ]] && [[ $(command -v git) ]]; then
             git clone --depth=1 $quietflag https://github.com/Aniverse/bbq
             cp -rf $HOME/bbq/$CODENAME $HOME/.iferal/qb
-            chmod +x $HOME/.iferal/qb/qbittorrent-nox.$QBVERSION
+            chmod +x $HOME/.iferal/qb/qbittorrent-nox.$qb_version
 		else # 难道我要全部 wget？？？
             echo -e "\n无法下载 qBittorrent！\n" ; exit 1
         fi
@@ -510,7 +525,7 @@ install_qb_ask_config
 install_qb_new_config
 
 # 运行 qBittorrent-nox
-TMPDIR=$HOME/tmp LD_LIBRARY_PATH=$HOME/.iferal/qb/library $HOME/.iferal/qb/qbittorrent-nox.$QBVERSION -d
+TMPDIR=$HOME/tmp LD_LIBRARY_PATH=$HOME/.iferal/qb/library $HOME/.iferal/qb/qbittorrent-nox.$qb_version -d
 
 install_qb_finished ; }
 
