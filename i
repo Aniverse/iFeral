@@ -8,7 +8,7 @@
 # rm -f i ; nano i ; bash i -d
 #
 #
-iFeralVer=0.9.6
+iFeralVer=0.9.7
 iFeralDate=2020.02.07
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0)   ; red=$(tput setaf 1)          ; green=$(tput setaf 2)   ; yellow=$(tput setaf 3);  bold=$(tput bold)
@@ -157,7 +157,7 @@ function _init() {
         chmod -R +x $HOME/.iferal/app
         cd ; clear ; wget --timeout=7 -qO- https://github.com/Aniverse/iFeral/raw/master/files/iFeral.logo.1
         echo -e "${bold}Ver. $iFeralVer    \n"
-        mkdir -p $HOME/bin $HOME/lib $HOME/.iferal/backup $HOME/.iferal/log $HOME/.config $HOME/.local/tmp
+        mkdir -p $HOME/.config $HOME/.local/tmp
         mkdir -p $HOME/.local/usr/{bin,lib,include} $HOME/.local/{bin,lib,include}
     fi
     if [[ ! $(grep iferal.bashrc $HOME/.profile) ]]; then
@@ -235,7 +235,7 @@ echo -ne "${yellow}${bold}你想做些什么？ (默认选择退出) ${normal}" 
 
 case $response in
     1 | 01) # 安装 qBittorrent
-            install_qb_v3 ;;
+            install_qbittorrent ;;
     2 | 02) # 安装 Deluge
             _install_de ;;
     3 | 03) # 安装 rclone
@@ -255,6 +255,7 @@ case $response in
         12) _install_aria2 ;;
         13) install_qb_v1 ;;
         14) install_qb_v2 ;;
+        15) install_qb_v3 ;;
     99| "") clear ; exit 0 ;;
     *     ) clear ; exit 0 ;;
 esac
@@ -278,7 +279,7 @@ function install_rclone() {
 }
 
 
-function install_qbittorrent_v4() {
+function install_qbittorrent() {
     echo ; mkdir -p $HOME/.config/{qBittorrent,flexget}
     for qbpid in ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittorrent | awk '{print $2}' ` ; do kill -9 $qbpid ; done
 
@@ -289,15 +290,21 @@ function install_qbittorrent_v4() {
     curl -s https://sourceforge.net/projects/aboxx/rss?path=/qbittorrent/$CODENAME/library | grep "<link>.*</link>" | sed 's|<link>||;s|</link>||' | grep download | while read url ; do
         wget --trust-server-name $url
     done
+    chmod +x $HOME/.local/bin/qbittorrent-nox
 
     install_qb_ask_config
     install_qb_new_config
-    # TMPDIR=$HOME/tmp LD_LIBRARY_PATH=$HOME/.iferal/qb/library $HOME/.iferal/qb/qbittorrent-nox.$QBVERSION -d
+    if [[ $systemd == 1 ]] ; then
+        install_qbittorrent_systemd
+    else
+        TMPDIR=$HOME/.local/tmp    LD_LIBRARY_PATH=$HOME/.iferal/qb/library:$PATH   $HOME/.local/bin/qbittorrent-nox -d
+    fi
     install_qb_finished
 }
 
 # https://kb.ultraseedbox.com/display/DOC/How+to+run+your+own+services+with+systemd
 function install_qbittorrent_systemd() {
+    mkdir -p $HOME/.config/systemd/user
     echo "LD_LIBRARY_PATH=$HOME/.local/lib:$HOME/.local/usr/lib:\$LD_LIBRARY_PATH" > $HOME/.config/systemd/qb.env
     cat << EOF > $HOME/.config/systemd/user/qbittorrent.service
 [Unit]
@@ -308,7 +315,7 @@ After=network.target
 [Service]
 #Type=forking
 LimitNOFILE=500000
-#EnvironmentFile=$HOME/.config/systemd/qb.env
+EnvironmentFile=$HOME/.config/systemd/qb.env
 ExecStart=$HOME/.local/bin/qbittorrent-nox -d
 ExecStop=/usr/bin/pkill -9 qbittorrent-nox
 Restart=on-failure
@@ -360,7 +367,7 @@ if [[ ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittorrent ` 
     echo -e "密码  ${cyan}(和以前一样)${normal}"
     echo "$qb_version" > $HOME/.iferal/qb_version.lock
 else
-    echo -e "${error} qBittorrent 安装完成，但无法正常运行。\n不要问我为什么和怎么办，你自己看着办吧！${normal}"
+    echo -e "${CW} qBittorrent 安装完成，但无法正常运行。\n不要问我为什么和怎么办，你自己看着办吧！${normal}"
 fi ; }
 
 
