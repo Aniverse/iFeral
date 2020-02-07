@@ -8,7 +8,7 @@
 # rm -f i ; nano i ; bash i -d
 #
 #
-iFeralVer=0.9.5
+iFeralVer=0.9.6
 iFeralDate=2020.02.07
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0)   ; red=$(tput setaf 1)          ; green=$(tput setaf 2)   ; yellow=$(tput setaf 3);  bold=$(tput bold)
@@ -160,8 +160,15 @@ function _init() {
         mkdir -p $HOME/bin $HOME/lib $HOME/.iferal/backup $HOME/.iferal/log $HOME/.config $HOME/.local/tmp
         mkdir -p $HOME/.local/usr/{bin,lib,include} $HOME/.local/{bin,lib,include}
     fi
-    [[ ! $(grep en_US.UTF-8 $HOME/.profile) ]] &&
-    cat >> $HOME/.profile <<EOF
+    if [[ ! $(grep iferal.bashrc $HOME/.profile) ]]; then
+        cat >> $HOME/.profile <<EOF
+if [ -f "$HOME/.local/iferal.bashrc" ]; then
+    . "$HOME/.local/iferal.bashrc"
+fi
+EOF
+    fi
+    cat > $HOME/.local/iferal.bashrc <<EOF
+################## iFeral Mod Start ##################
 export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export TZ="/usr/share/zoneinfo/Asia/Shanghai"
@@ -191,6 +198,7 @@ alias l="ls -hAv --color --group-directories-first"
 alias ll="ls -hAlvZ --color --group-directories-first"
 alias zjpid='ps aux | egrep "$(whoami)|COMMAND" | egrep -v "grep|aux|root"'
 alias px="ps aux | grep -v grep | grep"
+################## iFeral Mod END ##################
 EOF
 
     user=$(whoami)
@@ -271,32 +279,48 @@ function install_rclone() {
 
 
 function install_qbittorrent_v4() {
-qb_version=4.2.1
+    echo ; mkdir -p $HOME/.config/{qBittorrent,flexget}
+    for qbpid in ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittorrent | awk '{print $2}' ` ; do kill -9 $qbpid ; done
 
-mkdir -p $HOME/.local/{bin,lib}
-wget https://sourceforge.net/projects/aboxx/files/qbittorrent/$CODENAME/qbittorrent-nox.$qb_version/download -O $HOME/.local/bin/qbittorrent-nox
-cd $HOME/.local/lib
-curl -s https://sourceforge.net/projects/aboxx/rss?path=/qbittorrent/$CODENAME/library | grep "<link>.*</link>" | sed 's|<link>||;s|</link>||' | grep download | while read url ; do
-    wget --trust-server-name $url
-done
+    qb_version=4.2.1
+    mkdir -p $HOME/.local/{bin,lib}
+    wget https://sourceforge.net/projects/aboxx/files/qbittorrent/$CODENAME/qbittorrent-nox.$qb_version/download -O $HOME/.local/bin/qbittorrent-nox
+    cd $HOME/.local/lib
+    curl -s https://sourceforge.net/projects/aboxx/rss?path=/qbittorrent/$CODENAME/library | grep "<link>.*</link>" | sed 's|<link>||;s|</link>||' | grep download | while read url ; do
+        wget --trust-server-name $url
+    done
 
+    install_qb_ask_config
+    install_qb_new_config
+    # TMPDIR=$HOME/tmp LD_LIBRARY_PATH=$HOME/.iferal/qb/library $HOME/.iferal/qb/qbittorrent-nox.$QBVERSION -d
+    install_qb_finished
 }
 
+# https://kb.ultraseedbox.com/display/DOC/How+to+run+your+own+services+with+systemd
+function install_qbittorrent_systemd() {
+    echo "LD_LIBRARY_PATH=$HOME/.local/lib:$HOME/.local/usr/lib:\$LD_LIBRARY_PATH" > $HOME/.config/systemd/qb.env
+    cat << EOF > $HOME/.config/systemd/user/qbittorrent.service
+[Unit]
+Description=qBittorrent Daemon Service
+After=network.target
+#Environment="LD_LIBRARY_PATH=$HOME/.local/lib:$HOME/.local/usr/lib:\$LD_LIBRARY_PATH"
 
+[Service]
+#Type=forking
+LimitNOFILE=500000
+#EnvironmentFile=$HOME/.config/systemd/qb.env
+ExecStart=$HOME/.local/bin/qbittorrent-nox -d
+ExecStop=/usr/bin/pkill -9 qbittorrent-nox
+Restart=on-failure
+TimeoutStopSec=300
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+[Install]
+WantedBy=default.target
+EOF
+    systemctl --user enable  qbittorrent
+    systemctl --user start   qbittorrent
+    systemctl --user status  qbittorrent
+}
 
 
 
@@ -365,7 +389,7 @@ FileLogger\Age=6
 FileLogger\DeleteOld=true
 FileLogger\Backup=true
 FileLogger\AgeType=1
-FileLogger\Path=$HOME/.iferal/log
+FileLogger\Path=$HOME/.local/log
 FileLogger\MaxSize=20
 
 [LegalNotice]
