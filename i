@@ -8,7 +8,7 @@
 # rm -f i ; nano i ; bash i -d
 #
 #
-iFeralVer=0.9.7
+iFeralVer=0.9.8
 iFeralDate=2020.02.07
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0)   ; red=$(tput setaf 1)          ; green=$(tput setaf 2)   ; yellow=$(tput setaf 3);  bold=$(tput bold)
@@ -173,8 +173,9 @@ export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export TZ="/usr/share/zoneinfo/Asia/Shanghai"
 export PATH=$HOME/.iferal/app:$HOME/bin:$HOME/.bin:$HOME/.pip/bin:$HOME/.local/bin:\$PATH
-export LD_LIBRARY_PATH=$HOME/.local/lib:$HOME/.local/usr/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$HOME/.local/lib:$HOME/.local/usr/lib:\$LD_LIBRARY_PATH
 export TMPDIR=$HOME/.local/tmp
+export XDG_RUNTIME_DIR=/run/user/\$UID
 
 alias sysr="systemctl --user daemon-reload"
 alias qba="systemctl --user start qbittorrent"
@@ -305,21 +306,20 @@ function install_qbittorrent() {
 # https://kb.ultraseedbox.com/display/DOC/How+to+run+your+own+services+with+systemd
 function install_qbittorrent_systemd() {
     mkdir -p $HOME/.config/systemd/user
-    echo "LD_LIBRARY_PATH=$HOME/.local/lib:$HOME/.local/usr/lib:\$LD_LIBRARY_PATH" > $HOME/.config/systemd/qb.env
     cat << EOF > $HOME/.config/systemd/user/qbittorrent.service
 [Unit]
 Description=qBittorrent Daemon Service
 After=network.target
-#Environment="LD_LIBRARY_PATH=$HOME/.local/lib:$HOME/.local/usr/lib:\$LD_LIBRARY_PATH"
 
 [Service]
 #Type=forking
 LimitNOFILE=500000
-EnvironmentFile=$HOME/.config/systemd/qb.env
+Environment="LD_LIBRARY_PATH=$HOME/.local/lib:$HOME/.local/usr/lib:\$LD_LIBRARY_PATH"
 ExecStart=$HOME/.local/bin/qbittorrent-nox -d
-ExecStop=/usr/bin/pkill -9 qbittorrent-nox
+#ExecStop=/usr/bin/pkill -9 qbittorrent-nox
 Restart=on-failure
 TimeoutStopSec=300
+RemainAfterExit=true
 
 [Install]
 WantedBy=default.target
@@ -430,13 +430,13 @@ fi
         make
         cp -f qb_password_gen $HOME/.local/bin/qb_password_gen
         cd $HOME && rm -rf libqbpasswd
-        qbPass=$($HOME/.local/bin/qb_password_gen $iPass)
+        qbPass=$($HOME/.local/bin/qb_password_gen $PASSWORD)
         cat >> $HOME/.config/qBittorrent/qBittorrent.conf << EOF
 WebUI\Password_PBKDF2="@ByteArray($qbPass)"
 WebUI\Username=$(whoami)
 EOF
     else
-        qbPass=$(echo -n $iPass | md5sum | cut -f1 -d ' ')
+        qbPass=$(echo -n $PASSWORD | md5sum | cut -f1 -d ' ')
         cat >> $HOME/.config/qBittorrent/qBittorrent.conf << EOF
 WebUI\Password_ha1=@ByteArray($qbPass)
 WebUI\Username=$(whoami)
