@@ -8,24 +8,25 @@
 # rm -f i ; nano i ; bash i -d
 #
 #
-iFeralVer=0.9.3
-iFeralDate=2019.04.13
+iFeralVer=0.9.4
+iFeralDate=2020.02.07
 # 颜色 -----------------------------------------------------------------------------------
-black=$(tput setaf 0); red=$(tput setaf 1); green=$(tput setaf 2); yellow=$(tput setaf 3);
-blue=$(tput setaf 4); magenta=$(tput setaf 5); cyan=$(tput setaf 6); white=$(tput setaf 7);
-on_red=$(tput setab 1); on_green=$(tput setab 2); on_yellow=$(tput setab 3); on_blue=$(tput setab 4);
-on_magenta=$(tput setab 5); on_cyan=$(tput setab 6); on_white=$(tput setab 7); bold=$(tput bold);
-dim=$(tput dim); underline=$(tput smul); reset_underline=$(tput rmul); standout=$(tput smso);
-reset_standout=$(tput rmso); normal=$(tput sgr0); alert=${white}${on_red}; title=${standout};
-baihuangse=${white}${on_yellow}; bailanse=${white}${on_blue}; bailvse=${white}${on_green};
-baiqingse=${white}${on_cyan}; baihongse=${white}${on_red}; baizise=${white}${on_magenta};
-heibaise=${black}${on_white}; jiacu=${normal}${bold}
-shanshuo=$(tput blink); wuguangbiao=$(tput civis); guangbiao=$(tput cnorm)
-error="${baihongse}${bold} 错误 ${jiacu}" ; warn="${baihongse}${bold} 警告 ${jiacu}" ; atte="${baihongse}${bold} 注意 ${jiacu}"
+black=$(tput setaf 0)   ; red=$(tput setaf 1)          ; green=$(tput setaf 2)   ; yellow=$(tput setaf 3);  bold=$(tput bold)
+blue=$(tput setaf 4)    ; magenta=$(tput setaf 5)      ; cyan=$(tput setaf 6)    ; white=$(tput setaf 7) ;  normal=$(tput sgr0)
+on_black=$(tput setab 0); on_red=$(tput setab 1)       ; on_green=$(tput setab 2); on_yellow=$(tput setab 3)
+on_blue=$(tput setab 4) ; on_magenta=$(tput setab 5)   ; on_cyan=$(tput setab 6) ; on_white=$(tput setab 7)
+shanshuo=$(tput blink)  ; wuguangbiao=$(tput civis)    ; guangbiao=$(tput cnorm) ; jiacu=${normal}${bold}
+underline=$(tput smul)  ; reset_underline=$(tput rmul) ; dim=$(tput dim)
+standout=$(tput smso)   ; reset_standout=$(tput rmso)  ; title=${standout}
+baihuangse=${white}${on_yellow}; bailanse=${white}${on_blue} ; bailvse=${white}${on_green}
+baiqingse=${white}${on_cyan}   ; baihongse=${white}${on_red} ; baizise=${white}${on_magenta}
+heibaise=${black}${on_white}   ; heihuangse=${on_yellow}${black}
+CW="${bold}${baihongse} ERROR ${jiacu}";ZY="${baihongse}${bold} ATTENTION ${jiacu}";JG="${baihongse}${bold} WARNING ${jiacu}"
 # 调试 -----------------------------------------------------------------------------------
 DeBUG=0 ; [[ $1 == -d ]] && DeBUG=1
 quietflag=-q
 [[ $DeBUG == 1 ]] && unset quietflag
+[[ $(pgrep systemd) ]] && systemd=1
 # 系统检测 -----------------------------------------------------------------------------------
 DISTRO=$(awk -F'[= "]' '/PRETTY_NAME/{print $3}' /etc/os-release)
 DISTROL=$(echo $DISTRO | tr 'A-Z' 'a-z')
@@ -80,6 +81,7 @@ function isInternalIpAddress() { echo $1 | grep -qE '(192\.168\.((\d{1,2})|(1\d{
 ### 端口生成与检查 ###
 # https://bitbucket.org/feralio/wiki/src/master/src/wiki/software/qbittorrent/qbittorrent.sh
 
+version_ge(){ test "$(echo "$@" | tr " " "\n" | sort -rV | head -n 1)" == "$1" ; }
 portGenerator() { portGen=$(shuf -i 10001-32001 -n1) ; } ; portGenerator2() { portGen2=$(shuf -i 10001-32001 -n1) ; }
 portCheck() { while [[ "$(ss -ln | grep ':'"$portGen"'' | grep -c 'LISTEN')" -eq "1" ]]; do portGenerator ; done ; }
 portCheck2() { while [[ "$(ss -ln | grep ':'"$portGen2"'' | grep -c 'LISTEN')" -eq "1" ]]; do portGenerator2 ; done ; }
@@ -87,7 +89,7 @@ portCheck2() { while [[ "$(ss -ln | grep ':'"$portGen2"'' | grep -c 'LISTEN')" -
 [[ $Seedbox == USB    ]] && current_disk=$(echo $(pwd) | sed "s/\/$(whoami)//") # /home11    这样子的
 [[ $Seedbox == PM     ]] && current_disk=$(echo $(pwd) | sed "s/\/$(whoami)//") # /home       这样子的
 [[ $Seedbox == SH     ]] && current_disk=$(echo $(pwd) | sed "s/\/$(whoami)//") # /home22     这样子的
-[[ $Seedbox == FH     ]] && current_disk=$(echo $(pwd) | sed "s/\/$(whoami)//") # /media/sdk1 这样子的，或者 /media/98811
+[[ $Seedbox == FH     ]] && current_disk=$(echo $(pwd) | sed "s/\/$(whoami)//") # /media/sdk1 这样子的，或者 /media/98811；现在还有 /media/c0cd/ 这样子的
 [[ $Seedbox == DSD    ]] && current_disk=$(echo $(pwd) | sed "s/\/$(whoami)//") # /           这样子的
 [[ $Seedbox == Sbcc   ]] && current_disk=$(echo $(pwd) | sed "s/\/$(whoami)//") # /home/user  这样子的
 [[ $Seedbox == AppBox ]] && [[ ! $(whoami) == root  ]] && current_disk=/home/$(whoami)
@@ -141,11 +143,6 @@ trap cancel SIGINT
 function _logo() {
 cd ; clear ; wget --timeout=7 -qO- https://github.com/Aniverse/iFeral/raw/master/files/iFeral.logo.1
 echo -e "${bold}Ver. $iFeralVer    \n"
-#[[ $Seedbox == Unknown ]] && echo -e "${warn} 你这个似乎不是 FH 或 SH 的盒子，不保证本脚本能正常工作！\n"
-#[[ $Seedbox == SH ]] && echo -e "${atte} 本脚本主要为 FH 盒子设计，不保证所有功能都能在 SeedHost 盒子上正常工作！\n"
-#[[ $Seedbox == USB ]] && echo -e "${atte} 本脚本主要为 FH 盒子设计，不保证所有功能都能在 UltraSeedBox 盒子上正常工作！\n"
-#[[ $Seedbox == PM ]] && echo -e "${atte} 本脚本主要为 FH 盒子设计，不保证所有功能都能在 PulsedMedia 盒子上正常工作！\n"
-# echo -e "${atte} 1 和 2 以外的选项我都没怎么测试过，不保证一定能用\n"
 }
 
 
@@ -155,20 +152,16 @@ echo -e "${bold}Ver. $iFeralVer    \n"
 
 # 00. 初始化
 function _init() {
-
-if [[ ! $( ls -A $HOME | grep .iferal )  ]]; then
-
-git clone --depth=1 https://github.com/Aniverse/iFeral $HOME/.iferal
-chmod -R +x $HOME/.iferal/app
-cd ; clear ; wget --timeout=7 -qO- https://github.com/Aniverse/iFeral/raw/master/files/iFeral.logo.1
-echo -e "${bold}Ver. $iFeralVer    \n"
-mkdir -p $HOME/bin $HOME/lib $HOME/.iferal/backup $HOME/.iferal/log $HOME/.config $HOME/iSeed/{00.Tools,01.Screenshots,02.Torrents,03.BDinfo,04.BluRay}
-mkdir -p $HOME/.local/usr/{bin,lib,include} $HOME/.local/{bin,lib,include}
-
-fi
-
-[[ ! $(grep en_US.UTF-8 $HOME/.profile) ]] &&
-cat >> $HOME/.profile <<EOF
+    if [[ ! $( ls -A $HOME | grep .iferal )  ]]; then
+        git clone --depth=1 https://github.com/Aniverse/iFeral $HOME/.iferal
+        chmod -R +x $HOME/.iferal/app
+        cd ; clear ; wget --timeout=7 -qO- https://github.com/Aniverse/iFeral/raw/master/files/iFeral.logo.1
+        echo -e "${bold}Ver. $iFeralVer    \n"
+        mkdir -p $HOME/bin $HOME/lib $HOME/.iferal/backup $HOME/.iferal/log $HOME/.config $HOME/iSeed/{00.Tools,01.Screenshots,02.Torrents,03.BDinfo,04.BluRay}
+        mkdir -p $HOME/.local/usr/{bin,lib,include} $HOME/.local/{bin,lib,include}
+    fi
+    [[ ! $(grep en_US.UTF-8 $HOME/.profile) ]] &&
+    cat >> $HOME/.profile <<EOF
 export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export TZ="/usr/share/zoneinfo/Asia/Shanghai"
@@ -177,22 +170,20 @@ export PATH=$HOME/.iferal/app:$HOME/bin:$HOME/.bin:$HOME/.pip/bin:$HOME/.local/b
 #export TMPDIR=$HOME/tmp
 
 alias scrgd="screen -R gooooogle"
-alias yongle='du -sB GB $HOME/'
-alias space='du -sB GB'
-alias scrl="screen -ls"
-alias ls="ls -hAv --color --group-directories-first"
+alias space='du -sB GiB $HOME/'
+alias yongle='du -sB GiB'
+alias l="ls -hAv --color --group-directories-first"
 alias ll="ls -hAlvZ --color --group-directories-first"
-alias shanchu='rm -rf'
-alias scrl="screen -ls"
 alias zjpid='ps aux | egrep "$(whoami)|COMMAND" | egrep -v "grep|aux|root"'
 alias pid="ps aux | grep -v grep | grep"
 EOF
 
-user=$(whoami)
-#USERPATH=` pwd `
-#USERPATHSED=$( echo ${USERPATH} | sed -e 's/\//\\\//g' )
-USERPATH=$HOME
-USERPATHSED=$( echo ${USERPATH} | sed -e 's/\//\\\//g' ) ; }
+    user=$(whoami)
+    #USERPATH=` pwd `
+    #USERPATHSED=$( echo ${USERPATH} | sed -e 's/\//\\\//g' )
+    USERPATH=$HOME
+    USERPATHSED=$( echo ${USERPATH} | sed -e 's/\//\\\//g' )
+}
 
 
 
@@ -203,23 +194,17 @@ USERPATHSED=$( echo ${USERPATH} | sed -e 's/\//\\\//g' ) ; }
 # 00. 导航菜单
 function _main_menu() {
 
-echo -e "${bold}目前本脚本正在被作者 xjb 折腾中，不保证好用"
-echo -e "${bold}什么，你说 xjb 乱改你不会另外开一个 branch 么……"
-echo -e "${bold}作者：懒得管了，反正好像也没什么人用啊……\n"
-echo -e "${bold}${green}(01) ${jiacu}安装 qBittorrent (v3，推荐)    "
-echo -e "${green}(02) ${jiacu}安装 Deluge          "
-#echo -e "\n不保证以下功能好用\n"
-#echo -e "${green}(03) ${jiacu}安装 Transmission   "
-#echo -e "${green}(04) ${jiacu}降级 rTorrent        "
-#echo -e "${green}(05) ${jiacu}配置 ruTorrent       "
+echo -e "${bold}很多功能可能不正常，我懒得解决了\n"
+echo -e "${green}(01) ${jiacu}安装 qBittorrent (v4)"
+echo -e "${green}(02) ${jiacu}安装第二个 Deluge"
+echo -e "${green}(03) ${jiacu}安装 rclone"
 echo -e "${green}(06) ${jiacu}安装 flexget         "
-echo -e "${green}(07) ${jiacu}安装 ffmpeg/rclone/p7zip   "
 echo -e "${green}(08) ${jiacu}查看 系统信息        "
 echo -e "${green}(09) ${jiacu}查看 邻居            "
-#echo -e "${green}(11) ${jiacu}使用 zsh             "
-#echo -e "${green}(12) ${jiacu}安装 Aria2 & AriaNG  "
+
 echo -e "${green}(13) ${jiacu}安装 qBittorrent (v1)  "
 echo -e "${green}(14) ${jiacu}安装 qBittorrent (v2)  "
+echo -e "${green}(15) ${jiacu}安装 qBittorrent (v3)    "
 echo -e "${green}(99) ${jiacu}退出脚本             "
 echo -e "${normal}"
 
@@ -230,8 +215,8 @@ case $response in
             install_qb_v3 ;;
     2 | 02) # 安装 Deluge
             _install_de ;;
-    3 | 03) # 
-            clear ; exit 0 ;;
+    3 | 03) # 安装 rclone
+            install_rclone ;;
     4 | 04) # 降级 rTorrent
             _rt_downgrade ;;
     5 | 05) # 配置 ruTorrent
@@ -255,7 +240,53 @@ echo ; }
 
 
 
+##############################################################################################################################
 
+# 03. 安装 rclone
+function install_rclone() {
+    wget -qO $HOME/rclone.zip http://downloads.rclone.org/rclone-current-linux-amd64.zip
+    unzip -qq -o $HOME/rclone.zip
+    mkdir -p $HOME/.local/bin/rclone
+    rclone_cmd=$HOME/.local/bin/rclone
+    mv $HOME/rclone-v*-linux-amd64/rclone  $rclone_cmd
+    rm -rf $HOME/rclone-v*-linux-amd64 $HOME/rclone.zip
+    chmod +x $rclone_cmd
+    $rclone_cmd --version
+}
+
+
+function install_qbittorrent_v4() {
+qb_version=4.2.1
+
+mkdir -p $HOME/.local/{bin,lib}
+wget https://sourceforge.net/projects/aboxx/files/qbittorrent/$CODENAME/qbittorrent-nox.$qb_version/download -O $HOME/.local/bin/qbittorrent-nox
+cd $HOME/.local/lib
+curl -s https://sourceforge.net/projects/aboxx/rss?path=/qbittorrent/$CODENAME/library | grep "<link>.*</link>" | sed 's|<link>||;s|</link>||' | grep download | while read url ; do
+    wget --trust-server-name $url
+done
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+##############################################################################################################################
 
 
 
@@ -303,6 +334,7 @@ if [[ $qbconfig == new ]]; then
     [[ -e $HOME/.config/qBittorrent/qBittorrent.conf ]] && { rm -rf $HOME/.config/qBittorrent/qBittorrent.conf.backup ; mv -f $HOME/.config/qBittorrent/qBittorrent.conf $HOME/.config/qBittorrent/qBittorrent.conf.backup ; }
     portGenerator && portCheck
     portGenerator2 && portCheck2
+    QBDL_PATH="${USERPATH}/download"
     [[ $Seedbox == FH  ]]    && QBDL_PATH="${USERPATH}/private/qBittorrent/data"
     [[ $Seedbox == SH  ]]    && QBDL_PATH="${USERPATH}/downloads"
     [[ $Seedbox == PM  ]]    && QBDL_PATH="${USERPATH}/data"
@@ -311,7 +343,7 @@ if [[ $qbconfig == new ]]; then
     [[ $Seedbox == Sbcc ]]   && QBDL_PATH="${USERPATH}/files/downloads"
     [[ $Seedbox == AppBox ]] && QBDL_PATH="/APPBOX_DATA/apps/qBittorrent"
     mkdir -p $QBDL_PATH $HOME/.config/qBittorrent
-cat > $HOME/.config/qBittorrent/qBittorrent.conf <<EOF
+    cat > $HOME/.config/qBittorrent/qBittorrent.conf <<EOF
 [Application]
 FileLogger\Enabled=true
 FileLogger\Age=6
@@ -343,10 +375,28 @@ Queueing\QueueingEnabled=false
 Downloads\SavePath=$QBDL_PATH
 
 WebUI\Port=$portGen
-WebUI\Password_ha1=@ByteArray($QBPASS)
+EOF
+fi
+
+    if version_ge $qb_version 4.2.0; then
+        git clone --depth=1 https://github.com/KozakaiAya/libqbpasswd.git $HOME/libqbpasswd
+        cd $HOME/libqbpasswd
+        make
+        cp -f qb_password_gen $HOME/.local/bin/qb_password_gen
+        cd $HOME && rm -rf libqbpasswd
+        qbPass=$($HOME/.local/bin/qb_password_gen $iPass)
+        cat >> $HOME/.config/qBittorrent/qBittorrent.conf << EOF
+WebUI\Password_PBKDF2="@ByteArray($qbPass)"
 WebUI\Username=$(whoami)
 EOF
-fi ; }
+    else
+        qbPass=$(echo -n $iPass | md5sum | cut -f1 -d ' ')
+        cat >> $HOME/.config/qBittorrent/qBittorrent.conf << EOF
+WebUI\Password_ha1=@ByteArray($qbPass)
+WebUI\Username=$(whoami)
+EOF
+    fi
+}
 
 
 
@@ -475,7 +525,11 @@ install_qb_finished ; }
 
 function _install_de() {
 
-echo ; cd
+echo -e "${bold}这个脚本是让你来装第二个 Deluge 用的
+如果你这个共享盒子本身不支持 Deluge（比如 PulsedMedia），那这里也没法给你装上
+或者你这个盒子支持在控制面板安装 Deluge 但是你还没装的，请先去控制面板装
+总之这里在已经有一个 de 安装了的情况下装第二个 de 的，不是在没有 de 的情况下安装"
+cd
 
 # 关掉可能在运行的第二个 deluged
 for depid in ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep de2 | awk '{print $2}' ` ; do kill -9 $depid ; done
