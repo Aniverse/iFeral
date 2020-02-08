@@ -8,7 +8,7 @@
 # rm -f i ; nano i ; bash i -d
 #
 #
-iFeralVer=0.9.9
+iFeralVer=1.0.0
 iFeralDate=2020.02.07
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0)   ; red=$(tput setaf 1)          ; green=$(tput setaf 2)   ; yellow=$(tput setaf 3);  bold=$(tput bold)
@@ -287,15 +287,19 @@ function install_qbittorrent() {
     echo ; mkdir -p $HOME/.config/{qBittorrent,flexget}
     for qbpid in ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep qbittorrent | awk '{print $2}' ` ; do kill -9 $qbpid ; done
 
-    qb_version=4.2.1
-    mkdir -p $HOME/.local/{bin,lib}
-    echo -e "${bold} 开始下载 qBittorrent 程序 ... ${normal}"
-    wget https://sourceforge.net/projects/aboxx/files/qbittorrent/$CODENAME/qbittorrent-nox.$qb_version/download -O $HOME/.local/bin/qbittorrent-nox
-    cd $HOME/.local/lib
-    curl -s https://sourceforge.net/projects/aboxx/rss?path=/qbittorrent/$CODENAME/library | grep "<link>.*</link>" | sed 's|<link>||;s|</link>||' | grep download | while read url ; do
-        wget --trust-server-name $url
-    done
-    chmod +x $HOME/.local/bin/qbittorrent-nox
+    if [[ $CODENAME =~ (trusty|xenial|bionic|jessie|stretch|buster) ]]; then
+        qb_version=4.2.1
+        mkdir -p $HOME/.local/{bin,lib}
+        echo -e "${bold} 开始下载 qBittorrent 程序 ... ${normal}"
+        wget https://sourceforge.net/projects/aboxx/files/qbittorrent/$CODENAME/qbittorrent-nox.$qb_version/download -O $HOME/.local/bin/qbittorrent-nox
+        cd $HOME/.local/lib
+        curl -s https://sourceforge.net/projects/aboxx/rss?path=/qbittorrent/$CODENAME/library | grep "<link>.*</link>" | sed 's|<link>||;s|</link>||' | grep download | while read url ; do
+            wget --trust-server-name $url
+        done
+        chmod +x $HOME/.local/bin/qbittorrent-nox
+    else
+        echo -e "${bold}${yellow}暂时不支持系统非 Debian 9/10、Ubuntu 16.04/18.04 的盒子 ...${normal}\n" ; exit 1
+    fi
 
     install_qb_ask_config
     install_qb_new_config
@@ -319,6 +323,7 @@ After=network.target
 #Type=forking
 LimitNOFILE=500000
 Environment="LD_LIBRARY_PATH=$HOME/.local/lib:$HOME/.local/usr/lib:\$LD_LIBRARY_PATH"
+Environment="TMPDIR=$HOME/.local/tmp"
 ExecStart=$HOME/.local/bin/qbittorrent-nox -d
 #ExecStop=/usr/bin/pkill -9 qbittorrent-nox
 Restart=on-failure
@@ -599,7 +604,7 @@ rm -f $HOME/bin/{de2,dew2} >/dev/null 2>&1
 mv -f $HOME/.local/bin/deluged $HOME/bin/de2 >/dev/null 2>&1
 mv -f $HOME/.local/bin/deluge-web $HOME/bin/dew2 >/dev/null 2>&1
 chmod 700 $HOME/bin/{de2,dew2} >/dev/null 2>&1
-[[ ! -e $HOME/bin/de2 ]] && { echo -e "${error} 第二个 Deluged 安装失败！\n不要问我为什么和怎么办，你自己看着办吧！${normal}" ; exit 1 ; }
+[[ ! -e $HOME/bin/de2 ]] && { echo -e "${CW} 第二个 Deluged 安装失败！\n不要问我为什么和怎么办，你自己看着办吧！${normal}" ; exit 1 ; }
 
 # 询问是否覆盖原配置信息
 if [[ -e $HOME/.config/deluge2/core.conf ]]; then
@@ -656,7 +661,7 @@ if [[ ` ps aux | grep $(whoami) | grep -Ev "grep|aux|root" | grep de2 ` ]]; then
     echo -e "daemon 密码  ${cyan}$DE2AUTHPASS${jiacu}"
     echo -e "daemon 端口  ${cyan}$DE2PORT${normal}"
 else
-    echo -e "${error} 第二个 Deluge 安装完成，但无法正常运行。\n不要问我为什么和怎么办，你自己看着办吧！${normal}"
+    echo -e "${CW} 第二个 Deluge 安装完成，但无法正常运行。\n不要问我为什么和怎么办，你自己看着办吧！${normal}"
 fi ; }
 
 
@@ -836,11 +841,11 @@ if [[ -e $Flexget_PATH ]]; then
         echo -e "\n${bold}${green}Flexget 已安装完成！${jiacu}\n"
         echo -e "网址  ${cyan}http://$(hostname -f):$FLPORT${jiacu}"
         echo -e "账号  ${cyan}flexget${jiacu}"
-        if [[ $FlexPassFail == 1 ]]; then echo -e "${error}你刚才设的密码太简单了，Flexget 不接受这么简单的密码\n请自行输入 $HOME/pip/bin/flexget web passwd <密码> 来设置密码\n（方括号部分请改成密码）${normal}\n"
+        if [[ $FlexPassFail == 1 ]]; then echo -e "${CW}你刚才设的密码太简单了，Flexget 不接受这么简单的密码\n请自行输入 $HOME/pip/bin/flexget web passwd <密码> 来设置密码\n（方括号部分请改成密码）${normal}\n"
         else echo -e "密码  ${cyan}$PASSWORD${normal}\n" ; fi
-    else echo -e "${error} Flexget 安装完成，但 daemon 没开起来。\n不要问我为什么和怎么办，你自己看着办吧！${normal}" ; fi
+    else echo -e "${CW} Flexget 安装完成，但 daemon 没开起来。\n不要问我为什么和怎么办，你自己看着办吧！${normal}" ; fi
 else
-    echo -e "${error} Flexget 安装失败。请尝试手动安装？${normal}"
+    echo -e "${CW} Flexget 安装失败。请尝试手动安装？${normal}"
 fi
 
 [[ $DeBUG == 1 ]] && {
