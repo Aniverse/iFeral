@@ -8,8 +8,8 @@
 # rm -f i ; nano i ; bash i -d
 #
 #
-iFeralVer=1.0.0
-iFeralDate=2020.02.07
+iFeralVer=1.0.1.outdated
+iFeralDate=2020.08.20
 # 颜色 -----------------------------------------------------------------------------------
 black=$(tput setaf 0)   ; red=$(tput setaf 1)          ; green=$(tput setaf 2)   ; yellow=$(tput setaf 3);  bold=$(tput bold)
 blue=$(tput setaf 4)    ; magenta=$(tput setaf 5)      ; cyan=$(tput setaf 6)    ; white=$(tput setaf 7) ;  normal=$(tput sgr0)
@@ -143,8 +143,8 @@ trap cancel SIGINT
 
 # 00. Logo
 function _logo() {
-cd ; clear ; wget --timeout=7 -qO- https://github.com/Aniverse/iFeral/raw/master/files/iFeral.logo.1
-echo -e "${bold}Ver. $iFeralVer    \n"
+    cd ; clear ; wget --timeout=7 -qO- https://github.com/Aniverse/iFeral/raw/master/files/iFeral.logo.1
+    echo -e "${bold}Ver. $iFeralVer    \n"
 }
 
 
@@ -220,19 +220,16 @@ EOF
 
 # 00. 导航菜单
 function _main_menu() {
-
-echo -e "${bold}很多功能可能不正常，我懒得解决了\n"
-echo -e "${green}(01) ${jiacu}安装 qBittorrent (v4)"
-echo -e "${green}(02) ${jiacu}安装第二个 Deluge"
+echo -e "${bold}我现在没精力维护这个脚本了，再说我手上也没有 FH、SH、USB 之类的共享盒子了"
+echo -e "脚本功能很久没改过了，有 bug、用不了也很正常"
+echo -e "能用的部分就凑合着用，不能用的就先算了\n"
+echo -e "${green}(01) ${jiacu}安装 qBittorrent 4.2.1"
+echo -e "${green}(02) ${jiacu}安装第二个 Deluge（无法安装 2.0.X）"
 echo -e "${green}(03) ${jiacu}安装 rclone"
-echo -e "${green}(06) ${jiacu}安装 flexget         "
-echo -e "${green}(08) ${jiacu}查看 系统信息        "
-echo -e "${green}(09) ${jiacu}查看 邻居            "
-
-echo -e "${green}(13) ${jiacu}安装 qBittorrent (v1)  "
-echo -e "${green}(14) ${jiacu}安装 qBittorrent (v2)  "
-echo -e "${green}(15) ${jiacu}安装 qBittorrent (v3)    "
-echo -e "${green}(99) ${jiacu}退出脚本             "
+echo -e "${green}(06) ${jiacu}安装 flexget（大概率有 bug）"
+echo -e "${green}(08) ${jiacu}查看 系统信息"
+echo -e "${green}(09) ${jiacu}查看 邻居"
+echo -e "${green}(99) ${jiacu}退出脚本"
 echo -e "${normal}"
 
 echo -ne "${yellow}${bold}你想做些什么？ (默认选择退出) ${normal}" ; read -e response
@@ -264,7 +261,8 @@ case $response in
     *     ) clear ; exit 0 ;;
 esac
 
-echo ; }
+echo
+}
 
 
 
@@ -809,7 +807,7 @@ cp -f $HOME/.config/flexget/config.yml $HOME/.config/flexget/config.yml."$(date 
 cat >  $HOME/.config/flexget/config.yml <<EOF
 tasks:
   MTeam:
-    rss: https://https://tp.m-team.cc/torrentrss.php
+    rss: https://pt.m-team.cc/torrentrss.php
     verify_ssl_certificates: no
     regexp:
       accept:
